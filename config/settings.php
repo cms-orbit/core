@@ -16,7 +16,7 @@ return [
      |
      */
 
-    'domain' => env('PLATFORM_DOMAIN'),
+    'domain' => env('ORBIT_DOMAIN'),
 
     /*
      |--------------------------------------------------------------------------
@@ -29,7 +29,7 @@ return [
      |
      */
 
-    'prefix' => env('PLATFORM_PREFIX', '/admin'),
+    'prefix' => env('ORBIT_PREFIX', '/admin'),
 
     /*
      |--------------------------------------------------------------------------
@@ -185,7 +185,7 @@ return [
      */
 
     'attachment' => [
-        'disk'      => env('PLATFORM_FILESYSTEM_DISK', 'public'),
+        'disk'      => env('ORBIT_FILESYSTEM_DISK', 'public'),
         'generator' => \CmsOrbit\Core\Attachment\Engines\Generator::class,
     ],
 
