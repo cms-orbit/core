@@ -1,0 +1,89 @@
+{
+    "name": "cms-orbit/core",
+    "version": "4.0.0",
+    "authors": [
+        {
+            "name": "CMS Orbit",
+            "email": "ceo@amuz.co.kr"
+        }
+    ],
+    "description": "Unified Laravel Orbit platform, crud, and blade-icons packages with CmsOrbit namespace",
+    "keywords": [
+        "framework",
+        "laravel",
+        "orchid",
+        "orbit",
+        "platform",
+        "admin",
+        "cmf",
+        "cms",
+        "rad",
+        "extranet",
+        "crud",
+        "blade-icons"
+    ],
+    "type": "library",
+    "license": "MIT",
+    "homepage": "https://github.com/cms-orbit/core",
+    "support": {
+        "issues": "https://github.com/cms-orbit/core/issues",
+        "source": "https://github.com/cms-orbit/core"
+    },
+    "require": {
+        "composer-runtime-api": "^2.2",
+        "composer/semver": "^3.0",
+        "laravel/framework": "^10.0 || ^11.0 || ^12.0",
+        "laravel/scout": "^9.0 || ^10.0",
+        "tabuna/breadcrumbs": "^4.0",
+        "twbs/bootstrap-icons": "^1.10",
+        "watson/active": "^7.0",
+        "ext-dom": "*"
+    },
+    "require-dev": {
+        "fakerphp/faker": "^1.9.1",
+        "laravel/pint": "^1.14",
+        "orchestra/testbench": "^8.0 || ^9.0 || ^10.0",
+        "orchestra/testbench-core": "^8.0 || ^9.0 || ^10.0",
+        "orchestra/testbench-dusk": "^8.0 || ^9.0 || ^10.0",
+        "phpunit/phpunit": "^10.0 || ^11.0 || ^12.0"
+    },
+    "conflict": {
+        "laravel/framework": "<=10.48.25, <=11.34.0",
+        "orchestra/testbench-core": "<8.23.9",
+        "nesbot/carbon": "<2.66.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "CmsOrbit\\Core\\": "src/"
+        },
+        "files": [
+            "src/Support/helpers.php"
+        ]
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "CmsOrbit\\Core\\Database\\Factories\\": "database/factories/",
+            "CmsOrbit\\Core\\Database\\Seeders\\": "database/seeders/",
+            "CmsOrbit\\Core\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "CmsOrbit\\Core\\Settings\\Providers\\FoundationServiceProvider",
+                "CmsOrbit\\Core\\IconServiceProvider",
+                "CmsOrbit\\Core\\CrudServiceProvider"
+            ],
+            "aliases": {
+                "Alert": "CmsOrbit\\Core\\Facades\\Alert",
+                "Dashboard": "CmsOrbit\\Core\\Facades\\Dashboard"
+            }
+        }
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}
+
