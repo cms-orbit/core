@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CmsOrbit\Core\Facades;
 
 use Illuminate\Support\Facades\Facade;
-use CmsOrbit\Core\Alert\Alert as AlertClass;
+use CmsOrbit\Core\Support\Alert\Alert as AlertClass;
 use CmsOrbit\Core\Support\Color;
 
 /**

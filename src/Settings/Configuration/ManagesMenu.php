@@ -1,8 +1,8 @@
 <?php
 
-namespace CmsOrbit\Core\Configuration;
+namespace CmsOrbit\Core\Settings\Configuration;
 
-use CmsOrbit\Core\Screen\Actions\Menu;
+use CmsOrbit\Core\UI\Actions\Menu;
 use CmsOrbit\Core\Support\Attributes\FlushOctaneState;
 
 trait ManagesMenu

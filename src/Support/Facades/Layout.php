@@ -5,26 +5,26 @@ declare(strict_types=1);
 namespace CmsOrbit\Core\Facades;
 
 use Illuminate\Support\Facades\Facade;
-use CmsOrbit\Core\Screen\Layout as BaseLayout;
-use CmsOrbit\Core\Screen\LayoutFactory;
-use CmsOrbit\Core\Screen\Layouts\Accordion;
-use CmsOrbit\Core\Screen\Layouts\Blank;
-use CmsOrbit\Core\Screen\Layouts\Block;
-use CmsOrbit\Core\Screen\Layouts\Browsing;
-use CmsOrbit\Core\Screen\Layouts\Chart;
-use CmsOrbit\Core\Screen\Layouts\Columns;
-use CmsOrbit\Core\Screen\Layouts\Component;
-use CmsOrbit\Core\Screen\Layouts\Legend;
-use CmsOrbit\Core\Screen\Layouts\Metric;
-use CmsOrbit\Core\Screen\Layouts\Modal;
-use CmsOrbit\Core\Screen\Layouts\Rows;
-use CmsOrbit\Core\Screen\Layouts\Selection;
-use CmsOrbit\Core\Screen\Layouts\Sortable;
-use CmsOrbit\Core\Screen\Layouts\Split;
-use CmsOrbit\Core\Screen\Layouts\Table;
-use CmsOrbit\Core\Screen\Layouts\Tabs;
-use CmsOrbit\Core\Screen\Layouts\View;
-use CmsOrbit\Core\Screen\Layouts\Wrapper;
+use CmsOrbit\Core\UI\Layout as BaseLayout;
+use CmsOrbit\Core\UI\LayoutFactory;
+use CmsOrbit\Core\UI\Layouts\Accordion;
+use CmsOrbit\Core\UI\Layouts\Blank;
+use CmsOrbit\Core\UI\Layouts\Block;
+use CmsOrbit\Core\UI\Layouts\Browsing;
+use CmsOrbit\Core\UI\Layouts\Chart;
+use CmsOrbit\Core\UI\Layouts\Columns;
+use CmsOrbit\Core\UI\Layouts\Component;
+use CmsOrbit\Core\UI\Layouts\Legend;
+use CmsOrbit\Core\UI\Layouts\Metric;
+use CmsOrbit\Core\UI\Layouts\Modal;
+use CmsOrbit\Core\UI\Layouts\Rows;
+use CmsOrbit\Core\UI\Layouts\Selection;
+use CmsOrbit\Core\UI\Layouts\Sortable;
+use CmsOrbit\Core\UI\Layouts\Split;
+use CmsOrbit\Core\UI\Layouts\Table;
+use CmsOrbit\Core\UI\Layouts\Tabs;
+use CmsOrbit\Core\UI\Layouts\View;
+use CmsOrbit\Core\UI\Layouts\Wrapper;
 
 /**
  * Class Layout.

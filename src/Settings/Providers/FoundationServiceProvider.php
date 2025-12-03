@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CmsOrbit\Core\Providers;
+namespace CmsOrbit\Core\Settings\Providers;
 
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Blade;
@@ -10,11 +10,11 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Scout\ScoutServiceProvider;
-use CmsOrbit\Core\Icons\IconServiceProvider;
+use CmsOrbit\Core\IconServiceProvider;
 use CmsOrbit\Core\Settings\Components\Notification;
 use CmsOrbit\Core\Settings\Components\Stream;
 use CmsOrbit\Core\Settings\Dashboard;
-use CmsOrbit\Core\Screen\Components\Popover;
+use CmsOrbit\Core\UI\Components\Popover;
 use Tabuna\Breadcrumbs\BreadcrumbsServiceProvider;
 use Watson\Active\ActiveServiceProvider;
 

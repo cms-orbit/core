@@ -2,24 +2,24 @@
 
 declare(strict_types=1);
 
-namespace CmsOrbit\Core\Providers;
+namespace CmsOrbit\Core\Settings\Providers;
 
 use Illuminate\Foundation\Console\AboutCommand;
 use Illuminate\Support\ServiceProvider;
-use CmsOrbit\Core\Settings\Commands\AdminCommand;
-use CmsOrbit\Core\Settings\Commands\ChartCommand;
-use CmsOrbit\Core\Settings\Commands\FieldCommand;
-use CmsOrbit\Core\Settings\Commands\FilterCommand;
-use CmsOrbit\Core\Settings\Commands\InstallCommand;
-use CmsOrbit\Core\Settings\Commands\ListenerCommand;
-use CmsOrbit\Core\Settings\Commands\PresenterCommand;
-use CmsOrbit\Core\Settings\Commands\PublishCommand;
-use CmsOrbit\Core\Settings\Commands\RowsCommand;
-use CmsOrbit\Core\Settings\Commands\ScreenCommand;
-use CmsOrbit\Core\Settings\Commands\SelectionCommand;
-use CmsOrbit\Core\Settings\Commands\StubPublishCommand;
-use CmsOrbit\Core\Settings\Commands\TableCommand;
-use CmsOrbit\Core\Settings\Commands\TabMenuCommand;
+use CmsOrbit\Core\Commands\AdminCommand;
+use CmsOrbit\Core\Commands\ChartCommand;
+use CmsOrbit\Core\Commands\FieldCommand;
+use CmsOrbit\Core\Commands\FilterCommand;
+use CmsOrbit\Core\Commands\InstallCommand;
+use CmsOrbit\Core\Commands\ListenerCommand;
+use CmsOrbit\Core\Commands\PresenterCommand;
+use CmsOrbit\Core\Commands\PublishCommand;
+use CmsOrbit\Core\Commands\RowsCommand;
+use CmsOrbit\Core\Commands\ScreenCommand;
+use CmsOrbit\Core\Commands\SelectionCommand;
+use CmsOrbit\Core\Commands\StubPublishCommand;
+use CmsOrbit\Core\Commands\TableCommand;
+use CmsOrbit\Core\Commands\TabMenuCommand;
 use CmsOrbit\Core\Support\Facades\Dashboard;
 
 class ConsoleServiceProvider extends ServiceProvider

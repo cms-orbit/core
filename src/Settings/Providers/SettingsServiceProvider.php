@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace CmsOrbit\Core\Providers;
+namespace CmsOrbit\Core\Settings\Providers;
 
 use Illuminate\Support\ServiceProvider;
-use CmsOrbit\Core\Icons\IconFinder;
+use CmsOrbit\Core\IconFinder;
 use CmsOrbit\Core\Settings\Dashboard;
 use CmsOrbit\Core\Settings\ItemPermission;
 
@@ -24,7 +24,7 @@ class SettingsServiceProvider extends ServiceProvider
         $this->dashboard = $dashboard;
 
         foreach (config('settings.icons', []) as $key => $path) {
-            $iconFinder->registerIconDirectory($key, $path);
+            $iconFinder->registerIconDirectory($key, is_callable($path) ? $path() : $path);
         }
 
         $this->app->booted(function () {

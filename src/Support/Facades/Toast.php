@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CmsOrbit\Core\Facades;
 
 use Illuminate\Support\Facades\Facade;
-use CmsOrbit\Core\Alert\Toast as ToastClass;
+use CmsOrbit\Core\Support\Alert\Toast as ToastClass;
 
 /**
  * Facade to create Toast notifications.

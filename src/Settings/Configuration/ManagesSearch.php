@@ -1,11 +1,11 @@
 <?php
 
-namespace CmsOrbit\Core\Configuration;
+namespace CmsOrbit\Core\Settings\Configuration;
 
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
-use CmsOrbit\Core\Screen\Contracts\Searchable;
+use CmsOrbit\Core\UI\Contracts\Searchable;
 
 trait ManagesSearch
 {

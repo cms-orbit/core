@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use CmsOrbit\Core\Alert\Alert;
-use CmsOrbit\Core\Filters\HttpFilter;
+use CmsOrbit\Core\Support\Alert\Alert;
+use CmsOrbit\Core\Foundation\Filters\HttpFilter;
 use CmsOrbit\Core\Support\Color;
 
 if (! function_exists('alert')) {

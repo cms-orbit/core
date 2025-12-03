@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace CmsOrbit\Core\Facades;
+namespace CmsOrbit\Core\Support\Facades;
 
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Facade;
 use CmsOrbit\Core\Settings\Dashboard as DashboardKernel;
-use CmsOrbit\Core\Screen\Screen;
+use CmsOrbit\Core\UI\Screen;
 
 /**
  * Class Dashboard.

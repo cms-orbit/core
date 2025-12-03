@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CmsOrbit\Core;
+namespace CmsOrbit\Core\Settings;
 
 /**
  * This class represents a permission group that can be used to store collections of permissions.

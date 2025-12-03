@@ -1,6 +1,6 @@
 <?php
 
-namespace CmsOrbit\Core\Configuration;
+namespace CmsOrbit\Core\Settings\Configuration;
 
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;

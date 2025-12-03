@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CmsOrbit\Core\Events;
 
 use Illuminate\Queue\SerializesModels;
-use CmsOrbit\Core\Attachment\Models\Attachment;
+use CmsOrbit\Core\Foundation\Attachments\Models\Attachment;
 
 /**
  * Class ReplicateFileEvent.

@@ -1,6 +1,6 @@
 <?php
 
-namespace CmsOrbit\Core;
+namespace CmsOrbit\Core\Support;
 
 use Composer\InstalledVersions;
 

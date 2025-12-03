@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace CmsOrbit\Core\Providers;
+namespace CmsOrbit\Core\Settings\Providers;
 
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Route;
-use CmsOrbit\Core\Settings\Http\Middleware\Access;
-use CmsOrbit\Core\Settings\Http\Middleware\BladeIcons;
-use CmsOrbit\Core\Settings\Http\Middleware\Turbo;
+use CmsOrbit\Core\Http\Middleware\Access;
+use CmsOrbit\Core\Http\Middleware\BladeIcons;
+use CmsOrbit\Core\Http\Middleware\Turbo;
 use CmsOrbit\Core\Support\Facades\Dashboard;
 
 class RouteServiceProvider extends ServiceProvider
@@ -48,7 +48,7 @@ class RouteServiceProvider extends ServiceProvider
             ->prefix(Dashboard::prefix('/'))
             ->as('settings.')
             ->middleware(config('settings.middleware.private'))
-            ->group(Dashboard::path('routes/dashboard.php'));
+            ->group(Dashboard::path('routes/routes.php'));
 
         /*
          * Auth routes.
@@ -62,7 +62,7 @@ class RouteServiceProvider extends ServiceProvider
             ->prefix(Dashboard::prefix('/'))
             ->as('settings.')
             ->middleware(config('settings.middleware.public'))
-            ->group(Dashboard::path('routes/auth.php'));
+            ->group(Dashboard::path('routes/routes.php'));
 
         /*
          * Application routes.

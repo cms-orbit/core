@@ -1,12 +1,12 @@
 <?php
 
-namespace CmsOrbit\Core\Configuration;
+namespace CmsOrbit\Core\Settings\Configuration;
 
 use Composer\InstalledVersions;
 
 trait ManagesPackage
 {
-    protected static string $composerPackage = 'orchid/platform';
+    protected static string $composerPackage = 'cms-orbit/core';
 
     /**
      * Get the version number of the application.

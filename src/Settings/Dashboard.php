@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CmsOrbit\Core;
+namespace CmsOrbit\Core\Settings;
 
 use Illuminate\Support\Str;
 use Illuminate\Support\Traits\Macroable;

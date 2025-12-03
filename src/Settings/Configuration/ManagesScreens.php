@@ -1,9 +1,9 @@
 <?php
 
-namespace CmsOrbit\Core\Configuration;
+namespace CmsOrbit\Core\Settings\Configuration;
 
 use Illuminate\Support\Facades\App;
-use CmsOrbit\Core\Screen\Screen;
+use CmsOrbit\Core\UI\Screen;
 use CmsOrbit\Core\Support\Attributes\FlushOctaneState;
 
 trait ManagesScreens
