@@ -39,43 +39,43 @@ class RouteServiceProvider extends ServiceProvider
         /*
          * Dashboard routes.
          *
-         * The dashboard routes have a subdomain of the settings.domain config value,
+         * The dashboard routes have a subdomain of the orbit.domain config value,
          * a prefix consisting of the Dashboard::prefix() method return value,
-         * an alias of 'settings.', middleware from the settings.middleware.private config value,
+         * an alias of 'orbit.', middleware from the orbit.middleware.private config value,
          * and are defined in the Dashboard::path('routes/dashboard.php') file.
          */
-        Route::domain((string) config('settings.domain'))
+        Route::domain((string) config('orbit.domain'))
             ->prefix(Dashboard::prefix('/'))
-            ->as('settings.')
-            ->middleware(config('settings.middleware.private'))
+            ->as('orbit.')
+            ->middleware(config('orbit.middleware.private'))
             ->group(Dashboard::path('routes/routes.php'));
 
         /*
          * Auth routes.
          *
-         * The auth routes have a subdomain of the settings.domain config value,
+         * The auth routes have a subdomain of the orbit.domain config value,
          * a prefix consisting of the Dashboard::prefix() method return value,
-         * an alias of 'settings.', middleware from the settings.middleware.public config value,
+         * an alias of 'orbit.', middleware from the orbit.middleware.public config value,
          * and are defined in the Dashboard::path('routes/auth.php') file.
          */
-        Route::domain((string) config('settings.domain'))
+        Route::domain((string) config('orbit.domain'))
             ->prefix(Dashboard::prefix('/'))
-            ->as('settings.')
-            ->middleware(config('settings.middleware.public'))
+            ->as('orbit.')
+            ->middleware(config('orbit.middleware.public'))
             ->group(Dashboard::path('routes/routes.php'));
 
         /*
          * Application routes.
          *
-         * If the 'routes/settings.php' file exists, its routes have a subdomain of the settings.domain config value,
+         * If the 'routes/orbit.php' file exists, its routes have a subdomain of the orbit.domain config value,
          * a prefix consisting of the Dashboard::prefix() method return value,
-         * and middleware from the settings.middleware.private config value.
+         * and middleware from the orbit.middleware.private config value.
          */
-        if (file_exists(base_path('routes/settings.php'))) {
-            Route::domain((string) config('settings.domain'))
+        if (file_exists(base_path('routes/orbit.php'))) {
+            Route::domain((string) config('orbit.domain'))
                 ->prefix(Dashboard::prefix('/'))
-                ->middleware(config('settings.middleware.private'))
-                ->group(base_path('routes/settings.php'));
+                ->middleware(config('orbit.middleware.private'))
+                ->group(base_path('routes/orbit.php'));
         }
     }
 }

@@ -1,0 +1,81 @@
+<?php
+
+namespace {{ namespace }};
+
+use {{ modelNamespace }}\{{ class }};
+use {{ layoutNamespace }}\{{ class }}ListLayout;
+use CmsOrbit\Core\UI\Screen;
+use CmsOrbit\Core\UI\Actions\Link;
+use CmsOrbit\Core\Support\Facades\Toast;
+use Illuminate\Http\Request;
+
+class {{ class }}ListScreen extends Screen
+{
+    /**
+     * Fetch data to be displayed on the screen
+     *
+     * @return array
+     */
+    public function query(): iterable
+    {
+        return [
+            '{{ variablePlural }}' => {{ class }}::filters()->defaultSort('id', 'desc')->paginate(),
+        ];
+    }
+
+    /**
+     * The name of the screen displayed in the header
+     *
+     * @return string|null
+     */
+    public function name(): ?string
+    {
+        return __('{{ class }} Management');
+    }
+
+    /**
+     * Display header description
+     */
+    public function description(): ?string
+    {
+        return __('A comprehensive list of all {{ variablePlural }}');
+    }
+
+    /**
+     * The screen's action buttons
+     *
+     * @return \CmsOrbit\Core\UI\Action[]
+     */
+    public function commandBar(): iterable
+    {
+        return [
+            Link::make(__('Create'))
+                ->icon('bs.plus-circle')
+                ->route('orbit.entities.{{ routeName }}.create')
+                ->canSee(fn() => auth()->user()?->hasAccess('orbit.entities.{{ routeName }}.create')),
+        ];
+    }
+
+    /**
+     * The screen's layout elements
+     *
+     * @return \CmsOrbit\Core\UI\Layout[]|string[]
+     */
+    public function layout(): iterable
+    {
+        return [
+            {{ class }}ListLayout::class,
+        ];
+    }
+
+    /**
+     * Remove the specified resource
+     */
+    public function remove(Request $request): void
+    {
+        {{ class }}::findOrFail($request->get('id'))->delete();
+
+        Toast::info(__('{{ class }} was removed'));
+    }
+}
+

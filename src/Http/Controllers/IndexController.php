@@ -13,11 +13,17 @@ use Illuminate\View\View;
 class IndexController extends Controller
 {
     /**
-     * Redirect to the configured index route.
+     * Redirect to the configured index route or show dashboard.
      */
-    public function index(): RedirectResponse
+    public function index(): RedirectResponse|View
     {
-        return redirect()->route(config('settings.index'));
+        $indexRoute = config('orbit.index');
+        if ($indexRoute && \Illuminate\Support\Facades\Route::has($indexRoute)) {
+            return redirect()->route($indexRoute);
+        }
+
+        // Default dashboard view
+        return view('orbit::dashboard');
     }
 
     /**

@@ -47,7 +47,7 @@ class ViewScreen extends ResourceScreen
             Link::make(__('Edit'))
                 ->icon('bs.pencil')
                 ->canSee($this->can('update'))
-                ->route('settings.resource.edit', [
+                ->route('orbit.resource.edit', [
                     $this->resource::uriKey(),
                     $this->model->getKey(),
                 ]),

@@ -3,7 +3,7 @@
 namespace CmsOrbit\Core\Http\Middleware;
 
 use Illuminate\Http\Request;
-use CmsOrbit\Core\Icons\IconFinder;
+use CmsOrbit\Core\Foundation\Icons\IconFinder;
 
 class BladeIcons
 {

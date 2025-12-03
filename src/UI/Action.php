@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CmsOrbit\Core\UI;
 
-use CmsOrbit\Core\Screen\Contracts\Actionable;
+use CmsOrbit\Core\UI\Contracts\Actionable;
 use CmsOrbit\Core\Support\Color;
 
 class Action extends Field implements Actionable

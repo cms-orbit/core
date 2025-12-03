@@ -16,7 +16,7 @@ return [
     |--------------------------------------------------------------------------
     */
 
-    'prefix' => env('ORBIT_PREFIX', '/admin'),
+    'prefix' => env('ORBIT_PREFIX', '/orbit-settings'),
 
     /*
     |--------------------------------------------------------------------------
@@ -51,7 +51,7 @@ return [
     |--------------------------------------------------------------------------
     */
 
-    'index' => 'orbit.index',
+    'index' => null,
 
     /*
     |--------------------------------------------------------------------------
@@ -130,7 +130,7 @@ return [
     */
 
     'search' => [
-        // \App\Models\User::class
+        \App\Entities\User\User::class
     ],
 
     /*
@@ -176,7 +176,7 @@ return [
     |--------------------------------------------------------------------------
     */
 
-    'provider' => \App\Orbit\SettingsProvider::class,
+    'provider' => \CmsOrbit\Core\Settings\Providers\SettingsServiceProvider::class,
 
 ];
 

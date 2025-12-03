@@ -1,0 +1,15 @@
+<?php
+
+use {{ screenNamespace }}\{{ class }}ListScreen;
+use {{ screenNamespace }}\{{ class }}EditScreen;
+use Illuminate\Support\Facades\Route;
+
+Route::screen('documents/{{ routeName }}', {{ class }}ListScreen::class)
+    ->name('orbit.documents.{{ routeName }}');
+
+Route::screen('documents/{{ routeName }}/create', {{ class }}EditScreen::class)
+    ->name('orbit.documents.{{ routeName }}.create');
+
+Route::screen('documents/{{ routeName }}/{{{ variable }}}', {{ class }}EditScreen::class)
+    ->name('orbit.documents.{{ routeName }}.edit');
+

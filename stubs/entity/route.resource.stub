@@ -1,0 +1,17 @@
+<?php
+
+use {{ resourceNamespace }}\{{ class }}Resource;
+use Illuminate\Support\Facades\Route;
+
+// Resource routes
+Route::resource('{{ routeName }}', {{ class }}Resource::class, [
+    'names' => [
+        'index' => 'orbit.{{ routeName }}.list',
+        'create' => 'orbit.{{ routeName }}.create',
+        'store' => 'orbit.{{ routeName }}.store',
+        'edit' => 'orbit.{{ routeName }}.edit',
+        'update' => 'orbit.{{ routeName }}.update',
+        'destroy' => 'orbit.{{ routeName }}.destroy',
+    ],
+]);
+

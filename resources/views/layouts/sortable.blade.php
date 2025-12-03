@@ -14,7 +14,7 @@
             data-controller="sortable"
             data-sortable-selector-value=".reorder-handle"
             data-sortable-model-value="{{ get_class($rows->first()) }}"
-            data-sortable-action-value="{{ route('settings.systems.sorting') }}"
+            data-sortable-action-value="{{ route('orbit.systems.sorting') }}"
             data-sortable-success-message-value="{{ $successSortMessage }}"
             data-sortable-failure-message-value="{{ $failureSortMessage }}"
             class="list-group">

@@ -1,4 +1,4 @@
-<x-orbit-stream :target="$templateSlug" :rule="\request()->routeIs('settings.async.listener')">
+<x-orbit-stream :target="$templateSlug" :rule="\request()->routeIs('orbit.async.listener')">
     <div data-controller="listener"
          data-listener-watched-value="{{$targets}}"
          data-listener-url-value="{{$asyncRoute}}"

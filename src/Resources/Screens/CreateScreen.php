@@ -65,6 +65,6 @@ class CreateScreen extends ResourceScreen
 
         Toast::info($this->resource::createToastMessage());
 
-        return redirect()->route('settings.resource.list', $request->resource);
+        return redirect()->route('orbit.resource.list', $request->resource);
     }
 }

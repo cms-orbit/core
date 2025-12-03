@@ -1,0 +1,25 @@
+<?php
+
+namespace {{ namespace }};
+
+use CmsOrbit\Core\UI\Fields\Input;
+use CmsOrbit\Core\UI\Layouts\Rows;
+
+class {{ class }}EditLayout extends Rows
+{
+    /**
+     * Get the fields elements to be displayed
+     *
+     * @return \CmsOrbit\Core\UI\Field[]
+     */
+    protected function fields(): iterable
+    {
+        return [
+            Input::make('{{ variable }}.title')
+                ->title(__('Title'))
+                ->placeholder(__('Enter title'))
+                ->required(),
+        ];
+    }
+}
+

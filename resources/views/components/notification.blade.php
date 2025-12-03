@@ -1,10 +1,10 @@
-<a href="{{ route('settings.notifications') }}"
+<a href="{{ route('orbit.notifications') }}"
    class="m-auto d-flex align-items-center btn btn-link position-relative px-1 py-0 h-100 link-body-emphasis"
    data-controller="notification"
    data-notification-count="{{ count($notifications) }}"
-   data-notification-url="{{ route('settings.api.notifications') }}"
+   data-notification-url="{{ route('orbit.api.notifications') }}"
    data-notification-method="post"
-   data-notification-interval="{{ config('settings.notifications.interval') }}"
+   data-notification-interval="{{ config('orbit.notifications.interval') }}"
 >
     <x-orbit-icon path="bs.bell" />
 

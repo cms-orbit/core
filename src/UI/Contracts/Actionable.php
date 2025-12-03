@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CmsOrbit\Core\Contracts;
+namespace CmsOrbit\Core\UI\Contracts;
 
 use CmsOrbit\Core\UI\Repository;
 

@@ -1,6 +1,6 @@
 <div
     data-controller="upload"
-    data-upload-storage="{{$storage ?? config('settings.attachment.disk', 'public')}}"
+    data-upload-storage="{{$storage ?? config('orbit.attachment.disk', 'public')}}"
     data-upload-name="{{$name}}"
     data-upload-id="dropzone-{{$id}}"
     data-upload-data='@json($value)'

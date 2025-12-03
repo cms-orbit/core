@@ -4,6 +4,12 @@ declare(strict_types=1);
 
 namespace CmsOrbit\Core;
 
+use CmsOrbit\Core\Frontend\FrontendHandler;
+use CmsOrbit\Core\Frontend\SitemapGenerator;
+use CmsOrbit\Core\Http\Controllers\SitemapController;
+use CmsOrbit\Core\Support\EntityBootstrapper;
+use CmsOrbit\Core\Support\EntityDiscovery;
+use CmsOrbit\Core\Support\PackageManager;
 use Illuminate\Contracts\Foundation\CachesRoutes;
 use Illuminate\Foundation\Application;
 use Illuminate\Routing\Router;
@@ -33,6 +39,7 @@ class CoreServiceProvider extends ServiceProvider
             ->bootSettings()
             ->bootResources()
             ->bootIcons()
+            ->bootCoreEntities()  // Register entities before routes
             ->bootRoutes()
             ->bootViews()
             ->bootTranslations()
@@ -62,6 +69,7 @@ class CoreServiceProvider extends ServiceProvider
         Blade::component('orbit-notification', Settings\Components\Notification::class);
         Blade::component('orbit-stream', Settings\Components\Stream::class);
         Blade::component('orbit-popover', UI\Components\Popover::class);
+        Blade::component('orbit-icon', UI\Components\Icon::class);
 
         // Register menu
         View::composer('orbit::dashboard', function () {
@@ -103,6 +111,110 @@ class CoreServiceProvider extends ServiceProvider
     }
 
     /**
+     * Boot entities.
+     */
+    protected function bootEntities(): static
+    {
+        /** @var Support\EntityDiscovery $discovery */
+        $discovery = $this->app->make(Support\EntityDiscovery::class);
+
+        /** @var Support\PackageManager $packageManager */
+        $packageManager = $this->app->make(Support\PackageManager::class);
+
+        // Register default entity path (app/Entities)
+        $packageManager->registerEntityPath(app_path('Entities'));
+        $discovery->registerPath(app_path('Entities'));
+
+        // Register entity paths from packages
+        foreach ($packageManager->getEntityPaths() as $path) {
+            $discovery->registerPath($path);
+        }
+
+        // Discover all entities
+        $entities = $discovery->discover();
+
+        // Register entity migrations
+        foreach ($discovery->getMigrationPaths() as $path) {
+            $this->loadMigrationsFrom($path);
+        }
+
+        // Register entity menus
+        $this->registerEntityMenus($entities);
+
+        return $this;
+    }
+
+    /**
+     * Register entity menus.
+     */
+    protected function registerEntityMenus($entities): void
+    {
+        /** @var Settings\Dashboard $dashboard */
+        $dashboard = $this->app->make(Settings\Dashboard::class);
+
+        foreach ($entities as $entity) {
+            $menu = $this->buildEntityMenu($entity);
+            $dashboard->registerMenu($menu['route'], $menu);
+        }
+    }
+
+    /**
+     * Build entity menu structure.
+     */
+    protected function buildEntityMenu(array $entity): array
+    {
+        $name = $entity['name'];
+        $routeName = \Illuminate\Support\Str::snake(\Illuminate\Support\Str::plural($name));
+        $title = \Illuminate\Support\Str::title(\Illuminate\Support\Str::replace('_', ' ', $routeName));
+
+        $mainRoute = $entity['is_resource']
+            ? "orbit.{$routeName}.list"
+            : "orbit.entities.{$routeName}";
+
+        // Build submenu items
+        $submenus = [
+            [
+                'route' => $mainRoute,
+                'label' => __('All :entity', ['entity' => $title]),
+                'icon' => 'bs.list',
+                'permission' => "orbit.entities.{$routeName}",
+                'sort' => 10,
+            ],
+            [
+                'route' => $entity['is_resource']
+                    ? "orbit.{$routeName}.create"
+                    : "orbit.entities.{$routeName}.create",
+                'label' => __('New :entity', ['entity' => $name]),
+                'icon' => 'bs.plus-circle',
+                'permission' => "orbit.entities.{$routeName}.create",
+                'sort' => 20,
+            ],
+        ];
+
+        // Add trash menu if SoftDeletes is enabled
+        if ($entity['has_soft_deletes']) {
+            $submenus[] = [
+                'route' => $entity['is_resource']
+                    ? "orbit.{$routeName}.trash"
+                    : "orbit.entities.{$routeName}.trash",
+                'label' => __('Trash'),
+                'icon' => 'bs.trash',
+                'permission' => "orbit.entities.{$routeName}.trash",
+                'sort' => 30,
+            ];
+        }
+
+        return [
+            'route' => $mainRoute,
+            'label' => $title,
+            'icon' => 'bs.folder',
+            'permission' => "orbit.entities.{$routeName}",
+            'sort' => 1000,
+            'children' => $submenus,
+        ];
+    }
+
+    /**
      * Boot routes.
      */
     protected function bootRoutes(): static
@@ -116,6 +228,20 @@ class CoreServiceProvider extends ServiceProvider
             ->as('orbit.')
             ->middleware(config('orbit.middleware.private'))
             ->group(__DIR__ . '/../routes/routes.php');
+
+        // Load entity routes
+        /** @var Support\EntityDiscovery $discovery */
+        $discovery = $this->app->make(Support\EntityDiscovery::class);
+
+        foreach ($discovery->getRouteFiles() as $routeFile) {
+            Route::domain((string) config('orbit.domain'))
+                ->prefix($this->getPrefix())
+                ->middleware(config('orbit.middleware.private'))
+                ->group($routeFile);
+        }
+
+        // Sitemap route
+        // Route::get('sitemap.xml', Http\Controllers\SitemapController::class)->name('sitemap');
 
         return $this;
     }
@@ -157,6 +283,12 @@ class CoreServiceProvider extends ServiceProvider
             $this->getPath('database/migrations') => database_path('migrations'),
         ], 'orbit-migrations');
 
+        $this->loadMigrationsFrom($this->getPath('database/migrations'));
+
+        $this->publishes([
+            $this->getPath('resources/js') => base_path('node_modules/@cms-orbit/core'),
+        ], 'orbit-js');
+
         $this->publishes([
             $this->getPath('resources/views') => resource_path('views/vendor/orbit'),
         ], 'orbit-views');
@@ -177,9 +309,10 @@ class CoreServiceProvider extends ServiceProvider
      */
     protected function bootOctane(): static
     {
-        Event::listen(fn (\Laravel\Octane\Events\RequestReceived $request) =>
-            $this->app->make(Settings\Dashboard::class)->flush()
-        );
+        Event::listen(function (\Laravel\Octane\Events\RequestReceived $request) {
+            $this->app->make(Settings\Dashboard::class)->flush();
+            $this->app->make(Support\PackageManager::class)->flush();
+        });
 
         return $this;
     }
@@ -231,6 +364,14 @@ class CoreServiceProvider extends ServiceProvider
         $this->app->singleton(Settings\Dashboard::class, fn (Application $app) => new Settings\Dashboard);
         $this->app->singleton(Resources\Arbitrator::class, fn () => new Resources\Arbitrator);
         $this->app->singleton(Foundation\Icons\IconFinder::class, fn () => new Foundation\Icons\IconFinder);
+        $this->app->singleton(PackageManager::class, fn () => new PackageManager);
+        $this->app->singleton(FrontendHandler::class, fn () => new FrontendHandler);
+        $this->app->singleton(SitemapGenerator::class, fn () => new SitemapGenerator);
+        $this->app->singleton(EntityDiscovery::class, fn () => new EntityDiscovery);
+        $this->app->singleton(EntityBootstrapper::class, fn (Application $app) => new EntityBootstrapper(
+            $app->make(EntityDiscovery::class),
+            $app->make(Settings\Dashboard::class)
+        ));
 
         return $this;
     }
@@ -247,6 +388,14 @@ class CoreServiceProvider extends ServiceProvider
         $this->commands([
             Commands\ResourceCommand::class,
             Commands\ActionCommand::class,
+            Commands\EntityCommand::class,
+            Commands\DocumentCommand::class,
+            Commands\ModelCommand::class,
+            Commands\MigrationCommand::class,
+            Commands\FreshSuperAdminRoleCommand::class,
+            Commands\GenerateViteConfigCommand::class,
+            Commands\EntityDiscoverCommand::class,
+            Commands\InstallCommand::class,
         ]);
 
         return $this;
@@ -265,6 +414,35 @@ class CoreServiceProvider extends ServiceProvider
             return Route::match(['GET', 'HEAD', 'POST'], $url.'/{method?}', $screen)
                 ->where('method', $screen::getAvailableMethods()->implode('|'));
         });
+
+        return $this;
+    }
+
+    /**
+     * Boot core entities (User, Role) if not deployed to root project
+     */
+    protected function bootCoreEntities(): static
+    {
+        /** @var Support\EntityBootstrapper $entities */
+        $entities = $this->app->make(Support\EntityBootstrapper::class);
+
+        // Check if User and Role entities exist in root project
+        $rootUserPath = app_path('Entities/User');
+        $rootRolePath = app_path('Entities/Role');
+
+        // If entities are deployed to root, use those
+        if (is_dir($rootUserPath) && is_dir($rootRolePath)) {
+            $entities->registerPath(app_path('Entities'));
+        } else {
+            // Otherwise, use package entities
+            $entities->registerPath($this->getPath('src/Entities'));
+        }
+
+        // Load routes and migrations immediately
+        $entities->loadRoutes()->loadMigrations();
+
+        // Register menus after routes are loaded (deferred)
+        $entities->registerMenus(2000);
 
         return $this;
     }

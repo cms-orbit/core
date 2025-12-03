@@ -76,7 +76,7 @@ abstract class Listener extends Layout
             return null;
         }
 
-        return route('settings.async.listener', [
+        return route('orbit.async.listener', [
             'screen' => Crypt::encryptString(get_class($screen)),
             'layout' => Crypt::encryptString(static::class),
         ]);

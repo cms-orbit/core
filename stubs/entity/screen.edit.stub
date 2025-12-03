@@ -1,0 +1,95 @@
+<?php
+
+namespace {{ namespace }};
+
+use {{ modelNamespace }}\{{ class }};
+use {{ layoutNamespace }}\{{ class }}EditLayout;
+use CmsOrbit\Core\UI\Screen;
+use CmsOrbit\Core\UI\Actions\Button;
+use CmsOrbit\Core\Support\Facades\Toast;
+use Illuminate\Http\Request;
+
+class {{ class }}EditScreen extends Screen
+{
+    /**
+     * @var {{ class }}
+     */
+    public ${{ variable }};
+
+    /**
+     * Fetch data to be displayed on the screen
+     *
+     * @return array
+     */
+    public function query({{ class }} ${{ variable }}): iterable
+    {
+        return [
+            '{{ variable }}' => ${{ variable }},
+        ];
+    }
+
+    /**
+     * The name of the screen displayed in the header
+     *
+     * @return string|null
+     */
+    public function name(): ?string
+    {
+        return $this->{{ variable }}->exists 
+            ? __('Edit {{ class }}')
+            : __('Create {{ class }}');
+    }
+
+    /**
+     * The screen's action buttons
+     *
+     * @return \CmsOrbit\Core\UI\Action[]
+     */
+    public function commandBar(): iterable
+    {
+        return [
+            Button::make(__('Save'))
+                ->icon('bs.check-circle')
+                ->method('save'),
+
+            Button::make(__('Remove'))
+                ->icon('bs.trash')
+                ->method('remove')
+                ->canSee($this->{{ variable }}->exists)
+                ->confirm(__('Are you sure you want to delete this {{ variable }}?')),
+        ];
+    }
+
+    /**
+     * The screen's layout elements
+     *
+     * @return \CmsOrbit\Core\UI\Layout[]|string[]
+     */
+    public function layout(): iterable
+    {
+        return [
+            {{ class }}EditLayout::class,
+        ];
+    }
+
+    /**
+     * Save the specified resource
+     */
+    public function save(Request $request, {{ class }} ${{ variable }}): void
+    {
+        ${{ variable }}->fill($request->all())->save();
+
+        Toast::info(__('{{ class }} was saved'));
+    }
+
+    /**
+     * Remove the specified resource
+     */
+    public function remove({{ class }} ${{ variable }}): void
+    {
+        ${{ variable }}->delete();
+
+        Toast::info(__('{{ class }} was removed'));
+    }
+}
+

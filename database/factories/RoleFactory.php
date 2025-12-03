@@ -24,21 +24,21 @@ class RoleFactory extends Factory
         $role = ['Admin', 'User'];
         $roles = [
             $role[0] => [
-                'settings.index'              => 1,
-                'settings.systems'            => 1,
-                'settings.systems.roles'      => 1,
-                'settings.systems.settings'   => 1,
-                'settings.systems.users'      => 1,
-                'settings.systems.attachment' => 1,
-                'settings.systems.media'      => 1,
+                'orbit.index'              => 1,
+                'orbit.systems'            => 1,
+                'orbit.systems.roles'      => 1,
+                'orbit.systems.settings'   => 1,
+                'orbit.systems.users'      => 1,
+                'orbit.systems.attachment' => 1,
+                'orbit.systems.media'      => 1,
             ],
             $role[1] => [
-                'settings.index'              => 1,
-                'settings.systems'            => 1,
-                'settings.systems.settings'   => 1,
-                'settings.systems.comment'    => 1,
-                'settings.systems.attachment' => 1,
-                'settings.systems.media'      => 1,
+                'orbit.index'              => 1,
+                'orbit.systems'            => 1,
+                'orbit.systems.settings'   => 1,
+                'orbit.systems.comment'    => 1,
+                'orbit.systems.attachment' => 1,
+                'orbit.systems.media'      => 1,
             ],
         ];
 

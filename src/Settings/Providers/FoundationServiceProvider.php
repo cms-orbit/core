@@ -126,7 +126,7 @@ class FoundationServiceProvider extends ServiceProvider
         $this
             ->registerScreenMacro()
             ->mergeConfigFrom(
-                Dashboard::path('config/settings.php'), 'settings'
+                Dashboard::path('config/orbit.php'), 'settings'
             );
 
         Blade::component('orchid-popover', Popover::class);

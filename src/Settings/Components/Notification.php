@@ -49,6 +49,6 @@ class Notification extends Component
      */
     public function shouldRender(): bool
     {
-        return config('settings.notifications.enabled', true);
+        return config('orbit.notifications.enabled', true);
     }
 }

@@ -25,6 +25,7 @@ use CmsOrbit\Core\Screen\Layouts\Table;
 use CmsOrbit\Core\Screen\Layouts\Tabs;
 use CmsOrbit\Core\Screen\Layouts\View;
 use CmsOrbit\Core\Screen\Layouts\Wrapper;
+use CmsOrbit\Core\UI\Layouts\VueComponentLayout;
 
 /**
  * Class LayoutFactory.
@@ -245,5 +246,18 @@ class LayoutFactory
                 return $this->columns;
             }
         };
+    }
+
+    /**
+     * Create a Vue component layout
+     *
+     * @param  string  $component
+     * @param  array  $props
+     * @param  string  $rootClasses
+     * @return VueComponentLayout
+     */
+    public function vue(string $component, array $props = [], string $rootClasses = ''): VueComponentLayout
+    {
+        return new VueComponentLayout($component, $props, $rootClasses);
     }
 }

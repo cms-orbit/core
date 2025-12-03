@@ -122,7 +122,7 @@ class Attach extends Field
      * size configured in the server's `php.ini`. If no size is specified, it sets the size to
      * the server's maximum.
      *
-     * @throws \Throwable if the desired maximum file size exceeds server settings.
+     * @throws \Throwable if the desired maximum file size exceeds server orbit.
      *
      * @return static
      */

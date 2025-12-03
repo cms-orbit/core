@@ -24,7 +24,7 @@ class Dashboard
      */
     public static function prefix(string $path = ''): string
     {
-        $prefix = config('settings.prefix');
+        $prefix = config('orbit.prefix');
 
         return Str::start($prefix.$path, '/');
     }

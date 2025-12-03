@@ -34,6 +34,46 @@ trait ManagesMenu
     }
 
     /**
+     * Register a menu from array configuration.
+     *
+     * @param string $route The route name or identifier.
+     * @param array $config The menu configuration.
+     *
+     * @return $this
+     */
+    public function registerMenu(string $route, array $config): static
+    {
+        $menu = Menu::make($config['label'] ?? $route)
+            ->route($route)
+            ->icon($config['icon'] ?? 'bs.circle')
+            ->sort($config['sort'] ?? 1000);
+
+        if (isset($config['permission'])) {
+            $menu->permission($config['permission']);
+        }
+
+        // Add children if exists
+        if (!empty($config['children'])) {
+            $childMenus = [];
+            foreach ($config['children'] as $child) {
+                $childMenu = Menu::make($child['label'])
+                    ->route($child['route'])
+                    ->icon($child['icon'] ?? 'bs.circle')
+                    ->sort($child['sort'] ?? 0);
+
+                if (isset($child['permission'])) {
+                    $childMenu->permission($child['permission']);
+                }
+
+                $childMenus[] = $childMenu;
+            }
+            $menu->list($childMenus);
+        }
+
+        return $this->registerMenuElement($menu);
+    }
+
+    /**
      * Render the menu as a string for display.
      *
      * @throws \Throwable If rendering fails.

@@ -1,4 +1,4 @@
-@extends(config('settings.workspace', 'settings::workspace.compact'))
+@extends(config('orbit.workspace', 'settings::workspace.compact'))
 
 @section('aside')
     <div class="aside col-xs-12 col-lg-3 col-xl-2 bg-dark d-flex flex-column" data-controller="menu" data-bs-theme="dark">
@@ -10,8 +10,8 @@
                 <span class="ms-2">@yield('title')</span>
             </a>
 
-            <a class="header-brand order-last link-body-emphasis" href="{{ route(config('settings.index')) }}">
-                @includeFirst([config('settings.template.header'), 'settings::header'])
+            <a class="header-brand order-last link-body-emphasis" href="{{ route(config('orbit.index')) }}">
+                @includeFirst([config('orbit.template.header'), 'settings::header'])
             </a>
         </header>
 

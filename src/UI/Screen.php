@@ -273,7 +273,7 @@ abstract class Screen extends Controller
      */
     public function needPreventsAbandonment(): bool
     {
-        return config('settings.prevents_abandonment', true);
+        return config('orbit.prevents_abandonment', true);
     }
 
     /**

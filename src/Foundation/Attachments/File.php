@@ -65,11 +65,11 @@ class File
         abort_if($file->getSize() === false, 415, 'File failed to load.');
 
         $this->file = $file;
-        $this->disk = $disk ?? config('settings.attachment.disk', 'public'); // get the disk to use from the config or use the default 'public' disk
+        $this->disk = $disk ?? config('orbit.attachment.disk', 'public'); // get the disk to use from the config or use the default 'public' disk
         $this->storage = Storage::disk($this->disk);
 
         /** @var string $generator */
-        $generator = config('settings.attachment.generator', Generator::class);
+        $generator = config('orbit.attachment.generator', Generator::class);
 
         // Create a new engine class instance to manage the file's associations
         $this->engine = new $generator($file);

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CmsOrbit\Core\Actions;
+namespace CmsOrbit\Core\UI\Actions;
 
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;

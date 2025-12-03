@@ -38,7 +38,7 @@ class ListScreen extends ResourceScreen
         return [
             $this->actionsButtons(),
             Link::make($this->resource::createButtonLabel())
-                ->route('settings.resource.create', $this->resource::uriKey())
+                ->route('orbit.resource.create', $this->resource::uriKey())
                 ->canSee($this->can('create'))
                 ->icon('bs.plus-circle'),
         ];
@@ -92,7 +92,7 @@ class ListScreen extends ResourceScreen
             Link::make(__('View'))
                 ->icon('bs.eye')
                 ->canSee($this->can('view', $model))
-                ->route('settings.resource.view', [
+                ->route('orbit.resource.view', [
                     $this->resource::uriKey(),
                     $model->getAttribute($model->getKeyName()),
                 ]),
@@ -100,7 +100,7 @@ class ListScreen extends ResourceScreen
             Link::make(__('Edit'))
                 ->icon('bs.pencil')
                 ->canSee($this->can('update', $model))
-                ->route('settings.resource.edit', [
+                ->route('orbit.resource.edit', [
                     $this->resource::uriKey(),
                     $model->getAttribute($model->getKeyName()),
                 ]),

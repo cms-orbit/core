@@ -1,6 +1,6 @@
 <div data-controller="cropper"
      data-cropper-value="{{ $attributes['value'] }}"
-     data-cropper-storage="{{ $storage ?? config('settings.attachment.disk', 'public') }}"
+     data-cropper-storage="{{ $storage ?? config('orbit.attachment.disk', 'public') }}"
      data-cropper-width="{{ $width }}"
      data-cropper-height="{{ $height }}"
      data-cropper-min-width="{{ $minWidth }}"

@@ -1,0 +1,139 @@
+<?php
+
+namespace {{ namespace }};
+
+use {{ modelNamespace }}\{{ class }};
+use CmsOrbit\Core\UI\Resource;
+use CmsOrbit\Core\UI\TD;
+use Illuminate\Database\Eloquent\Model;
+
+class {{ class }}Resource extends Resource
+{
+    /**
+     * The model the resource corresponds to
+     *
+     * @var class-string<Model>
+     */
+    public static string $model = {{ class }}::class;
+
+    /**
+     * Get the displayable label of the resource
+     *
+     * @return string
+     */
+    public static function label(): string
+    {
+        return '{{ class }}';
+    }
+
+    /**
+     * Get the displayable singular label of the resource
+     *
+     * @return string
+     */
+    public static function singularLabel(): string
+    {
+        return '{{ class }}';
+    }
+
+    /**
+     * Get the columns displayed by the resource
+     *
+     * @return TD[]
+     */
+    public function columns(): array
+    {
+        return [
+            TD::make('id', 'ID')
+                ->sort()
+                ->filter(TD::FILTER_NUMERIC),
+
+            TD::make('title', __('Title'))
+                ->sort()
+                ->filter(TD::FILTER_TEXT),
+
+            TD::make('created_at', __('Created'))
+                ->render(fn ({{ class }} $model) => $model->created_at?->toDateTimeString())
+                ->sort(),
+
+            TD::make('updated_at', __('Updated'))
+                ->render(fn ({{ class }} $model) => $model->updated_at?->toDateTimeString())
+                ->sort(),
+        ];
+    }
+
+    /**
+     * Get the fields displayed by the resource
+     *
+     * @return \CmsOrbit\Core\UI\Field[]
+     */
+    public function fields(): array
+    {
+        return [
+            \CmsOrbit\Core\UI\Input::make('title')
+                ->title(__('Title'))
+                ->required(),
+        ];
+    }
+
+    /**
+     * Get the filters available for the resource
+     *
+     * @return array
+     */
+    public function filters(): array
+    {
+        return [];
+    }
+
+    /**
+     * Get the actions available for the resource
+     *
+     * @return array
+     */
+    public function actions(): array
+    {
+        return [];
+    }
+
+    /**
+     * Get the number of models to return per page
+     *
+     * @return int
+     */
+    public static function perPage(): int
+    {
+        return 30;
+    }
+
+    /**
+     * Indicates if the resource should be displayed in the sidebar
+     *
+     * @return bool
+     */
+    public static function displayInNavigation(): bool
+    {
+        return true;
+    }
+
+    /**
+     * Get the icon for the resource
+     *
+     * @return string|null
+     */
+    public static function icon(): ?string
+    {
+        return 'bs.list';
+    }
+
+    /**
+     * Get the URI key for the resource
+     *
+     * @return string
+     */
+    public static function uriKey(): string
+    {
+        return '{{ routeName }}';
+    }
+}
+

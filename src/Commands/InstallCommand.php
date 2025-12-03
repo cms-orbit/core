@@ -5,196 +5,300 @@ declare(strict_types=1);
 namespace CmsOrbit\Core\Commands;
 
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\App;
-use Illuminate\Support\Traits\Conditionable;
-use CmsOrbit\Core\Settings\Events\InstallEvent;
-use CmsOrbit\Core\Settings\Providers\ConsoleServiceProvider;
-use CmsOrbit\Core\Support\Facades\Dashboard;
+use Illuminate\Filesystem\Filesystem;
+use Illuminate\Support\Facades\Artisan;
 use Symfony\Component\Console\Attribute\AsCommand;
 
 #[AsCommand(name: 'cms:install')]
 class InstallCommand extends Command
 {
-    use Conditionable;
-
     /**
-     * The console command signature.
+     * The name and signature of the console command
      *
      * @var string
      */
-    protected $signature = 'cms:install';
+    protected $signature = 'cms:install
+                            {--force : Force the operation to run}
+                            {--entities : Enhance User model with Orbit features}
+                            {--remove-models : Remove app/Models directory}
+                            {--skip-migrations : Skip running migrations}';
 
     /**
-     * The console command description.
+     * The console command description
      *
      * @var string
      */
-    protected $description = 'Install all of the Orbit files';
+    protected $description = 'Install CMS Orbit';
 
-    /**
-     * Execute the console command.
-     *
-     * @return void
-     */
-    public function handle()
+    protected Filesystem $files;
+
+    public function __construct(Filesystem $files)
     {
-        $this->comment('Installation started. Please wait...');
-        $this->info('Version: '.Dashboard::version());
-
-        $this
-            ->executeCommand('vendor:publish', [
-                '--provider' => ConsoleServiceProvider::class,
-                '--tag'      => [
-                    'orchid-config',
-                    'orchid-migrations',
-                    'orchid-app-stubs',
-                    'orchid-assets',
-                ],
-            ])
-            ->executeCommand('migrate')
-            ->executeCommand('storage:link')
-            ->changeUserModel()
-            ->setValueEnv('SCOUT_DRIVER')
-            ->when(class_exists(\App\Models\User::class), function () {
-                $this->replaceInFiles(app_path(), 'use CmsOrbit\\Core\\Settings\\Models\\User;', 'use App\\Models\\User;');
-            })
-            ->showMeLove();
-
-        $this->info('Completed!');
-        $this->comment("To create a user, run 'artisan cms:admin'");
-        $this->line("To start the embedded server, run 'artisan serve'");
-
-        event(new InstallEvent($this));
+        parent::__construct();
+        $this->files = $files;
     }
 
     /**
-     * @return $this
+     * Execute the console command
      */
-    private function executeCommand(string $command, array $parameters = []): self
+    public function handle(): int
     {
-        try {
-            $result = $this->callSilent($command, $parameters);
-        } catch (\Exception $exception) {
-            $result = 1;
-            $this->alert($exception->getMessage());
+        $this->info('🚀 Installing CMS Orbit...');
+        $this->newLine();
+
+        // 1. Publish config
+        $this->publishConfig();
+
+        // 2. Publish migrations
+        $this->publishMigrations();
+
+        // 3. Publish entities (required) & 4. Remove app/Models (required, warning)
+        $this->warn('⚠️  This step will overwrite base entities (User, Role) and remove the entire app/Models directory. This action is REQUIRED for Orbit installation and cannot be undone!');
+        $confirmation = $this->ask('To continue, please type "install"');
+
+        if (trim(strtolower($confirmation)) !== 'install') {
+            $this->error('Installation aborted. You must type "install" to continue.');
+            return self::FAILURE;
         }
 
-        if ($result) {
-            $parameters = http_build_query($parameters, '', ' ');
-            $parameters = str_replace('%5C', '/', $parameters);
-            $this->alert("An error has occurred. The '{$command} {$parameters}' command was not executed");
+        $this->publishEntities();
+        $this->files->deleteDirectory(app_path('Models'));
+        // 프로젝트 루트 내의 모든 PHP 파일(단, vendor 제외)에서 App\Entities\User\User를 새로 배포된 User 엔티티(예: App\Entities\User)로 치환합니다.
+        $this->info('🔍 Replacing App\Entities\User\User references with new User entity...');
+
+        $rootPath = base_path();
+        $searchString = 'App\Entities\User\User';
+        $replaceString = 'App\Entities\User\User';
+
+        // Use Laravel's file system for recursion instead to avoid PHP's RecursiveDirectoryIterator
+        $allPhpFiles = collect($this->files->allFiles($rootPath))
+            ->filter(function ($file) {
+                /** @var \Symfony\Component\Finder\SplFileInfo $file */
+                // Exclude anything in "vendor" directory
+                return strpos($file->getRealPath(), DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR) === false
+                    && $file->getExtension() === 'php';
+            });
+
+        foreach ($allPhpFiles as $file) {
+            $filePath = $file->getRealPath();
+            $contents = $this->files->get($filePath);
+
+            if (strpos($contents, $searchString) !== false) {
+                $newContents = str_replace($searchString, $replaceString, $contents);
+                $this->files->put($filePath, $newContents);
+                $this->line("  ✓ Patched: " . str_replace($rootPath . DIRECTORY_SEPARATOR, '', $filePath));
+            }
         }
 
-        return $this;
+        $this->info('✅ All references to App\Entities\User\User have been updated to App\Entities\User\User.');
+
+        // 5. Run migrations
+        if (!$this->option('skip-migrations')) {
+            if ($this->confirm('Run migrations now?', true)) {
+                $this->runMigrations();
+            }
+        }
+
+        // 6. Fresh admin role
+        $this->freshAdminRole();
+        // 8. Setup AppServiceProvider
+        $this->setupAppServiceProvider();
+
+        $this->newLine();
+        $this->info('✅ CMS Orbit installed successfully!');
+        $this->newLine();
+        $this->comment('Next steps:');
+        $this->line('  1. Run: php artisan cms:build-config');
+        $this->line('  2. Update vite.config.js and tailwind.config.js');
+        $this->line('  3. Start creating entities: php artisan cms:entity Product -m');
+
+        return self::SUCCESS;
     }
 
     /**
-     * @return $this
+     * Publish config files
      */
-    private function changeUserModel(string $path = 'Models/User.php'): self
+    protected function publishConfig(): void
     {
-        $this->info('Attempting to set ORCHID User model as parent to App\User');
+        $this->info('📝 Publishing configuration...');
 
-        if (! file_exists(app_path($path))) {
-            $this->warn('Unable to locate "app/Models/User.php".  Did you move this file?');
-            $this->warn('You will need to update this manually.');
-            $this->warn('Change "extends Authenticatable" to "extends \CmsOrbit\Core\Settings\Models\User" in your User model');
-            $this->warn('Also pay attention to the properties so that they are not overwritten.');
+        Artisan::call('vendor:publish', [
+            '--tag' => 'orbit-config',
+            '--force' => $this->option('force'),
+        ]);
 
-            return $this;
-        }
-
-        $user = file_get_contents(Dashboard::path('stubs/app/User.stub'));
-        file_put_contents(app_path($path), $user);
-
-        return $this;
-    }
-
-    private function setValueEnv(string $constant, string $value = 'null'): self
-    {
-        $str = $this->fileGetContent(app_path('../.env'));
-
-        if ($str !== false && ! str_contains($str, $constant)) {
-            file_put_contents(app_path('../.env'), $str.PHP_EOL.$constant.'='.$value.PHP_EOL);
-        }
-
-        return $this;
+        $this->line('  ✓ Config published');
     }
 
     /**
-     * @return false|string
+     * Publish migrations
      */
-    private function fileGetContent(string $file)
+    protected function publishMigrations(): void
     {
-        if (! is_file($file)) {
-            return '';
-        }
+        $this->info('📦 Publishing migrations...');
 
-        return file_get_contents($file);
+        Artisan::call('vendor:publish', [
+            '--tag' => 'orbit-migrations',
+            '--force' => $this->option('force'),
+        ]);
+
+        $this->line('  ✓ Migrations published');
     }
 
     /**
-     * @return $this
+     * Publish base entities
      */
-    private function showMeLove(): self
+    protected function publishEntities(): void
     {
-        if (App::runningUnitTests() || ! $this->confirm('Would you like to show a little love by starting with ⭐')) {
-            return $this;
+        $this->info('🎯 Enhancing User model with Orbit features...');
+
+        $sourceDir = base_path('vendor/cms-orbit/core/src/Entities');
+        $targetDir = app_path('Entities');
+
+        if (!is_dir($sourceDir)) {
+            $this->warn('  ⚠ Entities directory not found in vendor package.');
+            return;
         }
 
-        $repo = 'https://github.com/orchidsoftware/platform';
+        // If Entities directory already exists in app, backup
+        if (is_dir($targetDir)) {
+            $backupDir = app_path('Entities.backup.' . date('Y-m-d_His'));
+            $this->files->copyDirectory($targetDir, $backupDir);
+            $this->line("  ✓ Backup created: {$backupDir}");
+        }
 
-        match (PHP_OS_FAMILY) {
-            'Darwin'  => exec('open '.$repo),
-            'Windows' => exec('start '.$repo),
-            'Linux'   => exec('xdg-open '.$repo),
-            default   => $this->line('You can find us at '.$repo),
-        };
+        // Recursively copy each file, updating namespaces
+        $rii = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($sourceDir, \FilesystemIterator::SKIP_DOTS));
 
-        $this->line('Thank you! It means a lot to us! 🙏');
+        foreach ($rii as $file) {
+            if ($file->isDir()) continue;
 
-        return $this;
+            $srcPath = $file->getPathname();
+            $subPath = ltrim(str_replace($sourceDir, '', $srcPath), DIRECTORY_SEPARATOR);
+            $destPath = $targetDir . DIRECTORY_SEPARATOR . $subPath;
+
+            // Ensure destination directory exists
+            if (!is_dir(dirname($destPath))) {
+                mkdir(dirname($destPath), 0755, true);
+            }
+
+            $contents = file_get_contents($srcPath);
+
+            // Replace namespace from 'CmsOrbit\Core\Entities' to 'App\Entities'
+            $contents = preg_replace_callback(
+                '/namespace\s+([^\s;]+);/i',
+                function ($matches) {
+                    $original = $matches[1];
+
+                    // Replace leading CmsOrbit\Core\Entities with App\Entities
+                    $replaced = preg_replace('/^CmsOrbit\\\\Core\\\\Entities/', 'App\Entities', $original);
+
+                    return 'namespace ' . $replaced . ';';
+                },
+                $contents
+            );
+
+            // Also replace usages: use CmsOrbit\Core\Entities... => use App\Entities...
+            $contents = preg_replace(
+                '/use\s+CmsOrbit\\\\Core\\\\Entities(.*);/i',
+                'use App\Entities$1;',
+                $contents
+            );
+
+
+            file_put_contents($destPath, $contents);
+        }
+
+        $this->line('  ✓ Entities copied to app/Entities with updated namespaces');
     }
 
     /**
-     * @param string $directory
-     * @param string $search
-     * @param string $replace
-     *
-     * @return void
+     * Run migrations
      */
-    private function replaceInFiles(string $directory, string $search, string $replace): self
+    protected function runMigrations(): void
     {
-        if (! is_dir($directory)) {
-            return $this;
+        $this->info('🗄️  Running migrations...');
+
+        Artisan::call('migrate', [], $this->output);
+
+        $this->line('  ✓ Migrations completed');
+    }
+
+    /**
+     * Fresh admin role
+     */
+    protected function freshAdminRole(): void
+    {
+        $this->info('🔐 Setting up permissions...');
+
+        Artisan::call('cms:admin-fresh', [], $this->output);
+
+        $this->line('  ✓ Admin role created');
+    }
+
+    /**
+     * Create admin user
+     */
+    protected function createAdminUser(): void
+    {
+        $this->info('👤 Creating admin user...');
+        $this->newLine();
+
+        $name = $this->ask('Admin name', 'Admin');
+        $email = $this->ask('Admin email', 'admin@admin.com');
+        $password = $this->secret('Admin password');
+
+        Artisan::call('cms:admin', [
+            'name' => $name,
+            'email' => $email,
+            'password' => $password,
+        ], $this->output);
+    }
+
+    /**
+     * Setup AppServiceProvider
+     */
+    protected function setupAppServiceProvider(): void
+    {
+        $providerPath = app_path('Providers/AppServiceProvider.php');
+
+        if (!file_exists($providerPath)) {
+            return;
         }
 
-        $files = new \RecursiveIteratorIterator(
-            new \RecursiveDirectoryIterator($directory)
+        $content = $this->files->get($providerPath);
+
+        // Check if already configured
+        if (str_contains($content, 'EntityBootstrapper')) {
+            $this->line('  ℹ AppServiceProvider already configured');
+            return;
+        }
+
+        if (!$this->confirm('Add entity discovery to AppServiceProvider?', true)) {
+            return;
+        }
+
+        $this->info('⚙️  Configuring AppServiceProvider...');
+
+        // Add entity discovery code
+        $bootMethod = <<<'PHP'
+    public function boot(): void
+    {
+        // Entity Discovery System
+        $entities = app(\CmsOrbit\Core\Support\EntityBootstrapper::class);
+        $entities->registerPath(app_path('Entities'));
+        $entities->bootstrap(menuSort: 1000);
+    }
+PHP;
+
+        $content = preg_replace(
+            '/public function boot\(\): void\s*\{[^}]*\}/',
+            $bootMethod,
+            $content
         );
 
-        // Iterate through all files in the directory
-        foreach ($files as $file) {
-            // Skip if not a .php file
-            if ($file->getExtension() !== 'php') {
-                continue;
-            }
+        $this->files->put($providerPath, $content);
 
-            $filePath = $file->getRealPath();
-            $fileContents = file_get_contents($filePath);
-
-            // Skip if the file does not contain the old namespace
-            if (! str_contains($fileContents, $search)) {
-                continue;
-            }
-
-            // Replace the old namespace with the new one
-            $updatedContents = str_replace($search, $replace, $fileContents);
-
-            // Save the changes
-            file_put_contents($filePath, $updatedContents);
-        }
-
-        return $this;
+        $this->line('  ✓ AppServiceProvider configured');
     }
 }

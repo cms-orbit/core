@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CmsOrbit\Core;
+namespace CmsOrbit\Core\Auth\Access;
 
 use Exception;
 use Illuminate\Database\Eloquent\Builder;
@@ -14,7 +14,7 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use CmsOrbit\Core\Settings\Events\AddRoleEvent;
 use CmsOrbit\Core\Settings\Events\RemoveRoleEvent;
-use CmsOrbit\Core\Settings\Models\Role;
+use CmsOrbit\Core\Entities\Role\Role;
 use CmsOrbit\Core\Support\Facades\Dashboard;
 
 trait UserAccess
@@ -79,7 +79,7 @@ trait UserAccess
     protected function filterWildcardAccess(array $permissions, string $permit): bool
     {
         return collect($permissions)
-            ->filter(fn (bool $value, $permission) => Str::is($permit, $permission) && $value)
+            ->filter(fn (bool $value, $permission) => Str::is($permission, $permit) && $value)
             ->isNotEmpty();
     }
 

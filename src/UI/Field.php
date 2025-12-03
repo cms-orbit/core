@@ -13,10 +13,10 @@ use Illuminate\Support\Traits\Conditionable;
 use Illuminate\Support\Traits\Macroable;
 use Illuminate\View\ComponentAttributeBag;
 use Illuminate\View\View;
-use CmsOrbit\Core\Screen\Concerns\HasTranslations;
-use CmsOrbit\Core\Screen\Concerns\Makeable;
-use CmsOrbit\Core\Screen\Contracts\Fieldable;
-use CmsOrbit\Core\Screen\Exceptions\FieldRequiredAttributeException;
+use CmsOrbit\Core\UI\Concerns\CanSee;
+use CmsOrbit\Core\UI\Concerns\HasTranslations;
+use CmsOrbit\Core\UI\Concerns\Makeable;
+use CmsOrbit\Core\UI\Contracts\Fieldable;
 use Throwable;
 
 /**

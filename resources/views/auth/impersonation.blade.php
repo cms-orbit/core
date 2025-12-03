@@ -9,7 +9,7 @@
           data-controller="form"
           data-form-need-prevents-form-abandonment-value="false"
           data-action="form#submit"
-          action="{{ route('settings.switch.logout') }}">
+          action="{{ route('orbit.switch.logout') }}">
         @csrf
 
         <p>

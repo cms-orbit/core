@@ -135,7 +135,7 @@ class Arbitrator
 
             $menu = Menu::make($resource::label())
                 ->icon($resource::icon())
-                ->route('settings.resource.list', [$resource::uriKey()])
+                ->route('orbit.resource.list', [$resource::uriKey()])
                 ->active($this->activeMenu($resource))
                 ->permission($resource::permission())
                 ->sort($resource::sort());
@@ -182,20 +182,20 @@ class Arbitrator
     private function activeMenu(Resource $resource): array
     {
         return [
-            route('settings.resource.list', [
+            route('orbit.resource.list', [
                 'resource' => $resource::uriKey(),
             ]),
-            route('settings.resource.list', [
+            route('orbit.resource.list', [
                 'resource' => $resource::uriKey() . '?*',
             ]),
-            route('settings.resource.create', [
+            route('orbit.resource.create', [
                 'resource' => $resource::uriKey(),
             ]),
-            route('settings.resource.view', [
+            route('orbit.resource.view', [
                 'resource' => $resource::uriKey(),
                 'id'       => '*',
             ]),
-            route('settings.resource.edit', [
+            route('orbit.resource.edit', [
                 'resource' => $resource::uriKey(),
                 'id'       => '*',
             ]),

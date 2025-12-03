@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CmsOrbit\Core\Settings\Providers;
 
 use Illuminate\Support\ServiceProvider;
-use CmsOrbit\Core\IconFinder;
+use CmsOrbit\Core\Foundation\Icons\IconFinder;
 use CmsOrbit\Core\Settings\Dashboard;
 use CmsOrbit\Core\Settings\ItemPermission;
 
@@ -23,15 +23,15 @@ class SettingsServiceProvider extends ServiceProvider
     {
         $this->dashboard = $dashboard;
 
-        foreach (config('settings.icons', []) as $key => $path) {
+        foreach (config('orbit.icons', []) as $key => $path) {
             $iconFinder->registerIconDirectory($key, is_callable($path) ? $path() : $path);
         }
 
         $this->app->booted(function () {
             $this->dashboard
-                ->registerResource('stylesheets', config('settings.resource.stylesheets'))
-                ->registerResource('scripts', config('settings.resource.scripts'))
-                ->registerSearch(config('settings.search', []))
+                ->registerResource('stylesheets', config('orbit.resource.stylesheets'))
+                ->registerResource('scripts', config('orbit.resource.scripts'))
+                ->registerSearch(config('orbit.search', []))
                 ->registerPermission($this->registerPermissionsMain())
                 ->registerPermission($this->registerPermissionsSystems());
         });
@@ -40,13 +40,13 @@ class SettingsServiceProvider extends ServiceProvider
     protected function registerPermissionsMain(): ItemPermission
     {
         return ItemPermission::group(__('Main'))
-            ->addPermission('settings.index', __('Main'));
+            ->addPermission('orbit.index', __('Main'));
     }
 
     protected function registerPermissionsSystems(): ItemPermission
     {
         return ItemPermission::group(__('System'))
-            ->addPermission('settings.systems.attachment', __('Attachment'));
+            ->addPermission('orbit.systems.attachment', __('Attachment'));
     }
 
     /**
@@ -54,7 +54,7 @@ class SettingsServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        $provider = config('settings.provider', \App\CmsOrbit\Core\SettingsProvider::class);
+        $provider = config('orbit.provider', \App\CmsOrbit\Core\SettingsProvider::class);
 
         if ($provider !== null && class_exists($provider)) {
             $this->app->register($provider);

@@ -10,7 +10,7 @@
           data-controller="form"
           data-form-need-prevents-form-abandonment-value="false"
           data-action="form#submit"
-          action="{{ route('settings.login.auth') }}">
+          action="{{ route('orbit.login.auth') }}">
         @csrf
 
         @includeWhen($isLockUser,'settings::auth.lockme')

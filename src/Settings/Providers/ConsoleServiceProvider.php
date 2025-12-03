@@ -50,8 +50,8 @@ class ConsoleServiceProvider extends ServiceProvider
     {
         AboutCommand::add('Orbit Settings', fn () => [
             'Version'       => Dashboard::version(),
-            'Domain'        => config('settings.domain'),
-            'Prefix'        => config('settings.prefix'),
+            'Domain'        => config('orbit.domain'),
+            'Prefix'        => config('orbit.prefix'),
             'Assets Status' => Dashboard::assetsAreCurrent() ? '<fg=green;options=bold>CURRENT</>' : '<fg=yellow;options=bold>OUTDATED</>',
         ]);
 
@@ -115,7 +115,7 @@ class ConsoleServiceProvider extends ServiceProvider
     protected function registerConfigPublisher(): self
     {
         $this->publishes([
-            Dashboard::path('config/settings.php') => config_path('settings.php'),
+            Dashboard::path('config/orbit.php') => config_path('orbit.php'),
         ], 'orchid-config');
 
         return $this;

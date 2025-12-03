@@ -1,0 +1,134 @@
+<?php
+
+namespace {{ namespace }};
+
+use CmsOrbit\Core\Models\DocumentModel;
+use CmsOrbit\Core\Models\Concerns\HasPermissions;
+use CmsOrbit\Core\Models\Document;
+use CmsOrbit\Core\Models\DocumentContent;
+use {{ presenterNamespace }}\{{ class }}Presenter;
+use {{ factoryNamespace }}\{{ class }}Factory;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
+use Illuminate\Database\Eloquent\SoftDeletes;
+
+/**
+ * @property DocumentContent[]|Collection $contents
+ */
+class {{ class }} extends DocumentModel
+{
+    use HasPermissions;
+    use SoftDeletes;
+    
+    /**
+     * The table associated with the model
+     *
+     * @var string
+     */
+    protected $table = '{{ table }}';
+    
+    /**
+     * The attributes that should be cast
+     *
+     * @var array<string, string>
+     */
+    protected $casts = [
+        'read_count' => 'integer',
+        'comment_count' => 'integer',
+        'assent_count' => 'integer',
+        'dissent_count' => 'integer',
+        'is_notice' => 'boolean',
+        'is_secret' => 'boolean',
+        'approved' => 'integer',
+        'public_at' => 'datetime',
+    ];
+
+    /**
+     * Appended attributes
+     *
+     * @var array<string>
+     */
+    protected $appends = [
+        'public_at_formatted',
+        'created_at_formatted',
+        'updated_at_formatted',
+    ];
+
+    /**
+     * Get formatted public_at attribute
+     *
+     * @return string|null
+     */
+    public function getPublicAtFormattedAttribute(): ?string
+    {
+        return $this->getAttribute('public_at')?->diffForHumans();
+    }
+
+    /**
+     * Get formatted created_at attribute
+     *
+     * @return string|null
+     */
+    public function getCreatedAtFormattedAttribute(): ?string
+    {
+        return $this->getAttribute('created_at')?->diffForHumans();
+    }
+
+    /**
+     * Get formatted updated_at attribute
+     *
+     * @return string|null
+     */
+    public function getUpdatedAtFormattedAttribute(): ?string
+    {
+        return $this->getAttribute('updated_at')?->diffForHumans();
+    }
+
+    /**
+     * Document relationship
+     *
+     * @return MorphOne
+     */
+    public function document(): MorphOne
+    {
+        return $this->morphOne(Document::class, 'instance');
+    }
+
+    /**
+     * Get presenter instance
+     *
+     * @return {{ class }}Presenter
+     */
+    public function presenter(): {{ class }}Presenter
+    {
+        return new {{ class }}Presenter($this);
+    }
+
+    /**
+     * Boot the model
+     *
+     * @return void
+     */
+    protected static function boot(): void
+    {
+        parent::boot();
+
+        self::saving(function ({{ class }} $model) {
+            if (is_null($model->public_at)) {
+                $model->public_at = now();
+            }
+        });
+    }
+
+    /**
+     * Create a new factory instance for the model
+     *
+     * @return Factory<static>
+     */
+    protected static function newFactory(): Factory
+    {
+        return {{ class }}Factory::new();
+    }
+}
+

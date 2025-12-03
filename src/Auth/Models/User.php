@@ -35,7 +35,7 @@ use CmsOrbit\Core\Support\Facades\Dashboard;
  */
 class User extends Authenticatable implements UserInterface
 {
-    use AsSource, Chartable, Filterable, HasFactory, Notifiable, UserAccess;
+    use AsSource, HasFactory, Notifiable, UserAccess;
 
     /**
      * The database table used by the model.

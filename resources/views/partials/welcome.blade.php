@@ -56,7 +56,7 @@
             <p class="ms-md-5 ps-md-1">
                 Screen design is hierarchical and declarative, rather than physical and imperative. You specify what
                 data should be displayed, how the controls manage that data are to be configured. Experience the power
-                of a declarative design approach with our settings.
+                of a declarative design approach with our orbit.
             </p>
         </div>
 

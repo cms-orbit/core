@@ -19,12 +19,12 @@
 
     <meta name="view-transition" content="same-origin">
     <meta name="turbo-root" content="{{  Dashboard::prefix() }}">
-    <meta name="turbo-refresh-method" content="{{ config('settings.turbo.refresh-method', 'replace') }}">
-    <meta name="turbo-refresh-scroll" content="{{ config('settings.turbo.refresh-scroll', 'reset') }}">
-    <meta name="turbo-prefetch" content="{{ var_export(config('settings.turbo.prefetch', true)) }}">
+    <meta name="turbo-refresh-method" content="{{ config('orbit.turbo.refresh-method', 'replace') }}">
+    <meta name="turbo-refresh-scroll" content="{{ config('orbit.turbo.refresh-scroll', 'reset') }}">
+    <meta name="turbo-prefetch" content="{{ var_export(config('orbit.turbo.prefetch', true)) }}">
     <meta name="dashboard-prefix" content="{{  Dashboard::prefix() }}">
 
-    @if(!config('settings.turbo.cache', false))
+    @if(!config('orbit.turbo.cache', false))
         <meta name="turbo-cache-control" content="no-cache">
     @endif
 
@@ -38,8 +38,8 @@
         <script src="{{  $scripts }}" defer type="text/javascript" data-turbo-track="reload"></script>
     @endforeach
 
-    @if(!empty(config('settings.vite', [])))
-        @vite(config('settings.vite'))
+    @if(!empty(config('orbit.vite', [])))
+        @vite(config('orbit.vite'))
     @endif
 </head>
 

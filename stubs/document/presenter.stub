@@ -1,0 +1,71 @@
+<?php
+
+namespace {{ namespace }};
+
+use {{ modelNamespace }}\{{ class }};
+use CmsOrbit\Core\Support\Presenter;
+
+class {{ class }}Presenter extends Presenter
+{
+    /**
+     * @var {{ class }}
+     */
+    protected $entity;
+
+    /**
+     * Constructor
+     *
+     * @param {{ class }} $entity
+     */
+    public function __construct({{ class }} $entity)
+    {
+        $this->entity = $entity;
+    }
+
+    /**
+     * Get title
+     *
+     * @return string|null
+     */
+    public function title(): ?string
+    {
+        return $this->entity->getAttribute('title');
+    }
+
+    /**
+     * Get slug
+     *
+     * @return string|null
+     */
+    public function slug(): ?string
+    {
+        return $this->entity->getAttribute('slug');
+    }
+
+    /**
+     * Get excerpt
+     *
+     * @param int $length
+     * @return string|null
+     */
+    public function excerpt(int $length = 160): ?string
+    {
+        $content = $this->entity->getAttribute('pure_content') 
+                   ?? strip_tags($this->entity->getAttribute('content'));
+        
+        return $content ? \Illuminate\Support\Str::limit($content, $length) : null;
+    }
+
+    /**
+     * Get URL
+     *
+     * @return string|null
+     */
+    public function url(): ?string
+    {
+        $slug = $this->entity->getAttribute('slug');
+        
+        return $slug ? url($slug) : null;
+    }
+}
+

@@ -1,0 +1,82 @@
+<?php
+
+namespace {{ namespace }};
+
+use {{ modelNamespace }}\{{ class }};
+use {{ layoutNamespace }}\{{ class }}ListLayout;
+use CmsOrbit\Core\UI\Screen;
+use Illuminate\Http\Request;
+
+class {{ class }}TrashScreen extends Screen
+{
+    /**
+     * Query data
+     *
+     * @return array
+     */
+    public function query(): iterable
+    {
+        return [
+            '{{ variablePlural }}' => {{ class }}::onlyTrashed()
+                ->orderBy('deleted_at', 'desc')
+                ->paginate(),
+        ];
+    }
+
+    /**
+     * The name of the screen displayed in the header
+     *
+     * @return string|null
+     */
+    public function name(): ?string
+    {
+        return '{{ class }} Trash';
+    }
+
+    /**
+     * The screen's action buttons
+     *
+     * @return \CmsOrbit\Core\UI\Action[]
+     */
+    public function commandBar(): iterable
+    {
+        return [];
+    }
+
+    /**
+     * The screen's layout elements
+     *
+     * @return \CmsOrbit\Core\UI\Layout[]|string[]
+     */
+    public function layout(): iterable
+    {
+        return [
+            {{ class }}ListLayout::class,
+        ];
+    }
+
+    /**
+     * Restore from trash
+     */
+    public function restore(Request $request): void
+    {
+        {{ class }}::onlyTrashed()
+            ->whereIn('id', $request->input('id', []))
+            ->restore();
+
+        toast(__('Items restored successfully'));
+    }
+
+    /**
+     * Permanently delete
+     */
+    public function destroy(Request $request): void
+    {
+        {{ class }}::onlyTrashed()
+            ->whereIn('id', $request->input('id', []))
+            ->forceDelete();
+
+        toast(__('Items permanently deleted'));
+    }
+}
+

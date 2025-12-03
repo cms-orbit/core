@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CmsOrbit\Core;
+namespace CmsOrbit\Core\Auth\Access;
 
 use Illuminate\Auth\SessionGuard;
 use Illuminate\Contracts\Auth\Authenticatable;
@@ -79,7 +79,7 @@ class Impersonation
     protected static function getAuth(): SessionGuard
     {
         // Get the authentication guard specified in the config file
-        return Auth::guard(config('settings.guard'));
+        return Auth::guard(config('orbit.guard'));
     }
 
     /**

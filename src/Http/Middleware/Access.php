@@ -31,14 +31,14 @@ class Access
      */
     public function __construct(Auth $auth)
     {
-        $auth->shouldUse(config('settings.guard'));
+        $auth->shouldUse(config('orbit.guard'));
         $this->guard = $auth->guard();
     }
 
     /**
      * @return ResponseFactory|RedirectResponse|Response|mixed
      */
-    public function handle(Request $request, Closure $next, string $permission = 'settings.index')
+    public function handle(Request $request, Closure $next, string $permission = 'orbit.index')
     {
         Carbon::setLocale(config('app.locale'));
 
@@ -46,7 +46,14 @@ class Access
             return $this->redirectToLogin($request);
         }
 
-        if ($this->guard->user()->hasAccess($permission)) {
+        $user = $this->guard->user();
+        
+        // Load roles if not loaded
+        if (!$user->relationLoaded('roles')) {
+            $user->load('roles');
+        }
+        
+        if ($user->hasAccess($permission)) {
             return $next($request);
         }
 
@@ -71,8 +78,8 @@ class Access
             return response('Unauthorized.', 401);
         }
 
-        if (Route::has('settings.login')) {
-            return redirect()->guest(route('settings.login'));
+        if (Route::has('orbit.login')) {
+            return redirect()->guest(route('orbit.login'));
         }
 
         if (Route::has('login')) {

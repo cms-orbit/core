@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CmsOrbit\Core\Models;
+namespace CmsOrbit\Core\Foundation\Attachments\Models;
 
 use Exception;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -14,7 +14,8 @@ use Illuminate\Support\Str;
 use CmsOrbit\Core\Foundation\Attachments\MimeTypes;
 use CmsOrbit\Core\Foundation\Filters\Filterable;
 use CmsOrbit\Core\Foundation\Filters\Types\Like;
-use CmsOrbit\Core\Settings\Concerns\Sortable;
+use Spatie\EloquentSortable\Sortable;
+use Spatie\EloquentSortable\SortableTrait;
 use CmsOrbit\Core\Settings\Models\User;
 use CmsOrbit\Core\UI\AsSource;
 use CmsOrbit\Core\Support\Facades\Dashboard;
@@ -22,9 +23,9 @@ use CmsOrbit\Core\Support\Facades\Dashboard;
 /**
  * Class Attachment.
  */
-class Attachment extends Model
+class Attachment extends Model implements Sortable
 {
-    use AsSource, Filterable, HasFactory, Sortable;
+    use AsSource, Filterable, HasFactory, SortableTrait;
 
     /**
      * @var array

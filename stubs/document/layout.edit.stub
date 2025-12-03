@@ -1,0 +1,55 @@
+<?php
+
+namespace {{ namespace }};
+
+use CmsOrbit\Core\UI\Fields\Input;
+use CmsOrbit\Core\UI\Fields\TextArea;
+use CmsOrbit\Core\UI\Fields\Switcher;
+use CmsOrbit\Core\UI\Fields\DateTimer;
+use CmsOrbit\Core\UI\Layouts\Rows;
+
+class {{ class }}EditLayout extends Rows
+{
+    /**
+     * Get the fields elements to be displayed
+     *
+     * @return \CmsOrbit\Core\UI\Field[]
+     */
+    protected function fields(): iterable
+    {
+        return [
+            Input::make('title')
+                ->title(__('Title'))
+                ->placeholder(__('Enter title'))
+                ->required(),
+
+            Input::make('slug')
+                ->title(__('Slug'))
+                ->placeholder(__('URL slug')),
+
+            TextArea::make('description')
+                ->title(__('Description'))
+                ->rows(3)
+                ->placeholder(__('Short description for SEO')),
+
+            TextArea::make('content')
+                ->title(__('Content'))
+                ->rows(10)
+                ->required(),
+
+            Switcher::make('is_notice')
+                ->title(__('Notice'))
+                ->sendTrueOrFalse(),
+
+            Switcher::make('is_secret')
+                ->title(__('Secret'))
+                ->sendTrueOrFalse(),
+
+            DateTimer::make('public_at')
+                ->title(__('Publish Date'))
+                ->allowInput()
+                ->format('Y-m-d H:i:s'),
+        ];
+    }
+}
+

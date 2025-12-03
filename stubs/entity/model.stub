@@ -1,0 +1,31 @@
+<?php
+
+namespace {{ namespace }};
+
+use CmsOrbit\Core\Models\DynamicModel;
+use CmsOrbit\Core\Models\Concerns\HasPermissions;
+use {{ factoryNamespace }}\{{ class }}Factory;
+use Illuminate\Database\Eloquent\Factories\Factory;
+
+class {{ class }} extends DynamicModel
+{
+    use HasPermissions;
+    
+    /**
+     * The table associated with the model
+     *
+     * @var string
+     */
+    protected $table = '{{ table }}';
+
+    /**
+     * Create a new factory instance for the model
+     *
+     * @return Factory<static>
+     */
+    protected static function newFactory(): Factory
+    {
+        return {{ class }}Factory::new();
+    }
+}
+

@@ -6,7 +6,7 @@
         <div class="form-signin h-full min-vh-100 d-flex flex-column justify-content-center">
 
             <a class="d-flex justify-content-center mb-4 p-0 px-sm-5" href="{{Dashboard::prefix()}}">
-                @includeFirst([config('settings.template.header'), 'settings::header'])
+                @includeFirst([config('orbit.template.header'), 'settings::header'])
             </a>
 
             <div class="row justify-content-center">
@@ -19,7 +19,7 @@
             </div>
 
 
-            @includeFirst([config('settings.template.footer'), 'settings::footer'])
+            @includeFirst([config('orbit.template.footer'), 'settings::footer'])
         </div>
     </div>
 

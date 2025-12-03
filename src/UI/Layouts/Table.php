@@ -47,7 +47,7 @@ abstract class Table extends Layout
     protected $title;
 
     /**
-     * Build the table view with columns, rows, and other settings.
+     * Build the table view with columns, rows, and other orbit.
      *
      * @return Factory|\Illuminate\View\View|void
      */

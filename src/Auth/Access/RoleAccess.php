@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CmsOrbit\Core;
+namespace CmsOrbit\Core\Auth\Access;
 
 use Exception;
 use Illuminate\Database\Eloquent\Collection;

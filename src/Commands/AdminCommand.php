@@ -7,7 +7,6 @@ namespace CmsOrbit\Core\Commands;
 use Exception;
 use Illuminate\Console\Command;
 use Illuminate\Database\QueryException;
-use CmsOrbit\Core\Settings\Models\User;
 use CmsOrbit\Core\Support\Facades\Dashboard;
 use Symfony\Component\Console\Attribute\AsCommand;
 
@@ -56,14 +55,25 @@ class AdminCommand extends Command
      */
     protected function createNewUser(): void
     {
-        Dashboard::modelClass(User::class)
-            ->createAdmin(
-                $this->argument('name') ?? $this->ask('What is your name?', 'admin'),
-                $this->argument('email') ?? $this->ask('What is your email?', 'admin@admin.com'),
-                $this->argument('password') ?? $this->secret('What is the password?')
-            );
+        $name = $this->argument('name') ?? $this->ask('What is your name?', 'admin');
+        $email = $this->argument('email') ?? $this->ask('What is your email?', 'admin@admin.com');
+        $password = $this->argument('password') ?? $this->secret('What is the password?');
+
+        // Get user model class from config or use default
+        $userClass = config('orbit.auth.user_model', config('auth.providers.users.model', \App\Entities\User\User::class));
+
+        $user = $userClass::create([
+            'name' => $name,
+            'email' => $email,
+            'password' => bcrypt($password),
+            'permissions' => Dashboard::getAllowAllPermission(),
+        ]);
 
         $this->info('User created successfully.');
+        $this->newLine();
+        $this->comment('Login credentials:');
+        $this->line("  Email: {$email}");
+        $this->line("  Password: {$password}");
     }
 
     /**
@@ -75,13 +85,15 @@ class AdminCommand extends Command
      */
     protected function updateUserPermissions(string $id): void
     {
-        Dashboard::modelClass(User::class)
-            ->findOrFail($id)
-            ->forceFill([
-                'permissions' => Dashboard::getAllowAllPermission(),
-            ])
-            ->save();
+        // Get user model class from config or use default
+        $userClass = config('orbit.auth.user_model', config('auth.providers.users.model', \App\Entities\User\User::class));
+
+        $user = $userClass::findOrFail($id);
+        $user->forceFill([
+            'permissions' => Dashboard::getAllowAllPermission(),
+        ])->save();
 
         $this->info('User permissions updated.');
+        $this->line("  User: {$user->name} ({$user->email})");
     }
 }

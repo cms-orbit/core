@@ -33,7 +33,7 @@ class NotificationScreen extends Screen
     /**
      * @var string
      */
-    public $permission = 'settings.index';
+    public $permission = 'orbit.index';
 
     /**
      * @var bool

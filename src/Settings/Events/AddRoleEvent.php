@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CmsOrbit\Core\Events;
+namespace CmsOrbit\Core\Settings\Events;
 
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Collection;

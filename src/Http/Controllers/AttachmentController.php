@@ -30,7 +30,7 @@ class AttachmentController extends Controller
      */
     public function __construct()
     {
-        $this->checkPermission('settings.systems.attachment');
+        $this->checkPermission('orbit.systems.attachment');
         $this->attachment = Dashboard::modelClass(Attachment::class);
     }
 

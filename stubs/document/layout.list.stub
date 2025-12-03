@@ -1,0 +1,61 @@
+<?php
+
+namespace {{ namespace }};
+
+use {{ modelNamespace }}\{{ class }};
+use CmsOrbit\Core\UI\Layouts\Table;
+use CmsOrbit\Core\UI\TD;
+
+class {{ class }}ListLayout extends Table
+{
+    /**
+     * Data source
+     *
+     * @var string
+     */
+    protected $target = '{{ variablePlural }}';
+
+    /**
+     * Get the table cells to be displayed
+     *
+     * @return TD[]
+     */
+    protected function columns(): iterable
+    {
+        return [
+            TD::make('id')
+                ->sort()
+                ->filter(TD::FILTER_TEXT),
+
+            TD::make('title', __('Title'))
+                ->sort()
+                ->filter(TD::FILTER_TEXT)
+                ->render(fn({{ class }} ${{ variable }}) => 
+                    e(${{ variable }}->title)
+                ),
+
+            TD::make('writer', __('Writer'))
+                ->render(fn({{ class }} ${{ variable }}) => 
+                    ${{ variable }}->writer ?? ${{ variable }}->author?->name
+                ),
+
+            TD::make('read_count', __('Views'))
+                ->sort()
+                ->render(fn({{ class }} ${{ variable }}) => 
+                    number_format(${{ variable }}->read_count)
+                ),
+
+            TD::make('is_notice', __('Notice'))
+                ->render(fn({{ class }} ${{ variable }}) => 
+                    ${{ variable }}->is_notice ? '✓' : ''
+                ),
+
+            TD::make('created_at', __('Created'))
+                ->sort()
+                ->render(fn({{ class }} ${{ variable }}) => 
+                    ${{ variable }}->created_at_formatted
+                ),
+        ];
+    }
+}
+

@@ -25,11 +25,17 @@
         "source": "https://github.com/cms-orbit/core"
     },
     "require": {
-        "php": "^8.2",
+        "php": "^8.4",
         "composer-runtime-api": "^2.2",
         "composer/semver": "^3.0",
         "laravel/framework": "^10.0 || ^11.0 || ^12.0",
         "laravel/scout": "^9.0 || ^10.0",
+        "spatie/laravel-translatable": "^6.8",
+        "spatie/eloquent-sortable": "^4.4",
+        "spatie/laravel-activitylog": "^4.9",
+        "spatie/laravel-sluggable": "^3.7",
+        "hulkur/laravel-hasmany-keyby": "^8.0",
+        "ralphjsmit/laravel-seo": "^1.6",
         "tabuna/breadcrumbs": "^4.0",
         "twbs/bootstrap-icons": "^1.10",
         "watson/active": "^7.0",
@@ -58,8 +64,6 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "CmsOrbit\\Core\\Database\\Factories\\": "database/factories/",
-            "CmsOrbit\\Core\\Database\\Seeders\\": "database/seeders/",
             "CmsOrbit\\Core\\Tests\\": "tests/"
         }
     },
@@ -68,10 +72,12 @@
             "providers": [
                 "CmsOrbit\\Core\\CoreServiceProvider"
             ],
-            "aliases": {
-                "Alert": "CmsOrbit\\Core\\Support\\Facades\\Alert",
-                "Dashboard": "CmsOrbit\\Core\\Support\\Facades\\Dashboard"
-            }
+                "aliases": {
+                    "Alert": "CmsOrbit\\Core\\Support\\Facades\\Alert",
+                    "Dashboard": "CmsOrbit\\Core\\Support\\Facades\\Dashboard",
+                    "OrbitPackage": "CmsOrbit\\Core\\Support\\Facades\\OrbitPackage",
+                    "EntityManager": "CmsOrbit\\Core\\Support\\Facades\\EntityManager"
+                }
         }
     },
     "config": {

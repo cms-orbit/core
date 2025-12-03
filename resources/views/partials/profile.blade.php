@@ -1,6 +1,6 @@
 <div class="profile-container d-flex align-items-stretch p-3 rounded lh-sm position-relative overflow-hidden">
 
-    <a href="{{ route(config('settings.profile', 'settings.profile')) }}" class="col-10 d-flex align-items-center gap-3">
+    <a href="{{ route(config('orbit.profile', 'orbit.profile')) }}" class="col-10 d-flex align-items-center gap-3">
         @if($image = Auth::user()->presenter()->image())
             <img src="{{$image}}"  alt="{{ Auth::user()->presenter()->title()}}" class="thumb-sm avatar b" type="image/*">
         @endif

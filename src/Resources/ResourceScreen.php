@@ -170,7 +170,7 @@ abstract class ResourceScreen extends Screen
 
         Toast::info($this->resource::updateToastMessage());
 
-        return redirect()->route('settings.resource.list', $request->resource);
+        return redirect()->route('orbit.resource.list', $request->resource);
     }
 
     /**
@@ -188,7 +188,7 @@ abstract class ResourceScreen extends Screen
 
         Toast::info($this->resource::deleteToastMessage());
 
-        return redirect()->route('settings.resource.list', $request->resource);
+        return redirect()->route('orbit.resource.list', $request->resource);
     }
 
     /**
@@ -206,7 +206,7 @@ abstract class ResourceScreen extends Screen
 
         Toast::info($this->resource::deleteToastMessage());
 
-        return redirect()->route('settings.resource.list', $request->resource);
+        return redirect()->route('orbit.resource.list', $request->resource);
     }
 
     /**
@@ -222,7 +222,7 @@ abstract class ResourceScreen extends Screen
 
         Toast::info($this->resource::restoreToastMessage());
 
-        return redirect()->route('settings.resource.list', $request->resource);
+        return redirect()->route('orbit.resource.list', $request->resource);
     }
 
     /**

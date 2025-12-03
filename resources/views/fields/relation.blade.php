@@ -9,7 +9,7 @@
      data-relation-append="{{ $relationAppend }}"
      data-relation-chunk="{{ $chunk }}"
      data-relation-allow-empty="{{ $allowEmpty }}"
-     data-relation-route="{{ route('settings.systems.relation') }}"
+     data-relation-route="{{ route('orbit.systems.relation') }}"
      data-relation-message-notfound="{{ __('No results found') }}"
      data-relation-message-add="{{ __('Add') }}"
      data-relation-allow-add="{{ var_export($allowAdd, true) }}"

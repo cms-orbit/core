@@ -89,7 +89,7 @@ class Modal extends Layout
     public function build(Repository $repository)
     {
         $this->variables = array_merge($this->variables, [
-            'deferredRoute'  => route('settings.async'),
+            'deferredRoute'  => route('orbit.async'),
             'deferrerParams' => $this->getDeferrerDataLoadingParameters(),
         ]);
 
