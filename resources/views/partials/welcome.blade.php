@@ -31,7 +31,7 @@
             <p class="ms-md-5 ps-md-1">
                 Ready to unleash your coding potential? Our platform built on the Laravel framework is user-friendly and
                 perfect for developers of all levels to create innovative solutions. Dive in and experience the power of
-                limitless creativity with our comprehensive <a href="https://orchid.software/en/docs" target="_blank" class="text-u-l">documentation</a>.
+                limitless creativity with our comprehensive documentation.
             </p>
         </div>
 
@@ -43,7 +43,7 @@
             </h3>
             <p class="ms-md-5 ps-md-1">
                 Are you entirely new to Laravel Orbit? Don't worry, we all were once. For a quick study of the main
-                features, be sure to <a href="https://orchid.software/en/docs/quickstart" target="_blank" class="text-u-l">check out the step-by-step tutorials</a> see on the site.
+                features, be sure to check out the step-by-step tutorials on the site.
             </p>
         </div>
 
@@ -95,8 +95,7 @@
             </h3>
             <div class="ms-md-5 ps-md-1">
                 <p>
-                    Connect with the Laravel Orbit community by following <a href="https://twitter.com/orchid_platform" class="text-u-l">@orchid_platform</a> on Twitter and joining the
-                    official <a href="https://t.me/orchid_community" class="text-u-l">Telegram group</a> for updates, news, and support from the community. Stay informed and be a
+                    Connect with the Laravel Orbit community for updates, news, and support. Stay informed and be a
                     part of the development process.
                 </p>
             </div>

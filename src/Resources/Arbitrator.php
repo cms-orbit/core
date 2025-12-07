@@ -63,7 +63,7 @@ class Arbitrator
             Filterable::class,
         ]);
 
-        abort_unless($exist, 501, sprintf('The model "%s" must have the required orchid/platform traits.', $resource::$model));
+        abort_unless($exist, 501, sprintf('The model "%s" must have the required Orbit traits.', $resource::$model));
 
         return $resource;
     }

@@ -11,7 +11,7 @@ use Illuminate\View\View;
 /**
  * Vue Component Layout
  * 
- * Orchid 레이아웃에 Vue 컴포넌트를 삽입
+ * Orbit 레이아웃에 Vue 컴포넌트를 삽입
  */
 class VueComponentLayout extends Layout
 {

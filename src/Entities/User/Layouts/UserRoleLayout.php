@@ -3,9 +3,9 @@
 namespace CmsOrbit\Core\Entities\User\Layouts;
 
 use CmsOrbit\Core\Auth\Models\Role;
-use Orchid\Screen\Field;
-use Orchid\Screen\Fields\Select;
-use Orchid\Screen\Layouts\Rows;
+use CmsOrbit\Core\UI\Field;
+use CmsOrbit\Core\UI\Fields\Select;
+use CmsOrbit\Core\UI\Layouts\Rows;
 
 class UserRoleLayout extends Rows
 {

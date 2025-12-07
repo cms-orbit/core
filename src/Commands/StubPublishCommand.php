@@ -36,7 +36,7 @@ class StubPublishCommand extends Command
      */
     public function handle(Filesystem $filesystem)
     {
-        $stubsPath = $this->laravel->basePath('stubs/orchid/platform');
+        $stubsPath = $this->laravel->basePath('stubs/orbit');
 
         $filesystem->ensureDirectoryExists($stubsPath);
 

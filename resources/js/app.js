@@ -2,7 +2,7 @@ import * as Turbo from '@hotwired/turbo';
 import * as Bootstrap from 'bootstrap';
 import { Application } from '@hotwired/stimulus';
 import ApplicationController from './controllers/application_controller';
-import Orbit from "./orchid";
+import Orbit from "./orbit";
 import { registerControllers } from 'stimulus-vite-helpers';
 
 window.Turbo = Turbo;

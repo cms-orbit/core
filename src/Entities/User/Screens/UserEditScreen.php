@@ -13,11 +13,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
-use Orchid\Access\Impersonation;
-use Orchid\Screen\Actions\Button;
-use Orchid\Support\Color;
-use Orchid\Support\Facades\Layout;
-use Orchid\Support\Facades\Toast;
+use CmsOrbit\Core\Auth\Access\Impersonation;
+use CmsOrbit\Core\UI\Actions\Button;
+use CmsOrbit\Core\Color;
+use CmsOrbit\Core\Support\Facades\Layout;
+use CmsOrbit\Core\Support\Facades\Toast;
 
 class UserEditScreen extends Screen
 {

@@ -83,7 +83,7 @@ class FieldCommand extends GeneratorCommand
             ->explode('/')
             ->map(fn ($segment) => Str::kebab($segment))
             ->prepend('fields')
-            ->prepend('orchid')
+            ->prepend('orbit')
             ->implode($separator);
     }
 

@@ -6,6 +6,6 @@
         </div>
 
         <p>{{ __("The published Orbit assets are not up-to-date with the installed version. To update, run:") }}</p>
-        <code class="user-select-all">php artisan orchid:publish</code>
+        <code class="user-select-all">php artisan cms:publish</code>
     </div>
 @endif

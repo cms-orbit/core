@@ -2,9 +2,9 @@
 
 namespace CmsOrbit\Core\Entities\User\Layouts;
 
-use Orchid\Screen\Field;
-use Orchid\Screen\Fields\Input;
-use Orchid\Screen\Layouts\Rows;
+use CmsOrbit\Core\UI\Field;
+use CmsOrbit\Core\UI\Fields\Input;
+use CmsOrbit\Core\UI\Layouts\Rows;
 
 class UserEditLayout extends Rows
 {

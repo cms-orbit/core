@@ -177,6 +177,6 @@ class LoginController extends Controller
      */
     private function nameForLock(): string
     {
-        return sprintf('%s_%s', $this->guard->getName(), '_orchid_lock');
+        return sprintf('%s_%s', $this->guard->getName(), '_orbit_lock');
     }
 }

@@ -2,9 +2,9 @@
 
 namespace CmsOrbit\Core\Entities\User\Layouts;
 
-use Orchid\Screen\Field;
-use Orchid\Screen\Fields\Password;
-use Orchid\Screen\Layouts\Rows;
+use CmsOrbit\Core\UI\Field;
+use CmsOrbit\Core\UI\Fields\Password;
+use CmsOrbit\Core\UI\Layouts\Rows;
 
 class UserPasswordLayout extends Rows
 {

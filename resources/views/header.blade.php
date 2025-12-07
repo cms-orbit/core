@@ -2,7 +2,7 @@
     <meta name="robots" content="noindex"/>
     <meta name="google" content="notranslate">
     <link
-          href="{{ asset('/vendor/orchid/favicon.svg') }}"
+          href="{{ asset('/vendor/orbit/favicon.svg') }}"
           sizes="any"
           type="image/svg+xml"
           id="favicon"

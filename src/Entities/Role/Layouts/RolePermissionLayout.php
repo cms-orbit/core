@@ -2,10 +2,10 @@
 
 namespace CmsOrbit\Core\Entities\Role\Layouts;
 
-use Orchid\Screen\Field;
-use Orchid\Screen\Fields\CheckBox;
-use Orchid\Screen\Layouts\Rows;
-use Orchid\Support\Facades\Dashboard;
+use CmsOrbit\Core\UI\Field;
+use CmsOrbit\Core\UI\Fields\CheckBox;
+use CmsOrbit\Core\UI\Layouts\Rows;
+use CmsOrbit\Core\Support\Facades\Dashboard;
 
 class RolePermissionLayout extends Rows
 {

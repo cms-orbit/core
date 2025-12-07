@@ -12,6 +12,10 @@ if (! function_exists('alert')) {
      */
     function alert(?string $message = null, Color $color = Color::INFO): Alert
     {
+        if (!function_exists('app') || !app()->bound(Alert::class)) {
+            throw new \RuntimeException('Application is not bootstrapped.');
+        }
+
         $notifier = app(Alert::class);
 
         if ($message !== null) {
@@ -25,14 +29,28 @@ if (! function_exists('alert')) {
 if (! function_exists('is_sort')) {
     function is_sort(string $property): bool
     {
-        return (new HttpFilter)->isSort($property);
+        if (!function_exists('app') || !app()->bound('request')) {
+            return false;
+        }
+        try {
+            return (new HttpFilter)->isSort($property);
+        } catch (\Throwable $e) {
+            return false;
+        }
     }
 }
 
 if (! function_exists('get_sort')) {
     function get_sort(?string $property): string
     {
-        return (new HttpFilter)->getSort($property);
+        if (!function_exists('app') || !app()->bound('request')) {
+            return '';
+        }
+        try {
+            return (new HttpFilter)->getSort($property);
+        } catch (\Throwable $e) {
+            return '';
+        }
     }
 }
 
@@ -42,7 +60,14 @@ if (! function_exists('get_filter')) {
      */
     function get_filter(string $property)
     {
-        return (new HttpFilter)->getFilter($property);
+        if (!function_exists('app') || !app()->bound('request')) {
+            return null;
+        }
+        try {
+            return (new HttpFilter)->getFilter($property);
+        } catch (\Throwable $e) {
+            return null;
+        }
     }
 }
 
@@ -73,6 +98,13 @@ if (! function_exists('get_filter_string')) {
 if (! function_exists('revert_sort')) {
     function revert_sort(string $property): string
     {
-        return (new HttpFilter)->revertSort($property);
+        if (!function_exists('app') || !app()->bound('request')) {
+            return $property;
+        }
+        try {
+            return (new HttpFilter)->revertSort($property);
+        } catch (\Throwable $e) {
+            return $property;
+        }
     }
 }

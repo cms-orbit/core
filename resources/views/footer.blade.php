@@ -17,20 +17,16 @@
     </p>
 
     <ul class="nav justify-content-center mb-5">
-        <li class="nav-item"><a href="https://orchid.software" class="nav-link px-2 text-muted">Documentation</a></li>
-        <li class="nav-item"><a href="https://github.com/orchidsoftware/platform/discussions" target="_blank" class="nav-link px-2 text-muted">Discussions</a></li>
-        <li class="nav-item"><a href="https://opencollective.com/orchid" target="_blank" class="nav-link px-2 text-muted">Donation</a></li>
-        <li class="nav-item"><a href="https://orchid.software/en/hig/" target="_blank" class="nav-link px-2 text-muted">Design</a></li>
-        <li class="nav-item"><a href="https://github.com/orchidsoftware" target="_blank" class="nav-link px-2 text-muted">GitHub</a></li>
+        <li class="nav-item"><span class="nav-link px-2 text-muted">CMS Orbit</span></li>
     </ul>
 @else
 
     <div class="text-center user-select-none my-4 d-none d-lg-block">
         <p class="small mb-0">
             {{ __('The application code is published under the MIT license.') }} 2016 - {{date('Y')}}<br>
-            <a href="http://orchid.software" target="_blank" rel="noopener">
+            <span>
                 {{ __('Version') }}: {{ Dashboard::version() }}
-            </a>
+            </span>
         </p>
     </div>
 @endguest

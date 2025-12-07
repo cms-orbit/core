@@ -1,6 +1,6 @@
 {
     "name": "cms-orbit/core",
-    "version": "4.0.0-alpha.1",
+    "version": "4.0.0",
     "description": "A powerful Laravel admin panel and resource management system",
     "keywords": [
         "laravel",
@@ -9,7 +9,9 @@
         "crud",
         "dashboard",
         "resources",
-        "ui"
+        "ui",
+        "amuz",
+        "orbit"
     ],
     "type": "library",
     "license": "MIT",
@@ -72,12 +74,12 @@
             "providers": [
                 "CmsOrbit\\Core\\CoreServiceProvider"
             ],
-                "aliases": {
-                    "Alert": "CmsOrbit\\Core\\Support\\Facades\\Alert",
-                    "Dashboard": "CmsOrbit\\Core\\Support\\Facades\\Dashboard",
-                    "OrbitPackage": "CmsOrbit\\Core\\Support\\Facades\\OrbitPackage",
-                    "EntityManager": "CmsOrbit\\Core\\Support\\Facades\\EntityManager"
-                }
+            "aliases": {
+                "Alert": "CmsOrbit\\Core\\Support\\Facades\\Alert",
+                "Dashboard": "CmsOrbit\\Core\\Support\\Facades\\Dashboard",
+                "OrbitPackage": "CmsOrbit\\Core\\Support\\Facades\\OrbitPackage",
+                "EntityManager": "CmsOrbit\\Core\\Support\\Facades\\EntityManager"
+            }
         }
     },
     "config": {

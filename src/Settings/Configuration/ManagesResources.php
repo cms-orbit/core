@@ -56,7 +56,7 @@ trait ManagesResources
      */
     public function assetsAreCurrent(): bool
     {
-        $publishedPath = public_path('vendor/orchid/manifest.json');
+        $publishedPath = public_path('vendor/orbit/manifest.json');
 
         throw_unless(File::exists($publishedPath), new RuntimeException('Orbit assets are not published. Please run: `php artisan cms:publish`'));
 
@@ -65,7 +65,7 @@ trait ManagesResources
 
     public static function vite(): \Illuminate\Foundation\Vite
     {
-        return Vite::useBuildDirectory('vendor/orchid')
+        return Vite::useBuildDirectory('vendor/orbit')
             ->useManifestFilename('manifest.json')
             ->useStyleTagAttributes(['data-turbo-track' => 'reload'])
             ->useScriptTagAttributes(['data-turbo-track' => 'reload'])

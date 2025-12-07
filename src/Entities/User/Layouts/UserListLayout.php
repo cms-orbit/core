@@ -3,9 +3,9 @@
 namespace CmsOrbit\Core\Entities\User\Layouts;
 
 use CmsOrbit\Core\Entities\User\User;
-use Orchid\Screen\Actions\Link;
-use Orchid\Screen\Layouts\Table;
-use Orchid\Screen\TD;
+use CmsOrbit\Core\UI\Actions\Link;
+use CmsOrbit\Core\UI\Layouts\Table;
+use CmsOrbit\Core\UI\TD;
 
 class UserListLayout extends Table
 {

@@ -130,7 +130,7 @@ return [
     */
 
     'search' => [
-        \App\Entities\User\User::class
+        // \App\Entities\User\User::class
     ],
 
     /*
@@ -176,7 +176,7 @@ return [
     |--------------------------------------------------------------------------
     */
 
-    'provider' => \CmsOrbit\Core\Settings\Providers\SettingsServiceProvider::class,
+    'provider' => null, // Custom provider class name. Set to null to disable.
 
 ];
 

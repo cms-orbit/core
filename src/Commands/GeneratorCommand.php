@@ -15,7 +15,7 @@ abstract class GeneratorCommand extends \Illuminate\Console\GeneratorCommand
      */
     protected function resolveStubPath(string $stub): string
     {
-        $path = $this->laravel->basePath('stubs/orchid/platform/'.trim($stub, '/'));
+        $path = $this->laravel->basePath('stubs/orbit/'.trim($stub, '/'));
 
         return file_exists($path)
             ? $path

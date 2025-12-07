@@ -3,9 +3,9 @@
 namespace CmsOrbit\Core\Entities\Role\Layouts;
 
 use CmsOrbit\Core\Auth\Models\Role;
-use Orchid\Screen\Actions\Link;
-use Orchid\Screen\Layouts\Table;
-use Orchid\Screen\TD;
+use CmsOrbit\Core\UI\Actions\Link;
+use CmsOrbit\Core\UI\Layouts\Table;
+use CmsOrbit\Core\UI\TD;
 
 class RoleListLayout extends Table
 {

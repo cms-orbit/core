@@ -40,10 +40,21 @@ class EntityBootstrapper
      */
     public function loadRoutes(): static
     {
+        $app = app();
+        
+        if (!$app->bound('router') || !$app->bound('config')) {
+            return $this;
+        }
+
+        $router = $app->make('router');
+        $domain = (string) config('orbit.domain');
+        $prefix = config('orbit.prefix', 'admin');
+        $middleware = config('orbit.middleware.private');
+
         foreach ($this->discovery->getRouteFiles() as $routeFile) {
-            Route::domain((string) config('orbit.domain'))
-                ->prefix(config('orbit.prefix', 'admin'))
-                ->middleware(config('orbit.middleware.private'))
+            $router->domain($domain)
+                ->prefix($prefix)
+                ->middleware($middleware)
                 ->group($routeFile);
         }
 
@@ -102,7 +113,8 @@ class EntityBootstrapper
             ->sort($sort);
 
         // Set route only if it exists
-        if (Route::has($mainRoute)) {
+        $router = app()->bound('router') ? app()->make('router') : null;
+        if ($router && $router->has($mainRoute)) {
             $menu->route($mainRoute);
         } else {
             $menu->url('#');
@@ -117,7 +129,7 @@ class EntityBootstrapper
             ->permission("orbit.entities.{$routeName}")
             ->sort(10);
             
-        if (Route::has($mainRoute)) {
+        if ($router && $router->has($mainRoute)) {
             $allMenu->route($mainRoute);
         } else {
             $allMenu->url('#');
@@ -134,7 +146,7 @@ class EntityBootstrapper
             ->permission("orbit.entities.{$routeName}.create")
             ->sort(20);
             
-        if (Route::has($createRoute)) {
+        if ($router && $router->has($createRoute)) {
             $createMenu->route($createRoute);
         } else {
             $createMenu->url('#');
@@ -152,7 +164,7 @@ class EntityBootstrapper
                 ->permission("orbit.entities.{$routeName}.trash")
                 ->sort(30);
                 
-            if (Route::has($trashRoute)) {
+            if ($router && $router->has($trashRoute)) {
                 $trashMenu->route($trashRoute);
             } else {
                 $trashMenu->url('#');
