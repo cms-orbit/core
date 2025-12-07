@@ -73,7 +73,7 @@
         </div>
     @else
 
-        @include('settings::layouts.pagination',[
+        @include('orbit::layouts.pagination',[
                 'paginator' => $rows,
                 'columns' => $columns,
                 'onEachSide' => $onEachSide,

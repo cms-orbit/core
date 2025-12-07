@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CmsOrbit\Core\Layouts;
+namespace CmsOrbit\Core\UI\Layouts;
 
 use Illuminate\Contracts\Pagination\CursorPaginator;
 use Illuminate\Contracts\Pagination\Paginator;
@@ -20,7 +20,7 @@ abstract class Table extends Layout
     /**
      * @var string
      */
-    protected $template = 'settings::layouts.table';
+    protected $template = 'orbit::layouts.table';
 
     /**
      * @var Repository

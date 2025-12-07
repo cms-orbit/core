@@ -12,7 +12,7 @@ class SearchController
      */
     public function search(?string $query = null): View
     {
-        return view('settings::partials.search-result', [
+        return view('orbit::partials.search-result', [
             'results' => Dashboard::search($query),
             'query'   => $query,
         ]);

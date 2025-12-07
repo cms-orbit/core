@@ -1,4 +1,4 @@
-@props(['target', 'action', 'push', 'rule' => \Orbit\Support\Facades\Dashboard::isPartialRequest()])
+@props(['target', 'action', 'push', 'rule' => \CmsOrbit\Core\Facades\Dashboard::isPartialRequest()])
 
 
 @if(filter_var($rule, FILTER_VALIDATE_BOOLEAN))

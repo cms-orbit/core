@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CmsOrbit\Core\Actions;
+namespace CmsOrbit\Core\UI\Actions;
 
 use Illuminate\Support\Arr;
 
@@ -21,7 +21,7 @@ class ModalToggle extends Button
     /**
      * @var string
      */
-    protected $view = 'settings::actions.modal';
+    protected $view = 'orbit::actions.modal';
 
     /**
      * Default attributes value.

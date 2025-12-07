@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CmsOrbit\Core\Fields;
+namespace CmsOrbit\Core\UI\Fields;
 
 use CmsOrbit\Core\UI\Field;
 
@@ -19,7 +19,7 @@ class Matrix extends Field
     /**
      * @var string
      */
-    protected $view = 'settings::fields.matrix';
+    protected $view = 'orbit::fields.matrix';
 
     /**
      * Default attributes value.

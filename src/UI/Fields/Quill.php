@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CmsOrbit\Core\Fields;
+namespace CmsOrbit\Core\UI\Fields;
 
 use CmsOrbit\Core\UI\Field;
 
@@ -36,7 +36,7 @@ class Quill extends Field
     /**
      * @var string
      */
-    protected $view = 'settings::fields.quill';
+    protected $view = 'orbit::fields.quill';
 
     /**
      * All attributes that are available to the field.

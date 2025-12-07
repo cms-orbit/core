@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CmsOrbit\Core\Concerns;
+namespace CmsOrbit\Core\Settings\Concerns;
 
 trait Sortable
 {

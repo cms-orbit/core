@@ -1,4 +1,4 @@
-@extends('settings::auth')
+@extends('orbit::auth')
 @section('title',__('Sign in to your account'))
 
 @section('content')
@@ -13,7 +13,7 @@
           action="{{ route('orbit.login.auth') }}">
         @csrf
 
-        @includeWhen($isLockUser,'settings::auth.lockme')
-        @includeWhen(!$isLockUser,'settings::auth.signin')
+        @includeWhen($isLockUser,'orbit::auth.lockme')
+        @includeWhen(!$isLockUser,'orbit::auth.signin')
     </form>
 @endsection

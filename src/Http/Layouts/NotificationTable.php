@@ -24,7 +24,7 @@ class NotificationTable extends Table
         return [
             TD::make('Message', __('Messages'))
                 ->cantHide()
-                ->render(static fn ($notification) => view('settings::partials.notification', [
+                ->render(static fn ($notification) => view('orbit::partials.notification', [
                     'notification' => $notification,
                 ])),
         ];

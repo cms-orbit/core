@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CmsOrbit\Core\Fields;
+namespace CmsOrbit\Core\UI\Fields;
 
 use CmsOrbit\Core\UI\Field;
 
@@ -30,7 +30,7 @@ class UTM extends Field
     /**
      * @var string
      */
-    protected $view = 'settings::fields.utm';
+    protected $view = 'orbit::fields.utm';
 
     /**
      * Default attributes value.

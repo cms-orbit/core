@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CmsOrbit\Core\Layouts;
+namespace CmsOrbit\Core\UI\Layouts;
 
 use Illuminate\View\View;
 use CmsOrbit\Core\UI\Action;
@@ -14,7 +14,7 @@ class Card extends Content
     /**
      * @var string
      */
-    protected $template = 'settings::layouts.card';
+    protected $template = 'orbit::layouts.card';
 
     /**
      * @var array|Action[]

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CmsOrbit\Core\Layouts;
+namespace CmsOrbit\Core\UI\Layouts;
 
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Str;
@@ -52,7 +52,7 @@ class Modal extends Layout
     /**
      * @var string
      */
-    protected $template = 'settings::layouts.modal';
+    protected $template = 'orbit::layouts.modal';
 
     /**
      * Modal constructor.

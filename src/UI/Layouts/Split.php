@@ -1,6 +1,6 @@
 <?php
 
-namespace CmsOrbit\Core\Layouts;
+namespace CmsOrbit\Core\UI\Layouts;
 
 use CmsOrbit\Core\UI\Layout;
 use CmsOrbit\Core\UI\Repository;
@@ -17,7 +17,7 @@ abstract class Split extends Layout
      *
      * @var string
      */
-    protected $template = 'settings::layouts.split';
+    protected $template = 'orbit::layouts.split';
 
     /**
      * An array of default variables that will be passed to the template.

@@ -53,7 +53,7 @@ class AdminAccessTest extends TestCase
     /** @test */
     public function guest_is_redirected_to_login()
     {
-        $response = $this->get('/orbit-settings');
+        $response = $this->get(config('orbit.prefix'));
         $response->assertRedirect('/login');
     }
 
@@ -70,28 +70,28 @@ class AdminAccessTest extends TestCase
         $this->assertAuthenticated();
 
         // Access admin panel
-        $response = $this->get('/orbit-settings');
+        $response = $this->get(config('orbit.prefix'));
         $response->assertStatus(200);
     }
 
     /** @test */
     public function authenticated_admin_can_access_dashboard()
     {
-        $response = $this->actingAs($this->admin)->get('/orbit-settings');
+        $response = $this->actingAs($this->admin)->get(config('orbit.prefix'));
         $response->assertStatus(200);
     }
 
     /** @test */
     public function authenticated_admin_can_access_users_list()
     {
-        $response = $this->actingAs($this->admin)->get('/orbit-settings/users');
+        $response = $this->actingAs($this->admin)->get(config('orbit.prefix') . '/users');
         $response->assertStatus(200);
     }
 
     /** @test */
     public function authenticated_admin_can_access_users_create()
     {
-        $response = $this->actingAs($this->admin)->get('/orbit-settings/users/create');
+        $response = $this->actingAs($this->admin)->get(config('orbit.prefix') . '/users/create');
         $response->assertStatus(200);
     }
 
@@ -100,21 +100,21 @@ class AdminAccessTest extends TestCase
     {
         $user = User::factory()->create();
 
-        $response = $this->actingAs($this->admin)->get("/orbit-settings/users/{$user->id}/edit");
+        $response = $this->actingAs($this->admin)->get(config('orbit.prefix') . "/users/{$user->id}/edit");
         $response->assertStatus(200);
     }
 
     /** @test */
     public function authenticated_admin_can_access_roles_list()
     {
-        $response = $this->actingAs($this->admin)->get('/orbit-settings/roles');
+        $response = $this->actingAs($this->admin)->get(config('orbit.prefix') . '/roles');
         $response->assertStatus(200);
     }
 
     /** @test */
     public function authenticated_admin_can_access_roles_create()
     {
-        $response = $this->actingAs($this->admin)->get('/orbit-settings/roles/create');
+        $response = $this->actingAs($this->admin)->get(config('orbit.prefix') . '/roles/create');
         $response->assertStatus(200);
     }
 
@@ -127,7 +127,7 @@ class AdminAccessTest extends TestCase
             'permissions' => [],
         ]);
 
-        $response = $this->actingAs($this->admin)->get("/orbit-settings/roles/{$role->id}/edit");
+        $response = $this->actingAs($this->admin)->get(config('orbit.prefix') . "/roles/{$role->id}/edit");
         $response->assertStatus(200);
     }
 
@@ -136,14 +136,14 @@ class AdminAccessTest extends TestCase
     {
         $user = User::factory()->create();
 
-        $response = $this->actingAs($this->admin)->post("/orbit-settings/users/{$user->id}/edit", [
+        $response = $this->actingAs($this->admin)->post(config('orbit.prefix') . "/users/{$user->id}/edit", [
             'user' => [
                 'name' => 'Updated Name',
                 'email' => $user->email,
             ],
         ]);
 
-        $response->assertRedirect('/orbit-settings/users');
+        $response->assertRedirect(config('orbit.prefix') . '/users');
         $this->assertEquals('Updated Name', $user->fresh()->name);
     }
 
@@ -156,7 +156,7 @@ class AdminAccessTest extends TestCase
             'permissions' => [],
         ]);
 
-        $response = $this->actingAs($this->admin)->post("/orbit-settings/roles/{$role->id}/edit", [
+        $response = $this->actingAs($this->admin)->post(config('orbit.prefix') . "/roles/{$role->id}/edit", [
             'role' => [
                 'name' => 'Updated Role',
                 'slug' => 'updated-role',
@@ -164,7 +164,7 @@ class AdminAccessTest extends TestCase
             'permissions' => [],
         ]);
 
-        $response->assertRedirect('/orbit-settings/roles');
+        $response->assertRedirect(config('orbit.prefix') . '/roles');
         $this->assertEquals('Updated Role', $role->fresh()->name);
     }
 
@@ -174,9 +174,9 @@ class AdminAccessTest extends TestCase
         $user = User::factory()->create();
 
         $response = $this->actingAs($this->admin)
-            ->post("/orbit-settings/users/{$user->id}/edit/remove");
+            ->post(config('orbit.prefix') . "/users/{$user->id}/edit/remove");
 
-        $response->assertRedirect('/orbit-settings/users');
+        $response->assertRedirect(config('orbit.prefix') . '/users');
         $this->assertSoftDeleted('users', ['id' => $user->id]);
     }
 
@@ -190,9 +190,9 @@ class AdminAccessTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->admin)
-            ->post("/orbit-settings/roles/{$role->id}/edit/remove");
+            ->post(config('orbit.prefix') . "/roles/{$role->id}/edit/remove");
 
-        $response->assertRedirect('/orbit-settings/roles');
+        $response->assertRedirect(config('orbit.prefix') . '/roles');
         $this->assertDatabaseMissing('roles', ['id' => $role->id]);
     }
 
@@ -201,7 +201,7 @@ class AdminAccessTest extends TestCase
     {
         $user = User::factory()->create();
 
-        $response = $this->actingAs($user)->get('/orbit-settings');
+        $response = $this->actingAs($user)->get(config('orbit.prefix'));
         $response->assertStatus(403);
     }
 
@@ -210,7 +210,7 @@ class AdminAccessTest extends TestCase
     {
         $user = User::factory()->create();
 
-        $response = $this->actingAs($user)->get('/orbit-settings/users');
+        $response = $this->actingAs($user)->get(config('orbit.prefix') . '/users');
         $response->assertStatus(403);
     }
 
@@ -219,7 +219,7 @@ class AdminAccessTest extends TestCase
     {
         $user = User::factory()->create();
 
-        $response = $this->actingAs($user)->get('/orbit-settings/roles');
+        $response = $this->actingAs($user)->get(config('orbit.prefix') . '/roles');
         $response->assertStatus(403);
     }
 
@@ -227,11 +227,11 @@ class AdminAccessTest extends TestCase
     public function comprehensive_admin_routes_test()
     {
         $routes = [
-            'GET /orbit-settings' => 200,
-            'GET /orbit-settings/users' => 200,
-            'GET /orbit-settings/users/create' => 200,
-            'GET /orbit-settings/roles' => 200,
-            'GET /orbit-settings/roles/create' => 200,
+            'GET ' . config('orbit.prefix') => 200,
+            'GET ' . config('orbit.prefix') . '/users' => 200,
+            'GET ' . config('orbit.prefix') . '/users/create' => 200,
+            'GET ' . config('orbit.prefix') . '/roles' => 200,
+            'GET ' . config('orbit.prefix') . '/roles/create' => 200,
         ];
 
         foreach ($routes as $route => $expectedStatus) {

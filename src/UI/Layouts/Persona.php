@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CmsOrbit\Core\Layouts;
+namespace CmsOrbit\Core\UI\Layouts;
 
 use Illuminate\View\View;
 use CmsOrbit\Core\UI\Contracts\Personable;
@@ -12,7 +12,7 @@ class Persona extends Content
     /**
      * @var string
      */
-    protected $template = 'settings::layouts.persona';
+    protected $template = 'orbit::layouts.persona';
 
     public function render(Personable $user): View
     {

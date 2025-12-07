@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CmsOrbit\Core\Fields;
+namespace CmsOrbit\Core\UI\Fields;
 
 /**
  * Class Cropper.
@@ -39,7 +39,7 @@ class Cropper extends Picture
     /**
      * @var string
      */
-    protected $view = 'settings::fields.cropper';
+    protected $view = 'orbit::fields.cropper';
 
     /**
      * Default attributes value.

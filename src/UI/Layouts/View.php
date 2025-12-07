@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CmsOrbit\Core\Layouts;
+namespace CmsOrbit\Core\UI\Layouts;
 
 use CmsOrbit\Core\UI\Layout;
 use CmsOrbit\Core\UI\Repository;

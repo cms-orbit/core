@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CmsOrbit\Core\Fields;
+namespace CmsOrbit\Core\UI\Fields;
 
 use DateTimeZone;
 use CmsOrbit\Core\UI\Concerns\Multipliable;
@@ -28,7 +28,7 @@ class TimeZone extends Field
     /**
      * @var string
      */
-    protected $view = 'settings::fields.select';
+    protected $view = 'orbit::fields.select';
 
     /**
      * Default attributes value.

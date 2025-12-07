@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CmsOrbit\Core\Layouts;
+namespace CmsOrbit\Core\UI\Layouts;
 
 use Illuminate\Contracts\View\Factory;
 use CmsOrbit\Core\UI\Actions\Menu;
@@ -19,7 +19,7 @@ abstract class TabMenu extends Layout
     /**
      * @var string
      */
-    protected $template = 'settings::layouts.tabMenu';
+    protected $template = 'orbit::layouts.tabMenu';
 
     /**
      * @throws Throwable

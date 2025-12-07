@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CmsOrbit\Core\Layouts;
+namespace CmsOrbit\Core\UI\Layouts;
 
 use Illuminate\Support\Arr;
 use CmsOrbit\Core\UI\Action;
@@ -20,7 +20,7 @@ abstract class Block extends Layout
     /**
      * @var string
      */
-    protected $template = 'settings::layouts.block';
+    protected $template = 'orbit::layouts.block';
 
     /**
      * @var false[]

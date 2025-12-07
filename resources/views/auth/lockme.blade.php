@@ -12,7 +12,7 @@
 <div class="mb-3">
     <input type="hidden" name="remember" value="true">
 
-    {!!  \Orbit\Screen\Fields\Password::make('password')
+    {!!  \CmsOrbit\Core\UI\Fields\Password::make('password')
             ->required()
             ->autocomplete('current-password')
             ->tabindex(1)

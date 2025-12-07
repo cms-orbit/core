@@ -1,4 +1,4 @@
-@extends('settings::app')
+@extends('orbit::app')
 
 @section('body')
 
@@ -6,7 +6,7 @@
         <div class="workspace workspace-limit pt-3 pt-md-4 mb-4 mb-md-0 d-flex flex-column h-100">
             @yield('workspace')
 
-            @includeFirst([config('orbit.template.footer'), 'settings::footer'])
+            @includeFirst([config('orbit.template.footer'), 'orbit::footer'])
         </div>
     </div>
 

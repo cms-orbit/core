@@ -1,4 +1,4 @@
-@extends('settings::dashboard')
+@extends('orbit::dashboard')
 
 @section('title', '404')
 @section('description', __("You requested a page that doesn't exist."))

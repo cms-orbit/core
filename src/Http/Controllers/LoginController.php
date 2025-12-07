@@ -125,7 +125,7 @@ class LoginController extends Controller
 
         $model = $provider->createModel()->find($user);
 
-        return view('settings::auth.login', [
+        return view('orbit::auth.login', [
             'isLockUser' => optional($model)->exists ?? false,
             'lockUser'   => $model,
         ]);

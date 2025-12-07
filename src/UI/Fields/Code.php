@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CmsOrbit\Core\Fields;
+namespace CmsOrbit\Core\UI\Fields;
 
 use CmsOrbit\Core\UI\Field;
 
@@ -48,7 +48,7 @@ class Code extends Field
     /**
      * @var string
      */
-    protected $view = 'settings::fields.code';
+    protected $view = 'orbit::fields.code';
 
     /**
      * Default attributes value.

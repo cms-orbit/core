@@ -10,7 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 use CmsOrbit\Core\UI\Actions\Button;
-use CmsOrbit\Core\Color;
+use CmsOrbit\Core\Support\Color;
 use CmsOrbit\Core\Support\Facades\Layout;
 use CmsOrbit\Core\Support\Facades\Toast;
 

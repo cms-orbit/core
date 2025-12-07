@@ -14,7 +14,7 @@ class Action extends Field implements Actionable
      *
      * @var string
      */
-    protected $typeForm = 'settings::partials.fields.clear';
+    protected $typeForm = 'orbit::partials.fields.clear';
 
     /**
      * Attributes available for a particular tag.

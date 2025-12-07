@@ -1,6 +1,6 @@
 <?php
 
-namespace CmsOrbit\Core\Components\Cells;
+namespace CmsOrbit\Core\UI\Components\Cells;
 
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Str;

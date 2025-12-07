@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CmsOrbit\Core;
+namespace CmsOrbit\Core\Support\Alert;
 
 use Illuminate\Session\Store;
 use CmsOrbit\Core\Support\Color;

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CmsOrbit\Core\Actions;
+namespace CmsOrbit\Core\UI\Actions;
 
 use Illuminate\Contracts\Routing\UrlRoutable;
 use CmsOrbit\Core\UI\Action;
@@ -24,7 +24,7 @@ class Button extends Action
     /**
      * @var string
      */
-    protected $view = 'settings::actions.button';
+    protected $view = 'orbit::actions.button';
 
     /**
      * Default attributes value.

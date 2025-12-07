@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CmsOrbit\Core;
+namespace CmsOrbit\Core\Foundation\Attachments;
 
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use CmsOrbit\Core\Foundation\Attachments\Models\Attachment;

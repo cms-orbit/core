@@ -87,7 +87,7 @@ class Field implements Fieldable, Htmlable
      *
      * @var Closure|string|null
      */
-    protected $typeForm = 'settings::partials.fields.vertical';
+    protected $typeForm = 'orbit::partials.fields.vertical';
 
     /**
      * A set of attributes for the assignment
@@ -461,7 +461,7 @@ class Field implements Fieldable, Htmlable
      */
     public function vertical(): static
     {
-        $this->typeForm = 'settings::partials.fields.vertical';
+        $this->typeForm = 'orbit::partials.fields.vertical';
 
         return $this;
     }
@@ -473,7 +473,7 @@ class Field implements Fieldable, Htmlable
      */
     public function clear(): static
     {
-        $this->typeForm = 'settings::partials.fields.clear';
+        $this->typeForm = 'orbit::partials.fields.clear';
 
         return $this;
     }
@@ -485,7 +485,7 @@ class Field implements Fieldable, Htmlable
      */
     public function horizontal(): static
     {
-        $this->typeForm = 'settings::partials.fields.horizontal';
+        $this->typeForm = 'orbit::partials.fields.horizontal';
 
         return $this;
     }
@@ -497,7 +497,7 @@ class Field implements Fieldable, Htmlable
      */
     public function hiddenFormType(): static
     {
-        $this->typeForm = 'settings::partials.fields.hidden';
+        $this->typeForm = 'orbit::partials.fields.hidden';
 
         return $this;
     }

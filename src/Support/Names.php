@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CmsOrbit\Core;
+namespace CmsOrbit\Core\Support;
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;

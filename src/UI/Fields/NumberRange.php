@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CmsOrbit\Core\Fields;
+namespace CmsOrbit\Core\UI\Fields;
 
 use CmsOrbit\Core\UI\Concerns\ComplexFieldConcern;
 use CmsOrbit\Core\UI\Field;
@@ -21,7 +21,7 @@ class NumberRange extends Field implements ComplexFieldConcern
     /**
      * @var string
      */
-    protected $view = 'settings::fields.numberRange';
+    protected $view = 'orbit::fields.numberRange';
 
     protected $attributes = [
         'class'    => 'form-control',

@@ -6,6 +6,7 @@ namespace CmsOrbit\Core;
 
 use CmsOrbit\Core\Frontend\FrontendHandler;
 use CmsOrbit\Core\Frontend\SitemapGenerator;
+use CmsOrbit\Core\Http\Controllers\LoginController;
 use CmsOrbit\Core\Http\Controllers\SitemapController;
 use CmsOrbit\Core\Http\Middleware\Access;
 use CmsOrbit\Core\Http\Middleware\BladeIcons;
@@ -293,8 +294,27 @@ class CoreServiceProvider extends ServiceProvider
         $domain = (string) config('orbit.domain');
         $prefix = $this->getPrefix();
         $middleware = config('orbit.middleware.private');
+        $publicMiddleware = config('orbit.middleware.public', ['web']);
 
-        // Core routes (includes auth and dashboard routes)
+        // Public auth routes (login, logout) - should not use Access middleware
+        $router->domain($domain)
+            ->prefix($prefix)
+            ->as('orbit.')
+            ->middleware($publicMiddleware)
+            ->group(function () {
+                if (config('orbit.auth', true)) {
+                    Route::get('login', [LoginController::class, 'showLoginForm'])->name('login');
+                    Route::middleware('throttle:60,1')
+                        ->post('login', [LoginController::class, 'login'])
+                        ->name('login.auth');
+                    Route::get('lock', [LoginController::class, 'resetCookieLockMe'])->name('login.lock');
+                }
+                Route::get('switch-logout', [LoginController::class, 'switchLogout']);
+                Route::post('switch-logout', [LoginController::class, 'switchLogout'])->name('switch.logout');
+                Route::post('logout', [LoginController::class, 'logout'])->name('logout');
+            });
+
+        // Core routes (includes dashboard routes, but not auth routes)
         $router->domain($domain)
             ->prefix($prefix)
             ->as('orbit.')
@@ -304,7 +324,7 @@ class CoreServiceProvider extends ServiceProvider
         // Application routes (from RouteServiceProvider)
         if (file_exists(base_path('routes/orbit.php'))) {
             Route::domain($domain)
-                ->prefix(Settings\Support\Facades\Dashboard::prefix('/'))
+                ->prefix(Support\Facades\Dashboard::prefix('/'))
                 ->middleware(config('orbit.middleware.private'))
                 ->group(base_path('routes/orbit.php'));
         }
@@ -526,7 +546,6 @@ class CoreServiceProvider extends ServiceProvider
             Commands\ModelCommand::class,
             Commands\MigrationCommand::class,
             Commands\FreshSuperAdminRoleCommand::class,
-            Commands\GenerateViteConfigCommand::class,
             Commands\EntityDiscoverCommand::class,
 
             Commands\FilterCommand::class,

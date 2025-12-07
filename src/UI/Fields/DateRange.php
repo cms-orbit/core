@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CmsOrbit\Core\Fields;
+namespace CmsOrbit\Core\UI\Fields;
 
 use Illuminate\Support\Carbon;
 use CmsOrbit\Core\UI\Concerns\ComplexFieldConcern;
@@ -23,7 +23,7 @@ class DateRange extends Field implements ComplexFieldConcern
     /**
      * @var string
      */
-    protected $view = 'settings::fields.dataRange';
+    protected $view = 'orbit::fields.dataRange';
 
     /**
      * Default attributes value.

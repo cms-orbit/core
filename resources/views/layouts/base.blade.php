@@ -1,4 +1,4 @@
-@extends('settings::dashboard')
+@extends('orbit::dashboard')
 
 @section('title', (string) __($name))
 @section('description', (string) __($description))
@@ -33,7 +33,7 @@
     >
         {!! $layouts !!}
         @csrf
-        @include('settings::partials.confirm')
+        @include('orbit::partials.confirm')
     </form>
 
     <div data-controller="filter">
@@ -43,5 +43,5 @@
         ></form>
     </div>
 
-    @includeWhen(isset($state), 'settings::partials.state')
+    @includeWhen(isset($state), 'orbit::partials.state')
 @endsection

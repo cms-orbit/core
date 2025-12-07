@@ -2,8 +2,8 @@
 
 namespace CmsOrbit\Core\Http\Requests;
 
-use CmsOrbit\Core\Layouts\ResourceFields;
-use CmsOrbit\Core\ResourceRequest;
+use CmsOrbit\Core\Resources\Layouts\ResourceFields;
+use CmsOrbit\Core\Resources\ResourceRequest;
 
 class CreateRequest extends ResourceRequest
 {

@@ -3,7 +3,7 @@
 namespace CmsOrbit\Core\Http\Requests;
 
 use Carbon\Carbon;
-use CmsOrbit\Core\Resource;
+use CmsOrbit\Core\Resources\Resource;
 
 class UpdateRequest extends CreateRequest
 {

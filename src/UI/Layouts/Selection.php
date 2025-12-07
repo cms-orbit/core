@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CmsOrbit\Core\Layouts;
+namespace CmsOrbit\Core\UI\Layouts;
 
 use Illuminate\Contracts\View\Factory;
 use CmsOrbit\Core\Foundation\Filters\Filter;
@@ -17,12 +17,12 @@ abstract class Selection extends Layout
     /**
      * Drop-down filters.
      */
-    public const TEMPLATE_DROP_DOWN = 'settings::layouts.selection';
+    public const TEMPLATE_DROP_DOWN = 'orbit::layouts.selection';
 
     /**
      * Line filters.
      */
-    public const TEMPLATE_LINE = 'settings::layouts.filter';
+    public const TEMPLATE_LINE = 'orbit::layouts.filter';
 
     /**
      * @var string

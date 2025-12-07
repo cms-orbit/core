@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CmsOrbit\Core\Layouts;
+namespace CmsOrbit\Core\UI\Layouts;
 
 use Illuminate\Contracts\View\Factory;
 use CmsOrbit\Core\UI\Layout;
@@ -16,7 +16,7 @@ class Metric extends Layout
     /**
      * @var string
      */
-    protected $template = 'settings::layouts.metric';
+    protected $template = 'orbit::layouts.metric';
 
     /**
      * @var string|null

@@ -123,7 +123,7 @@ class Arbitrator
      */
     private function registerMenu(Resource $resource, int $key): Arbitrator
     {
-        View::composer('settings::dashboard', function () use ($resource, $key) {
+        View::composer('orbit::dashboard', function () use ($resource, $key) {
             if (! $resource::displayInNavigation()) {
                 return;
             }

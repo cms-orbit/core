@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CmsOrbit\Core\Fields;
+namespace CmsOrbit\Core\UI\Fields;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -35,7 +35,7 @@ class Select extends Field implements ComplexFieldConcern
     /**
      * @var string
      */
-    protected $view = 'settings::fields.select';
+    protected $view = 'orbit::fields.select';
 
     /**
      * Default attributes value.

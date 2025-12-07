@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CmsOrbit\Core\Fields;
+namespace CmsOrbit\Core\UI\Fields;
 
 use CmsOrbit\Core\UI\Field;
 
@@ -35,7 +35,7 @@ class Switcher extends Field
     /**
      * @var string
      */
-    protected $view = 'settings::fields.switch';
+    protected $view = 'orbit::fields.switch';
 
     /**
      * Default attributes value.

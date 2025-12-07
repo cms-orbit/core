@@ -16,7 +16,7 @@
     <tbody>
 
     @foreach($value as $key => $row)
-        @include('settings::partials.fields.matrixRow',['row' => $row, 'key' => $key])
+        @include('orbit::partials.fields.matrixRow',['row' => $row, 'key' => $key])
     @endforeach
 
     <tr class="add-row">
@@ -30,7 +30,7 @@
     </tr>
 
     <template class="matrix-template">
-        @include('settings::partials.fields.matrixRow',['row' => [], 'key' => '{index}'])
+        @include('orbit::partials.fields.matrixRow',['row' => [], 'key' => '{index}'])
     </template>
     </tbody>
 </table>

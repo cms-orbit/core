@@ -1,6 +1,6 @@
 <?php
 
-namespace CmsOrbit\Core\Layouts;
+namespace CmsOrbit\Core\UI\Layouts;
 
 use Illuminate\Contracts\View\Factory;
 use CmsOrbit\Core\UI\Layout;
@@ -12,7 +12,7 @@ abstract class Sortable extends Layout
     /**
      * @var string
      */
-    protected $template = 'settings::layouts.sortable';
+    protected $template = 'orbit::layouts.sortable';
 
     /**
      * Used to create the title of a group of form elements.

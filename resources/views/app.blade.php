@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{  app()->getLocale() }}" data-controller="html-load" dir="{{ \Orbit\Support\Locale::currentDir() }}">
+<html lang="{{  app()->getLocale() }}" data-controller="html-load" dir="{{ \CmsOrbit\Core\Support\Locale::currentDir() }}">
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -43,7 +43,7 @@
     @endif
 </head>
 
-<body class="{{ \Orbit\Support\Names::getPageNameClass() }}" data-controller="pull-to-refresh">
+<body class="{{ \CmsOrbit\Core\Names::getPageNameClass() }}" data-controller="pull-to-refresh">
 
 <div class="container-fluid" data-controller="@yield('controller')" @yield('controller-data')>
 
@@ -56,11 +56,11 @@
     </div>
 
 
-    @include('settings::partials.toast')
+    @include('orbit::partials.toast')
 </div>
 
 @stack('scripts')
 
-@include('settings::partials.search-modal')
+@include('orbit::partials.search-modal')
 </body>
 </html>

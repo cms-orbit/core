@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CmsOrbit\Core\Fields;
+namespace CmsOrbit\Core\UI\Fields;
 
 use Illuminate\Contracts\Support\Htmlable;
 use CmsOrbit\Core\UI\Concerns\Multipliable;
@@ -51,7 +51,7 @@ class Input extends Field
     /**
      * @var string
      */
-    protected $view = 'settings::fields.input';
+    protected $view = 'orbit::fields.input';
 
     /**
      * Default attributes value.

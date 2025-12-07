@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CmsOrbit\Core\Fields;
+namespace CmsOrbit\Core\UI\Fields;
 
 use Illuminate\Support\Arr;
 use CmsOrbit\Core\Foundation\Attachments\Models\Attachment;
@@ -38,7 +38,7 @@ class Attach extends Field
      *
      * @var string
      */
-    protected $view = 'settings::fields.attach';
+    protected $view = 'orbit::fields.attach';
 
     /**
      * Default attributes value.

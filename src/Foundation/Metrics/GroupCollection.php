@@ -1,6 +1,6 @@
 <?php
 
-namespace CmsOrbit\Core;
+namespace CmsOrbit\Core\Foundation\Metrics;
 
 use Illuminate\Support\Collection;
 

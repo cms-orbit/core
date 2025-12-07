@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CmsOrbit\Core\Fields;
+namespace CmsOrbit\Core\UI\Fields;
 
 use Illuminate\View\View;
 use CmsOrbit\Core\UI\Contracts\Fieldable;
@@ -34,7 +34,7 @@ class Group implements Fieldable, Groupable
     /**
      * @var string
      */
-    protected $view = 'settings::fields.group';
+    protected $view = 'orbit::fields.group';
 
     /**
      * @return static

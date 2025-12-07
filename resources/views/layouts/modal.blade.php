@@ -65,7 +65,7 @@
                 <div class="modal-body layout-wrapper">
                     <x-orbit-stream target="{{$templateSlug}}">
                         <div id="{{ $templateSlug }}">
-                            @if(!empty($deferrerParams) == \Orbit\Support\Facades\Dashboard::isPartialRequest())
+                            @if(!empty($deferrerParams) == \CmsOrbit\Core\Facades\Dashboard::isPartialRequest())
                                 @foreach($manyForms as $formKey => $modal)
                                     @foreach($modal as $item)
                                         {!! $item ?? '' !!}

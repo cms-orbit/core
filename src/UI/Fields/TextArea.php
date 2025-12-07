@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CmsOrbit\Core\Fields;
+namespace CmsOrbit\Core\UI\Fields;
 
 use CmsOrbit\Core\UI\Field;
 
@@ -32,7 +32,7 @@ class TextArea extends Field
     /**
      * @var string
      */
-    protected $view = 'settings::fields.textarea';
+    protected $view = 'orbit::fields.textarea';
 
     /**
      * Default attributes value.

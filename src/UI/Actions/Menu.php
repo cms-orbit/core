@@ -30,7 +30,7 @@ class Menu extends Link
      *
      * @var string
      */
-    protected $view = 'settings::actions.menu';
+    protected $view = 'orbit::actions.menu';
 
     /**
      * Determines whether the menu item should be displayed based on permissions.

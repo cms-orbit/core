@@ -4,7 +4,7 @@
         {{__('Email address')}}
     </label>
 
-    {!!  \Orbit\Screen\Fields\Input::make('email')
+    {!!  \CmsOrbit\Core\UI\Fields\Input::make('email')
         ->type('email')
         ->required()
         ->tabindex(1)
@@ -21,7 +21,7 @@
         {{__('Password')}}
     </label>
 
-    {!!  \Orbit\Screen\Fields\Password::make('password')
+    {!!  \CmsOrbit\Core\UI\Fields\Password::make('password')
         ->required()
         ->autocomplete('current-password')
         ->tabindex(2)

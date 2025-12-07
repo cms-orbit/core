@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CmsOrbit\Core\Fields;
+namespace CmsOrbit\Core\UI\Fields;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
@@ -35,7 +35,7 @@ class Relation extends Field
     /**
      * @var string
      */
-    protected $view = 'settings::fields.relation';
+    protected $view = 'orbit::fields.relation';
 
     /**
      * Default attributes value.

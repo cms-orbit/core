@@ -58,7 +58,7 @@ class Access
         }
 
         if (Impersonation::isSwitch()) {
-            return response()->view('settings::auth.impersonation');
+            return response()->view('orbit::auth.impersonation');
         }
 
         // The current user is already signed in.
@@ -76,6 +76,12 @@ class Access
     {
         if ($request->expectsJson()) {
             return response('Unauthorized.', 401);
+        }
+
+        // Prevent infinite redirects: if already on login page, just return 401
+        $loginRoute = Route::has('orbit.login') ? route('orbit.login') : (Route::has('login') ? route('login') : null);
+        if ($loginRoute && $request->url() === $loginRoute) {
+            abort(401);
         }
 
         if (Route::has('orbit.login')) {

@@ -1,4 +1,4 @@
-@extends('settings::auth')
+@extends('orbit::auth')
 @section('title',__('Access Denied: Viewing as Another User'))
 
 @section('content')

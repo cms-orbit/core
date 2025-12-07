@@ -6,7 +6,6 @@ use Illuminate\Support\Facades\Route;
 use CmsOrbit\Core\Http\Controllers\AsyncController;
 use CmsOrbit\Core\Http\Controllers\AttachmentController;
 use CmsOrbit\Core\Http\Controllers\IndexController;
-use CmsOrbit\Core\Http\Controllers\LoginController;
 use CmsOrbit\Core\Http\Controllers\RelationController;
 use CmsOrbit\Core\Http\Controllers\SearchController;
 use CmsOrbit\Core\Http\Controllers\SortableController;
@@ -20,25 +19,10 @@ use Tabuna\Breadcrumbs\Trail;
 
 /*
 |--------------------------------------------------------------------------
-| Authentication Routes
-|--------------------------------------------------------------------------
-*/
-
-if (config('orbit.auth', true)) {
-    Route::get('login', [LoginController::class, 'showLoginForm'])->name('login');
-    Route::middleware('throttle:60,1')
-        ->post('login', [LoginController::class, 'login'])
-        ->name('login.auth');
-    Route::get('lock', [LoginController::class, 'resetCookieLockMe'])->name('login.lock');
-}
-
-Route::get('switch-logout', [LoginController::class, 'switchLogout']);
-Route::post('switch-logout', [LoginController::class, 'switchLogout'])->name('switch.logout');
-Route::post('logout', [LoginController::class, 'logout'])->name('logout');
-
-/*
-|--------------------------------------------------------------------------
 | Dashboard Routes
+|--------------------------------------------------------------------------
+| Note: Authentication routes are registered separately in CoreServiceProvider
+| to avoid Access middleware causing infinite redirects.
 |--------------------------------------------------------------------------
 */
 

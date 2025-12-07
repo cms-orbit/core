@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CmsOrbit\Core\Layouts;
+namespace CmsOrbit\Core\UI\Layouts;
 
 use ArrayAccess;
 use Illuminate\View\View;
@@ -13,7 +13,7 @@ class Facepile extends Content
     /**
      * @var string
      */
-    protected $template = 'settings::layouts.facepile';
+    protected $template = 'orbit::layouts.facepile';
 
     /**
      * @param Personable[] $users

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CmsOrbit\Core\Components;
+namespace CmsOrbit\Core\Settings\Components;
 
 use Illuminate\Contracts\View\View;
 use Illuminate\View\Component;
@@ -16,6 +16,6 @@ class Stream extends Component
      */
     public function render()
     {
-        return view('settings::components.stream');
+        return view('orbit::components.stream');
     }
 }

@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use CmsOrbit\Core\Auth\Access\Impersonation;
 use CmsOrbit\Core\UI\Actions\Button;
-use CmsOrbit\Core\Color;
+use CmsOrbit\Core\Support\Color;
 use CmsOrbit\Core\Support\Facades\Layout;
 use CmsOrbit\Core\Support\Facades\Toast;
 

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CmsOrbit\Core\Layouts;
+namespace CmsOrbit\Core\UI\Layouts;
 
 use Illuminate\Contracts\View\Factory;
 use CmsOrbit\Core\UI\Layout;
@@ -17,7 +17,7 @@ abstract class Legend extends Layout
     /**
      * @var string
      */
-    protected $template = 'settings::layouts.legend';
+    protected $template = 'orbit::layouts.legend';
 
     /**
      * Used to create the title of a group of form elements.

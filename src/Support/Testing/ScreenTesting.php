@@ -1,6 +1,6 @@
 <?php
 
-namespace CmsOrbit\Core\Testing;
+namespace CmsOrbit\Core\Support\Testing;
 
 trait ScreenTesting
 {

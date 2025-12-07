@@ -1,6 +1,6 @@
 <?php
 
-namespace CmsOrbit\Core\Layouts;
+namespace CmsOrbit\Core\UI\Layouts;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
@@ -14,7 +14,7 @@ abstract class Listener extends Layout
     /**
      * @var string
      */
-    protected $template = 'settings::layouts.listener';
+    protected $template = 'orbit::layouts.listener';
 
     /**
      * List of field names for which values will be listened.

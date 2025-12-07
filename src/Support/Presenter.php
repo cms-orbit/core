@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CmsOrbit\Core;
+namespace CmsOrbit\Core\Support;
 
 /**
  * Presenter class for presenting data from the Eloquent model

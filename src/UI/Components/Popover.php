@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CmsOrbit\Core\Components;
+namespace CmsOrbit\Core\UI\Components;
 
 use Illuminate\Contracts\View\View;
 use Illuminate\View\Component;
@@ -39,7 +39,7 @@ class Popover extends Component
      */
     public function render()
     {
-        return view('settings::components.popover');
+        return view('orbit::components.popover');
     }
 
     /**

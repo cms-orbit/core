@@ -1,4 +1,4 @@
-@extends(config('orbit.workspace', 'settings::workspace.compact'))
+@extends(config('orbit.workspace', 'orbit::workspace.compact'))
 
 @section('aside')
     <div class="aside col-xs-12 col-lg-3 col-xl-2 bg-dark d-flex flex-column" data-controller="menu" data-bs-theme="dark">
@@ -11,13 +11,13 @@
             </a>
 
             <a class="header-brand order-last link-body-emphasis" href="{{ route(config('orbit.index')) }}">
-                @includeFirst([config('orbit.template.header'), 'settings::header'])
+                @includeFirst([config('orbit.template.header'), 'orbit::header'])
             </a>
         </header>
 
         <nav class="aside-collapse w-100 d-lg-flex flex-column collapse-horizontal text-body-emphasis" id="headerMenuCollapse">
 
-            @include('settings::partials.search')
+            @include('orbit::partials.search')
 
             <ul class="nav nav-pills flex-column mb-md-1 mb-auto ps-0 gap-1">
                 {!! Dashboard::renderMenu() !!}
@@ -38,7 +38,7 @@
 
             <footer class="position-sticky bottom-0">
                 <div class="bg-dark position-relative overflow-hidden" style="padding-bottom: 10px;">
-                    @includeWhen(Auth::check(), 'settings::partials.profile')
+                    @includeWhen(Auth::check(), 'orbit::partials.profile')
                 </div>
             </footer>
         </nav>
@@ -71,6 +71,6 @@
         </div>
     </div>
 
-    @include('settings::partials.alert')
+    @include('orbit::partials.alert')
     @yield('content')
 @endsection

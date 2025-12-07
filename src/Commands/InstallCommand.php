@@ -67,7 +67,7 @@ class InstallCommand extends Command
         $this->info('🔍 Replacing App\Entities\User\User references with new User entity...');
 
         $rootPath = base_path();
-        $searchString = 'App\Entities\User\User';
+        $searchString = 'App\Models\User';
         $replaceString = 'App\Entities\User\User';
 
         // Use Laravel's file system for recursion instead to avoid PHP's RecursiveDirectoryIterator
@@ -108,9 +108,9 @@ class InstallCommand extends Command
         $this->info('✅ CMS Orbit installed successfully!');
         $this->newLine();
         $this->comment('Next steps:');
-        $this->line('  1. Run: php artisan cms:build-config');
-        $this->line('  2. Update vite.config.js and tailwind.config.js');
-        $this->line('  3. Start creating entities: php artisan cms:entity Product -m');
+        $this->line('  1. You must run: composer dump-autoload');
+        $this->line('     (The User model has been deleted and newly published entities will not be available until you refresh autoloads.)');
+        $this->line('  2. Start creating entities: php artisan cms:entity Product -m');
 
         return self::SUCCESS;
     }
@@ -162,9 +162,7 @@ class InstallCommand extends Command
 
         // If Entities directory already exists in app, backup
         if (is_dir($targetDir)) {
-            $backupDir = app_path('Entities.backup.' . date('Y-m-d_His'));
-            $this->files->copyDirectory($targetDir, $backupDir);
-            $this->line("  ✓ Backup created: {$backupDir}");
+            $this->files->deleteDirectory($targetDir);
         }
 
         // Recursively copy each file, updating namespaces

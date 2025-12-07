@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CmsOrbit\Core\Fields;
+namespace CmsOrbit\Core\UI\Fields;
 
 use CmsOrbit\Core\UI\Field;
 
@@ -33,7 +33,7 @@ class Radio extends Field
     /**
      * @var string
      */
-    protected $view = 'settings::fields.radio';
+    protected $view = 'orbit::fields.radio';
 
     /**
      * Default attributes value.

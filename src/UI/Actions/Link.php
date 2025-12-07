@@ -21,7 +21,7 @@ class Link extends Action
     /**
      * @var string
      */
-    protected $view = 'settings::actions.link';
+    protected $view = 'orbit::actions.link';
 
     /**
      * The field wrapper view type (horizontal/vertical).

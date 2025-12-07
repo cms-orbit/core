@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CmsOrbit\Core;
+namespace CmsOrbit\Core\Foundation\Attachments;
 
 use Illuminate\Support\Arr;
 use Symfony\Component\Mime\MimeTypes as Mime;

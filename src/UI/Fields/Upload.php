@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CmsOrbit\Core\Fields;
+namespace CmsOrbit\Core\UI\Fields;
 
 use Illuminate\Support\Arr;
 use CmsOrbit\Core\Foundation\Attachments\Models\Attachment;
@@ -43,7 +43,7 @@ class Upload extends Field
     /**
      * @var string
      */
-    protected $view = 'settings::fields.upload';
+    protected $view = 'orbit::fields.upload';
 
     /**
      * All attributes that are available to the field.

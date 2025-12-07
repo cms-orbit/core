@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CmsOrbit\Core\Layouts;
+namespace CmsOrbit\Core\UI\Layouts;
 
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Support\Str;
@@ -26,7 +26,7 @@ abstract class Chart extends Layout
      *
      * @var string
      */
-    protected $template = 'settings::layouts.chart';
+    protected $template = 'orbit::layouts.chart';
 
     /**
      * @var string|null

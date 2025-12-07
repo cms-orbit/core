@@ -12,7 +12,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
+            $table->uuid('uuid')->after('id')->unique();
+            $table->boolean('is_active')->default(true)->after('id');
             $table->jsonb('permissions')->nullable();
+            $table->timestamp('last_login_at')->nullable();
+
+            $table->softDeletes();
         });
     }
 

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CmsOrbit\Core\Fields;
+namespace CmsOrbit\Core\UI\Fields;
 
 use Carbon\Carbon;
 use CmsOrbit\Core\UI\Field;
@@ -35,7 +35,7 @@ class DateTimer extends Field
     /**
      * @var string
      */
-    protected $view = 'settings::fields.datetime';
+    protected $view = 'orbit::fields.datetime';
 
     /**
      * Default attributes value.

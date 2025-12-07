@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CmsOrbit\Core\Actions;
+namespace CmsOrbit\Core\UI\Actions;
 
 use CmsOrbit\Core\UI\Action;
 use CmsOrbit\Core\UI\Contracts\Actionable;
@@ -21,7 +21,7 @@ class DropDown extends Action
     /**
      * @var string
      */
-    protected $view = 'settings::actions.dropdown';
+    protected $view = 'orbit::actions.dropdown';
 
     /**
      * Default attributes value.

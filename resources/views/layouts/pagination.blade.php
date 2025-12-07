@@ -35,14 +35,14 @@
                 {!!
                     $paginator->appends(request()
                         ->except(['page','_token']))
-                        ->links('settings::partials.pagination')
+                        ->links('orbit::partials.pagination')
                 !!}
             @elseif($paginator instanceof \Illuminate\Contracts\Pagination\Paginator)
                 {!!
                     $paginator->appends(request()
                         ->except(['page','_token']))
                         ->onEachSide($onEachSide ?? 3)
-                        ->links('settings::partials.pagination')
+                        ->links('orbit::partials.pagination')
                 !!}
             @endif
         </div>

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CmsOrbit\Core\Components;
+namespace CmsOrbit\Core\Settings\Components;
 
 use Illuminate\Contracts\Auth\Guard;
 use Illuminate\Contracts\View\View;
@@ -37,7 +37,7 @@ class Notification extends Component
             ->limit(15)
             ->get();
 
-        return view('settings::components.notification', [
+        return view('orbit::components.notification', [
             'notifications' => $notifications,
         ]);
     }

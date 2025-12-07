@@ -66,7 +66,7 @@ class FieldCommand extends GeneratorCommand
      */
     protected function getDefaultNamespace($rootNamespace): string
     {
-        return $rootNamespace.'\CmsOrbit\Core\Fields';
+        return $rootNamespace.'\CmsOrbit\Core\UI\Fields';
     }
 
     /**

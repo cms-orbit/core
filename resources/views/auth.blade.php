@@ -1,4 +1,4 @@
-@extends('settings::app')
+@extends('orbit::app')
 
 @section('body')
 
@@ -6,7 +6,7 @@
         <div class="form-signin h-full min-vh-100 d-flex flex-column justify-content-center">
 
             <a class="d-flex justify-content-center mb-4 p-0 px-sm-5" href="{{Dashboard::prefix()}}">
-                @includeFirst([config('orbit.template.header'), 'settings::header'])
+                @includeFirst([config('orbit.template.header'), 'orbit::header'])
             </a>
 
             <div class="row justify-content-center">
@@ -19,7 +19,7 @@
             </div>
 
 
-            @includeFirst([config('orbit.template.footer'), 'settings::footer'])
+            @includeFirst([config('orbit.template.footer'), 'orbit::footer'])
         </div>
     </div>
 

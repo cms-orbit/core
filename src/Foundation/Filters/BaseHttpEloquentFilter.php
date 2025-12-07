@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CmsOrbit\Core;
+namespace CmsOrbit\Core\Foundation\Filters;
 
 abstract class BaseHttpEloquentFilter extends Filter
 {

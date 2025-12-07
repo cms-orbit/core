@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CmsOrbit\Core\Fields;
+namespace CmsOrbit\Core\UI\Fields;
 
 use CmsOrbit\Core\UI\Field;
 
@@ -35,7 +35,7 @@ class CheckBox extends Field
     /**
      * @var string
      */
-    protected $view = 'settings::fields.checkbox';
+    protected $view = 'orbit::fields.checkbox';
 
     /**
      * Default attributes value.

@@ -3,7 +3,7 @@
 namespace CmsOrbit\Core\Http\Requests;
 
 use Illuminate\Support\Collection;
-use CmsOrbit\Core\ResourceRequest;
+use CmsOrbit\Core\Resources\ResourceRequest;
 
 class ActionRequest extends ResourceRequest
 {

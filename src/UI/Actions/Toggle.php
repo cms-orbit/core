@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CmsOrbit\Core\Actions;
+namespace CmsOrbit\Core\UI\Actions;
 
 /**
  * Class Toggle.
@@ -20,7 +20,7 @@ class Toggle extends Button
     /**
      * @var string
      */
-    protected $view = 'settings::actions.toggle';
+    protected $view = 'orbit::actions.toggle';
 
     /**
      * Default attributes value.

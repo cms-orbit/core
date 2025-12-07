@@ -17,7 +17,7 @@ class Sight extends Cell
      */
     public function buildDt()
     {
-        return view('settings::partials.layouts.dt', [
+        return view('orbit::partials.layouts.dt', [
             'column'  => $this->column,
             'title'   => $this->title,
             'popover' => $this->popover,

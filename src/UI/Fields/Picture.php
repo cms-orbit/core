@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CmsOrbit\Core\Fields;
+namespace CmsOrbit\Core\UI\Fields;
 
 use CmsOrbit\Core\Foundation\Attachments\Models\Attachment;
 use CmsOrbit\Core\UI\Field;
@@ -30,7 +30,7 @@ class Picture extends Field
     /**
      * @var string
      */
-    protected $view = 'settings::fields.picture';
+    protected $view = 'orbit::fields.picture';
 
     /**
      * Default attributes value.

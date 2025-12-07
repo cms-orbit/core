@@ -9,7 +9,7 @@ use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
-use CmsOrbit\Core\Layouts\ResourceFields;
+use CmsOrbit\Core\Resources\Layouts\ResourceFields;
 
 class ResourceRequest extends FormRequest
 {

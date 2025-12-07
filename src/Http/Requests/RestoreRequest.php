@@ -2,7 +2,7 @@
 
 namespace CmsOrbit\Core\Http\Requests;
 
-use CmsOrbit\Core\ResourceRequest;
+use CmsOrbit\Core\Resources\ResourceRequest;
 
 class RestoreRequest extends ResourceRequest
 {

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CmsOrbit\Core\Layouts;
+namespace CmsOrbit\Core\UI\Layouts;
 
 use CmsOrbit\Core\UI\Layout;
 use CmsOrbit\Core\UI\Repository;
@@ -12,7 +12,7 @@ class Browsing extends Layout
     /**
      * @var string
      */
-    protected $template = 'settings::layouts.browsing';
+    protected $template = 'orbit::layouts.browsing';
 
     /**
      * @var array

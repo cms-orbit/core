@@ -31,6 +31,6 @@ class IndexController extends Controller
      */
     public function fallback(): View
     {
-        return view('settings::errors.404');
+        return view('orbit::errors.404');
     }
 }
