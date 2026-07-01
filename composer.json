@@ -1,0 +1,53 @@
+{
+    "name": "cms-orbit/core",
+    "description": "CMS Orbit core: server-driven Screen/Layout/Field engine rendered via Inertia + React.",
+    "keywords": [
+        "laravel",
+        "cms",
+        "admin",
+        "inertia",
+        "react",
+        "orbit"
+    ],
+    "type": "library",
+    "license": "MIT",
+    "require": {
+        "php": "^8.3",
+        "composer-runtime-api": "^2.2",
+        "composer/semver": "^3.0",
+        "inertiajs/inertia-laravel": "^3.0",
+        "intervention/image": "^3.0",
+        "laravel/framework": "^11.0 || ^12.0 || ^13.0",
+        "laravel/scout": "^10.0 || ^11.0",
+        "tabuna/breadcrumbs": "^4.0 || ^5.0 || ^6.0",
+        "watson/active": "^7.0"
+    },
+    "require-dev": {
+        "laravel/pint": "^1.14"
+    },
+    "autoload": {
+        "psr-4": {
+            "CmsOrbit\\Core\\": "src/"
+        },
+        "files": [
+            "src/Support/helpers.php"
+        ]
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "CmsOrbit\\Core\\Foundation\\Providers\\FoundationServiceProvider"
+            ],
+            "aliases": {
+                "Alert": "CmsOrbit\\Core\\Support\\Facades\\Alert",
+                "Orbit": "CmsOrbit\\Core\\Support\\Facades\\Orbit"
+            }
+        }
+    },
+    "config": {
+        "sort-packages": true,
+        "lock": false
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}

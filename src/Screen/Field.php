@@ -1,0 +1,670 @@
+<?php
+
+declare(strict_types=1);
+
+namespace CmsOrbit\Core\Screen;
+
+use Closure;
+use CmsOrbit\Core\Screen\Concerns\CanSee;
+use CmsOrbit\Core\Screen\Concerns\HasTranslations;
+use CmsOrbit\Core\Screen\Concerns\Makeable;
+use CmsOrbit\Core\Screen\Contracts\Fieldable;
+use CmsOrbit\Core\Screen\Exceptions\FieldRequiredAttributeException;
+use Illuminate\Contracts\Support\Htmlable;
+use Illuminate\Contracts\View\Factory;
+use Illuminate\Support\Arr;
+use Illuminate\Support\MessageBag;
+use Illuminate\Support\Str;
+use Illuminate\Support\Traits\Conditionable;
+use Illuminate\Support\Traits\Macroable;
+use Illuminate\View\ComponentAttributeBag;
+use Illuminate\View\View;
+use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\NotFoundExceptionInterface;
+use Throwable;
+
+/**
+ * Class Field.
+ *
+ * @method static accesskey($value = true)
+ * @method static class($value = true)
+ * @method static dir($value = true)
+ * @method static hidden($value = true)
+ * @method static id($value = true)
+ * @method static lang($value = true)
+ * @method static spellcheck($value = true)
+ * @method static style($value = true)
+ * @method static tabindex($value = true)
+ * @method static autocomplete($value = true)
+ */
+class Field implements Fieldable, Htmlable
+{
+    use CanSee, Conditionable, HasTranslations, Macroable, Makeable {
+        Macroable::__call as macroCall;
+    }
+
+    /**
+     * A set of closure functions
+     * that must be executed before data is displayed.
+     *
+     * @var Closure[]
+     */
+    private $beforeRender = [];
+
+    /**
+     * View template show.
+     *
+     * @var string
+     */
+    protected $view;
+
+    /**
+     * Explicit React component key. When null the kebab-cased class basename
+     * is used (e.g. TextArea -> "text-area").
+     *
+     * @var string|null
+     */
+    protected $component;
+
+    /**
+     * An array containing all attributes available to the field.
+     * Attributes are used to configure the HTML form element.
+     *
+     * @var array
+     */
+    protected $attributes = [
+        'value' => null,
+    ];
+
+    /**
+     * Required Attributes.
+     *
+     * @var array
+     */
+    protected $required = [
+        'name',
+    ];
+
+    /**
+     * The default layout wrapper view for the field.
+     *
+     * This property holds the Blade view path or Closure that defines
+     * the layout used to wrap the field when rendering.
+     *
+     * It provides the standard wrapper including label, help text, and validation feedback.
+     *
+     * Set to `null` to disable the wrapper and render the field without any additional markup.
+     *
+     * This value can be overridden in subclasses to customize the wrapper.
+     *
+     * @var Closure|string|null
+     */
+    protected $typeForm = 'orbit::partials.fields.vertical';
+
+    /**
+     * A set of attributes for the assignment
+     * of which will automatically translate them.
+     *
+     * @var array
+     */
+    protected $translations = [
+        'title',
+        'placeholder',
+        'help',
+    ];
+
+    /**
+     * Universal attributes are applied to almost all tags,
+     * so they are allocated to a separate group so that they do not repeat for all tags.
+     *
+     * @var array
+     */
+    protected $universalAttributes = [
+        'accesskey',
+        'class',
+        'dir',
+        'hidden',
+        'id',
+        'lang',
+        'spellcheck',
+        'style',
+        'tabindex',
+        'title',
+        'xml:lang',
+        'autocomplete',
+        'data-*',
+        'aria-*',
+    ];
+
+    /**
+     * Attributes available for a particular tag.
+     *
+     * @var array
+     */
+    protected $inlineAttributes = [];
+
+    /**
+     * @return $this|mixed|static|Field
+     */
+    public function __call(string $method, array $parameters)
+    {
+        if (static::hasMacro($method)) {
+            return $this->macroCall($method, $parameters);
+        }
+
+        $arguments = collect($parameters)->map(static fn ($argument) => $argument instanceof Closure ? $argument() : $argument);
+
+        if (method_exists($this, $method)) {
+            $this->$method($arguments);
+        }
+
+        return $this->set($method, $arguments->first() ?? true);
+    }
+
+    /**
+     * Sets the 'value' attribute of the field.
+     *
+     * @param  mixed  $value  The value to be set for the 'value' attribute.
+     */
+    public function value(mixed $value): static
+    {
+        return $this->set('value', $value);
+    }
+
+    /**
+     * Sets the value for the specified attribute of the field.
+     *
+     * @param  string  $key  The name of the attribute to set.
+     * @param  mixed  $value  The value of the attribute. Defaults to true.
+     * @return static Returns the current instance for method chaining.
+     */
+    public function set(string $key, $value = true): static
+    {
+        $this->attributes[$key] = $value;
+
+        return $this;
+    }
+
+    /**
+     * Validates that all required attributes are present in the field.
+     *
+     *
+     * @return static Returns the current instance for method chaining.
+     *
+     * @throws FieldRequiredAttributeException if any required attribute is missing.
+     */
+    protected function ensureRequiredAttributesArePresent(): static
+    {
+        collect($this->required)
+            ->filter(fn ($attribute) => ! array_key_exists($attribute, $this->attributes))
+            ->each(function ($attribute) {
+                throw new FieldRequiredAttributeException($attribute);
+            });
+
+        return $this;
+    }
+
+    /**
+     * Renders the field.
+     *
+     *
+     * @return Factory|View|mixed
+     *
+     * @throws Throwable
+     */
+    public function render()
+    {
+        if (! $this->isSee()) {
+            return;
+        }
+
+        $this
+            ->ensureRequiredAttributesArePresent()
+            ->customizeFieldName()
+            ->updateFieldValue()
+            ->runBeforeRender()
+            ->translateAttributes()
+            ->markFieldWithError()
+            ->generateId();
+
+        $errors = $this->getErrorsMessage();
+
+        $slot = view($this->view, array_merge($this->getAttributes(), [
+            'attributes' => $this->getAllowAttributes(),
+            'dataAttributes' => $this->getAllowDataAttributes(),
+            'old' => $this->getOldValue(),
+            'oldName' => $this->getOldName(),
+            'errors' => $errors,
+        ]));
+
+        if (! $this->typeForm) {
+            return $slot;
+        }
+
+        return view($this->typeForm, [
+            'slot' => $slot,
+            'field' => $this,
+            'errors' => $errors,
+        ]);
+    }
+
+    /**
+     * Serialize the field to the React JSON contract (FieldNode).
+     *
+     * Reuses the same value-binding pipeline as render() (old input, Closure
+     * value, prefix/lang name mangling, translations) but emits an array
+     * instead of a Blade view.
+     *
+     * @return array<string, mixed>|null
+     */
+    public function toArray(): ?array
+    {
+        if (! $this->isSee()) {
+            return null;
+        }
+
+        $this
+            ->ensureRequiredAttributesArePresent()
+            ->customizeFieldName()
+            ->updateFieldValue()
+            ->runBeforeRender()
+            ->translateAttributes()
+            ->generateId();
+
+        $attributes = $this->getAttributes();
+
+        return [
+            'component' => $this->getComponent(),
+            'name' => Arr::get($attributes, 'name'),
+            'value' => Arr::get($attributes, 'value'),
+            'old' => $this->getOldValue(),
+            'attributes' => Arr::except($attributes, ['value']),
+            'errors' => $this->getFieldErrors(),
+        ];
+    }
+
+    /**
+     * The React component key used to render this field.
+     */
+    public function getComponent(): string
+    {
+        return $this->component ?? Str::of(class_basename($this))->kebab()->value();
+    }
+
+    /**
+     * Validation errors for this field's name.
+     *
+     * @return array<int, string>
+     */
+    protected function getFieldErrors(): array
+    {
+        $errors = session('errors');
+
+        if ($errors === null) {
+            return [];
+        }
+
+        return $errors->get($this->getOldName());
+    }
+
+    /**
+     * Translates the field's attributes if necessary.
+     */
+    private function translateAttributes(): static
+    {
+        $lang = $this->get('lang');
+
+        collect($this->attributes)
+            ->filter(fn ($value, $key) => is_string($value) && $this->shouldTranslate($key))
+            ->each(function ($value, $key) use ($lang) {
+                $translation = __($value, [], $lang);
+                $this->set($key, is_string($translation) ? $translation : $value);
+            });
+
+        return $this;
+    }
+
+    /**
+     * Gets the field's attributes.
+     */
+    public function getAttributes(): array
+    {
+        return $this->attributes;
+    }
+
+    /**
+     * Gets the allowed attributes for the field.
+     */
+    protected function getAllowAttributes(): ComponentAttributeBag
+    {
+        $allow = array_merge($this->universalAttributes, $this->inlineAttributes);
+
+        $attributes = collect($this->getAttributes())
+            ->filter(fn ($value, $attribute) => Str::is($allow, $attribute))
+            ->toArray();
+
+        return (new ComponentAttributeBag)
+            ->merge($attributes);
+    }
+
+    /**
+     * Gets the allowed data attributes for the field.
+     */
+    protected function getAllowDataAttributes(): ComponentAttributeBag
+    {
+        return $this->getAllowAttributes()->filter(fn ($value, $key) => Str::startsWith($key, 'data-'));
+    }
+
+    /**
+     * Generates a field ID if not already set.
+     *
+     * @param  string  $defaultId  The default ID to set if none is provided.
+     * @return static Returns the current instance for method chaining.
+     */
+    public function generateId(): static
+    {
+        if (! empty($this->get('id'))) {
+            return $this;
+        }
+
+        $hash = hash(
+            'xxh3',
+            json_encode($this->getAttributes())
+        );
+
+        $id = collect([
+            'field',
+            $this->get('lang'),
+            $this->get('name'),
+            $hash,
+        ])->implode('-');
+
+        return $this->set('id', Str::slug($id));
+    }
+
+    /**
+     * @param  mixed|null  $value
+     * @return static|mixed|null
+     */
+    public function get(string $key, $value = null)
+    {
+        return $this->attributes[$key] ?? $value;
+    }
+
+    /**
+     * @param  mixed|null  $value
+     * @return static|mixed|null
+     */
+    public function has(string $key)
+    {
+        return ! empty($this->get($key));
+    }
+
+    /**
+     * Retrieve the unique ID assigned to this action element.
+     *
+     * If the ID is not explicitly set, this method returns `null`.
+     *
+     * @return string|null The ID of the action element, or null if not set.
+     */
+    protected function getId(): ?string
+    {
+        return $this->get('id');
+    }
+
+    /**
+     * Get the old value of the field.
+     *
+     * @return float|int|mixed|string
+     */
+    public function getOldValue()
+    {
+        return old($this->getOldName());
+    }
+
+    /**
+     * Gets the old value of the field.
+     *
+     * @return mixed
+     */
+    public function getOldName(): string
+    {
+        return Str::of($this->get('name'))
+            ->replace(['][', '['], '.')
+            ->replace([']'], '')
+            ->rtrim('.')
+            ->toString();
+    }
+
+    /**
+     * Marks the field as having an error by appending the 'is-invalid' CSS class.
+     *
+     * If the field has an error (determined by the hasError() method),
+     * it appends the 'is-invalid' class to the existing 'class' attribute.
+     *
+     * @return static Returns the current instance for method chaining.
+     */
+    private function markFieldWithError(): static
+    {
+        if (! $this->hasError()) {
+            return $this;
+        }
+
+        $class = $this->get('class');
+
+        return $this->set('class', $class.' is-invalid');
+    }
+
+    /**
+     * Checks if the field has an error.
+     */
+    private function hasError(): bool
+    {
+        return optional(session('errors'))->has($this->getOldName()) ?? false;
+    }
+
+    /**
+     * Modifies the 'name' attribute of the field by adding a prefix and/or language identifier if they are set.
+     *
+     * If both prefix and language are set, the name will be modified as "prefix[lang]name".
+     * If only the prefix is set, the name will be modified as "prefixname".
+     * If only the language is set, the name will be modified as "lang[name]".
+     *
+     * @return static Returns the current instance for method chaining.
+     */
+    protected function customizeFieldName(): static
+    {
+        $name = $this->get('name');
+        $prefix = $this->get('prefix');
+        $lang = $this->get('lang');
+
+        if ($prefix !== null && $lang !== null) {
+            return $this->set('name', $prefix.'['.$lang.']'.$name);
+        }
+
+        if ($prefix !== null) {
+            return $this->set('name', $prefix.$name);
+        }
+
+        if ($lang !== null) {
+            return $this->set('name', $lang.'['.$name.']');
+        }
+
+        return $this;
+    }
+
+    /**
+     * Modifies the 'value' attribute of the field.
+     *
+     * Retrieves the old value using the getOldValue() method, falling back to the current 'value' attribute if no old value is found.
+     * If the value is a Closure, it will be executed with the current attributes and its result will be used as the value.
+     *
+     * @return static Returns the current instance for method chaining.
+     */
+    protected function updateFieldValue(): static
+    {
+        $value = $this->getOldValue() ?? $this->get('value');
+
+        if ($value instanceof Closure) {
+            $value = $value($this->attributes);
+        }
+
+        return $this->set('value', $value);
+    }
+
+    /**
+     * Use vertical layout for the field.
+     */
+    public function vertical(): static
+    {
+        $this->typeForm = 'orbit::partials.fields.vertical';
+
+        return $this;
+    }
+
+    /**
+     * Use clear layout for the field.
+     */
+    public function clear(): static
+    {
+        $this->typeForm = 'orbit::partials.fields.clear';
+
+        return $this;
+    }
+
+    /**
+     * Use horizontal layout for the field.
+     */
+    public function horizontal(): static
+    {
+        $this->typeForm = 'orbit::partials.fields.horizontal';
+
+        return $this;
+    }
+
+    /**
+     * Use hidden layout for the field.
+     *
+     * @return $this
+     */
+    public function hiddenFormType(): static
+    {
+        $this->typeForm = 'orbit::partials.fields.hidden';
+
+        return $this;
+    }
+
+    /**
+     * Displaying an item without titles or additional information.
+     *
+     * @return $this
+     */
+    public function withoutFormType(): static
+    {
+        $this->typeForm = null;
+
+        return $this;
+    }
+
+    /**
+     * Create separate line after the field.
+     */
+    public function hr(): static
+    {
+        $this->set('hr');
+
+        return $this;
+    }
+
+    /**
+     * Adds a closure to be executed before rendering the field.
+     *
+     * @param  Closure  $closure  The closure to be executed before rendering.
+     */
+    public function addBeforeRender(Closure $closure): static
+    {
+        $this->beforeRender[] = $closure;
+
+        return $this;
+    }
+
+    /**
+     * Performs all tasks added to be executed before rendering the field.
+     *
+     * This method iterates over each closure added via addBeforeRender() method
+     * and executes them in the context of the current field instance.
+     */
+    public function runBeforeRender(): static
+    {
+        foreach ($this->beforeRender as $before) {
+            $before->call($this);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Closure|mixed|object|null
+     *
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     */
+    private function getErrorsMessage()
+    {
+        return session()->get('errors', new MessageBag);
+    }
+
+    /**
+     * Converts the field to a string by rendering it.
+     *
+     * @throws Throwable
+     */
+    public function __toString(): string
+    {
+        $view = $this->render();
+
+        if (is_string($view)) {
+            return $view;
+        }
+
+        if (is_a($view, View::class)) {
+            return (string) $view->render();
+        }
+
+        return '';
+    }
+
+    /**
+     * Converts the field to an HTML string.
+     *
+     *
+     * @return string
+     *
+     * @throws Throwable
+     */
+    public function toHtml()
+    {
+        return $this->render()->toHtml();
+    }
+
+    /**
+     * Add a class to the field including the existing classes.
+     */
+    public function addClass(string|array $classes): static
+    {
+        $currentClasses = array_filter(explode(' ', $this->get('class', '')));
+        $newClasses = is_array($classes) ? $classes : explode(' ', $classes);
+
+        $mergedClasses = array_unique(array_merge($currentClasses, $newClasses));
+
+        return $this->set('class', implode(' ', array_filter($mergedClasses)));
+    }
+
+    /**
+     * Set the field as required without displaying an asterisk.
+     */
+    public function requiredWithoutAsterisk(bool $value = false): static
+    {
+        return $this->set('showRequiredMark', $value);
+    }
+}

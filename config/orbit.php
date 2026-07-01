@@ -1,0 +1,187 @@
+<?php
+
+use CmsOrbit\Core\Attachment\Engines\Generator;
+
+return [
+
+    /*
+    |--------------------------------------------------------------------------
+    | Admin Access Mode
+    |--------------------------------------------------------------------------
+    |
+    | Controls how the Orbit admin panel is reached. Three strategies are
+    | supported and resolved by the RouteServiceProvider:
+    |
+    |   - "subdomain": serve the panel from a subdomain derived from APP_URL,
+    |                  e.g. "orbit.{appDomain}". The subdomain label is taken
+    |                  from "access.subdomain" (default "orbit").
+    |   - "domain":    serve the panel from a dedicated domain set explicitly
+    |                  in "access.domain".
+    |   - "path":      serve the panel under a path prefix on the current
+    |                  domain, taken from "access.prefix" (default "settings").
+    |
+    */
+
+    'access' => [
+
+        'mode' => env('ORBIT_ACCESS_MODE', 'subdomain'),
+
+        // subdomain mode: label prepended to the APP_URL host (orbit.example.com).
+        'subdomain' => env('ORBIT_SUBDOMAIN', 'orbit'),
+
+        // domain mode: fully-qualified dedicated domain (admin.example.com).
+        'domain' => env('ORBIT_DOMAIN'),
+
+        // path mode: URL prefix (defaults to /settings).
+        'prefix' => env('ORBIT_PREFIX', 'settings'),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Middleware
+    |--------------------------------------------------------------------------
+    |
+    | These middleware groups are assigned to every route in the admin panel.
+    | "private" guards authenticated dashboard routes; "public" is used for the
+    | authentication screens.
+    |
+    */
+
+    'middleware' => [
+        'public' => ['web'],
+        'private' => ['web', 'orbit'],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Guard
+    |--------------------------------------------------------------------------
+    */
+
+    'guard' => env('AUTH_GUARD', 'web'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Authentication Pages
+    |--------------------------------------------------------------------------
+    */
+
+    'auth' => true,
+
+    /*
+    |--------------------------------------------------------------------------
+    | Main / Profile Routes
+    |--------------------------------------------------------------------------
+    */
+
+    'index' => 'orbit.main',
+    'profile' => 'orbit.profile',
+
+    /*
+    |--------------------------------------------------------------------------
+    | Dashboard Resources (extra stylesheets / scripts)
+    |--------------------------------------------------------------------------
+    */
+
+    'resource' => [
+        'stylesheets' => [],
+        'scripts' => [],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Vite Resource
+    |--------------------------------------------------------------------------
+    */
+
+    'vite' => [],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Template View (brand header / footer fragments)
+    |--------------------------------------------------------------------------
+    */
+
+    'template' => [
+        'header' => '',
+        'footer' => '',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Default Attachment Configuration
+    |--------------------------------------------------------------------------
+    */
+
+    'attachment' => [
+        'disk' => env('ORBIT_FILESYSTEM_DISK', 'public'),
+        'generator' => Generator::class,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Notifications
+    |--------------------------------------------------------------------------
+    */
+
+    'notifications' => [
+        'enabled' => true,
+        'interval' => 60,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Demo / Examples
+    |--------------------------------------------------------------------------
+    |
+    | When enabled, Orbit registers a "Demo" section of example entities that
+    | showcase the Entity/Screen/Field APIs (grouped fields, field types,
+    | rendered legends). It is enabled automatically outside production so a
+    | fresh install has something to explore; set ORBIT_DEMO to force it on/off.
+    |
+    */
+
+    'demo' => [
+        'enabled' => (bool) env('ORBIT_DEMO', env('APP_ENV', 'production') !== 'production'),
+        'section' => 'Demo',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Search (searchable models)
+    |--------------------------------------------------------------------------
+    */
+
+    'search' => [
+        // \App\Models\User::class
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Fallback Page
+    |--------------------------------------------------------------------------
+    */
+
+    'fallback' => true,
+
+    /*
+    |--------------------------------------------------------------------------
+    | Prevents Abandonment
+    |--------------------------------------------------------------------------
+    */
+
+    'prevents_abandonment' => true,
+
+    /*
+    |--------------------------------------------------------------------------
+    | Application Service Provider
+    |--------------------------------------------------------------------------
+    |
+    | The host application's Orbit provider. Registered only when the class
+    | exists, so a fresh install without it boots cleanly.
+    |
+    */
+
+    'provider' => 'App\Orbit\OrbitProvider',
+
+];

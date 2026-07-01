@@ -1,0 +1,165 @@
+<?php
+
+namespace CmsOrbit\Core\Screen\Concerns;
+
+use Illuminate\Contracts\Container\BindingResolutionException;
+use Illuminate\Contracts\Queue\QueueableCollection;
+use Illuminate\Contracts\Queue\QueueableEntity;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Queue\Attributes\WithoutRelations;
+use Illuminate\Queue\SerializesAndRestoresModelIdentifiers;
+use Laravel\SerializableClosure\SerializableClosure;
+
+/**
+ * This trait is designed for managing the state of Eloquent models. It uses
+ * the SerializesModels functionality to ensure proper serialization of the model
+ * when working with queues and allows loading the state of the model from the database.
+ *
+ * Use this trait in classes where you need to load the model's state
+ * from the database, such as in screens or other components that work with models.
+ */
+trait ModelStateRetrievable
+{
+    use SerializesAndRestoresModelIdentifiers;
+
+    /**
+     * Prepare the instance values for serialization.
+     *
+     * @return array
+     */
+    public function __serialize()
+    {
+        $values = [];
+
+        $reflectionClass = new \ReflectionClass($this);
+
+        [$properties, $classLevelWithoutRelations] = [
+            $reflectionClass->getProperties(),
+            ! empty($reflectionClass->getAttributes(WithoutRelations::class)),
+        ];
+
+        foreach ($properties as $property) {
+            if ($property->isStatic()) {
+                continue;
+            }
+
+            if (! $property->isInitialized($this)) {
+                continue;
+            }
+
+            $value = $this->getPropertyValue($property);
+
+            if ($property->hasDefaultValue() && $value === $property->getDefaultValue()) {
+                continue;
+            }
+
+            $name = $property->getName();
+
+            if ($property->isPrivate() || $property->isProtected()) {
+                continue;
+            }
+
+            // Store unsaved models as-is, since they cannot be rehydrated via DB
+            if ($value instanceof Model && ! $value->exists) {
+                $values[$name] = $value;
+
+                continue;
+            }
+
+            // Wrap closures for safe serialization
+            if ($value instanceof \Closure) {
+                $values[$name] = new SerializableClosure($value);
+
+                continue;
+            }
+
+            // Saved Eloquent models and model collections are stored as lightweight
+            // model identifiers and rehydrated from the database on deserialization
+            if ($value instanceof QueueableEntity || $value instanceof QueueableCollection) {
+                $values[$name] = $this->getSerializedPropertyValue(
+                    $value,
+                    ! $classLevelWithoutRelations &&
+                    empty($property->getAttributes(WithoutRelations::class))
+                );
+
+                continue;
+            }
+
+            // All other values (primitives, arrays, plain objects) are wrapped in a
+            // signed SerializableClosure (HMAC-protected when APP_KEY is set) to
+            // prevent tampering when the state is round-tripped through the client
+            $values[$name] = new SignedValue($value);
+        }
+
+        return $values;
+    }
+
+    /**
+     * Restore the model after serialization.
+     *
+     *
+     *
+     * @return void
+     *
+     * @throws BindingResolutionException
+     * @throws \ReflectionException
+     */
+    public function __unserialize(array $values)
+    {
+        $default = $this->getDefaultPropertyWithConstructor();
+
+        $values = array_merge($default, $values);
+
+        $properties = (new \ReflectionClass($this))->getProperties();
+
+        foreach ($properties as $property) {
+            if ($property->isStatic()) {
+                continue;
+            }
+
+            $name = $property->getName();
+
+            if (! array_key_exists($name, $values)) {
+                continue;
+            }
+
+            $value = $values[$name];
+
+            if ($value instanceof SignedValue) {
+                $restored = $value->restore();
+            } elseif ($value instanceof SerializableClosure) {
+                $restored = $value->getClosure();
+            } else {
+                $restored = $this->getRestoredPropertyValue($value);
+            }
+
+            $property->setValue($this, $restored);
+        }
+    }
+
+    /**
+     * Get the property value for the given property.
+     *
+     *
+     * @return mixed
+     */
+    protected function getPropertyValue(\ReflectionProperty $property)
+    {
+        return $property->getValue($this);
+    }
+
+    /**
+     * @throws BindingResolutionException
+     * @throws \ReflectionException
+     */
+    protected function getDefaultPropertyWithConstructor(): array
+    {
+        $default = app()->make(static::class);
+
+        $defaultReflection = (new \ReflectionClass($default))->getProperties();
+
+        return collect($defaultReflection)
+            ->mapWithKeys(fn (\ReflectionProperty $property) => [$property->getName() => $property->getValue($default)])
+            ->all();
+    }
+}

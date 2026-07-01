@@ -1,0 +1,17 @@
+<?php
+
+namespace CmsOrbit\Core\Support\Testing;
+
+trait ScreenTesting
+{
+    /**
+     * Get a DynamicTestScreen object.
+     *
+     * @param  string|null  $name  Name of the screen
+     */
+    public function screen(?string $name = null, array $parameters = []): DynamicTestScreen
+    {
+        return (new DynamicTestScreen($name))
+            ->parameters($parameters);
+    }
+}

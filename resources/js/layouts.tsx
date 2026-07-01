@@ -1,0 +1,476 @@
+import { useState } from 'react';
+import type { ColumnNode, FieldNode, LayoutComponentProps } from './contract';
+import { ChartLayout } from './layouts/chart';
+import { ListenerLayout } from './layouts/listener';
+import { ModalLayout } from './layouts/modal';
+import { SelectionLayout } from './layouts/selection';
+import { SettingsHubLayout } from './layouts/settings-hub';
+import { SortableLayout } from './layouts/sortable';
+import { cn } from './lib/cn';
+import type { LayoutComponent } from './registry';
+import {
+    FieldRenderer,
+    LayoutChildren,
+    LayoutNodeRenderer,
+} from './screen-renderer';
+import { Card, CardBody, CardHeader } from './ui/card';
+
+function asFields(value: unknown): FieldNode[] {
+    return Array.isArray(value) ? (value as FieldNode[]) : [];
+}
+
+function asColumns(value: unknown): ColumnNode[] {
+    return Array.isArray(value) ? (value as ColumnNode[]) : [];
+}
+
+/** Resolve a row collection from a repository target (array or paginator). */
+function asRows(content: unknown): Record<string, unknown>[] {
+    if (Array.isArray(content)) {
+        return content as Record<string, unknown>[];
+    }
+
+    if (content && typeof content === 'object' && Array.isArray((content as { data?: unknown }).data)) {
+        return (content as { data: Record<string, unknown>[] }).data;
+    }
+
+    return [];
+}
+
+export function RowsLayout({ node, data, screen }: LayoutComponentProps) {
+    const fields = asFields(node.data.fields);
+    const title = node.data.title as string | null;
+
+    return (
+        <Card>
+            <CardHeader title={title} />
+            <CardBody>
+                {fields.map((field, index) => (
+                    <FieldRenderer
+                        key={field.name ?? `${field.component}-${index}`}
+                        node={field}
+                        data={data}
+                        screen={screen}
+                    />
+                ))}
+            </CardBody>
+        </Card>
+    );
+}
+
+export function ColumnsLayout({ node, data, screen }: LayoutComponentProps) {
+    return (
+        <LayoutChildren
+            nodes={node.children}
+            data={data}
+            screen={screen}
+            className="grid grid-cols-1 gap-4 md:grid-cols-2"
+        />
+    );
+}
+
+export function SplitLayout({ node, data, screen }: LayoutComponentProps) {
+    return (
+        <LayoutChildren
+            nodes={node.children}
+            data={data}
+            screen={screen}
+            className="grid grid-cols-1 gap-4 lg:grid-cols-3"
+        />
+    );
+}
+
+export function StackLayout({ node, data, screen }: LayoutComponentProps) {
+    return <LayoutChildren nodes={node.children} data={data} screen={screen} className="space-y-4" />;
+}
+
+export function TabsLayout({ node, data, screen }: LayoutComponentProps) {
+    const titles = (node.data.titles as (string | null)[] | undefined) ?? [];
+    const [active, setActive] = useState(0);
+    const panes = node.children;
+
+    return (
+        <Card>
+            <div className="flex gap-1 border-b border-gray-100 px-3 dark:border-gray-700">
+                {panes.map((pane, index) => (
+                    <button
+                        key={pane.key}
+                        type="button"
+                        onClick={() => setActive(index)}
+                        className={
+                            index === active
+                                ? 'border-b-2 border-orbit-primary px-3 py-2 text-sm font-medium text-orbit-primary'
+                                : 'px-3 py-2 text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400'
+                        }
+                    >
+                        {titles[index] ?? (pane.data.title as string | undefined) ?? `Tab ${index + 1}`}
+                    </button>
+                ))}
+            </div>
+            <CardBody>
+                {panes[active] ? (
+                    <LayoutNodeRenderer node={panes[active]} data={data} screen={screen} />
+                ) : null}
+            </CardBody>
+        </Card>
+    );
+}
+
+export function TabPaneLayout({ node, data, screen }: LayoutComponentProps) {
+    return <LayoutChildren nodes={node.children} data={data} screen={screen} className="space-y-4" />;
+}
+
+function cellValue(row: Record<string, unknown>, column: ColumnNode): unknown {
+    return row[column.name];
+}
+
+export function TableLayout({ node, data }: LayoutComponentProps) {
+    const columns = asColumns(node.data.columns);
+    const target = node.data.target as string | undefined;
+    const rows = asRows(target ? data[target] : undefined);
+
+    return (
+        <Card>
+            <CardHeader title={node.data.title as string | null} />
+            <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                    <thead className="bg-gray-50 dark:bg-gray-900/50">
+                        <tr>
+                            {columns.map((column) => (
+                                <th
+                                    key={column.slug}
+                                    className="px-4 py-2 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400"
+                                >
+                                    {column.title}
+                                </th>
+                            ))}
+                        </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+                        {rows.length === 0 ? (
+                            <tr>
+                                <td
+                                    colSpan={columns.length || 1}
+                                    className="px-4 py-8 text-center text-sm text-gray-400"
+                                >
+                                    {(node.data.textNotFound as string) ?? 'No records found'}
+                                </td>
+                            </tr>
+                        ) : (
+                            rows.map((row, rowIndex) => (
+                                <tr key={rowIndex}>
+                                    {columns.map((column) => (
+                                        <td
+                                            key={column.slug}
+                                            className="px-4 py-2 text-sm text-gray-700 dark:text-gray-200"
+                                        >
+                                            {column.rendered != null ? (
+                                                <span dangerouslySetInnerHTML={{ __html: column.rendered }} />
+                                            ) : (
+                                                String(cellValue(row, column) ?? '')
+                                            )}
+                                        </td>
+                                    ))}
+                                </tr>
+                            ))
+                        )}
+                    </tbody>
+                </table>
+            </div>
+        </Card>
+    );
+}
+
+export function LegendLayout({ node, data }: LayoutComponentProps) {
+    const columns = asColumns(node.data.columns);
+    const target = node.data.target as string | undefined;
+    const source = (target ? data[target] : data) as Record<string, unknown>;
+
+    return (
+        <Card>
+            <CardHeader title={node.data.title as string | null} />
+            <CardBody>
+                <dl className="divide-y divide-gray-100 dark:divide-gray-800">
+                    {columns.map((column) => (
+                        <div key={column.slug} className="grid grid-cols-3 gap-4 py-2">
+                            <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                                {column.title}
+                            </dt>
+                            <dd className="col-span-2 text-sm text-gray-900 dark:text-gray-100">
+                                {column.rendered != null ? (
+                                    <span dangerouslySetInnerHTML={{ __html: column.rendered }} />
+                                ) : (
+                                    String(source?.[column.name] ?? '')
+                                )}
+                            </dd>
+                        </div>
+                    ))}
+                </dl>
+            </CardBody>
+        </Card>
+    );
+}
+
+interface MetricEntry {
+    label?: string;
+    value?: string | number;
+    diff?: number;
+}
+
+export function MetricLayout({ node }: LayoutComponentProps) {
+    const metrics = (node.data.metrics as MetricEntry[] | undefined) ?? [];
+    const title = node.data.title as string | null;
+
+    if (metrics.length === 0) {
+        return null;
+    }
+
+    return (
+        <div className="space-y-2">
+            {title ? <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200">{title}</h3> : null}
+            <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+                {metrics.map((metric, index) => (
+                    <Card key={metric.label ?? index}>
+                        <CardBody>
+                            <p className="text-xs uppercase tracking-wide text-gray-400">{metric.label}</p>
+                            <p className="mt-1 text-2xl font-semibold">{metric.value ?? '—'}</p>
+                            {typeof metric.diff === 'number' ? (
+                                <p className={cn('mt-1 text-xs', metric.diff >= 0 ? 'text-green-600' : 'text-red-600')}>
+                                    {metric.diff >= 0 ? '▲' : '▼'} {Math.abs(metric.diff)}%
+                                </p>
+                            ) : null}
+                        </CardBody>
+                    </Card>
+                ))}
+            </div>
+        </div>
+    );
+}
+
+export function PersonaLayout({ node }: LayoutComponentProps) {
+    const title = node.data.title as string | null;
+    const subTitle = node.data.subTitle as string | null;
+    const image = node.data.image as string | null;
+    const url = node.data.url as string | null;
+
+    const content = (
+        <div className="flex items-center gap-3">
+            {image ? (
+                <img src={image} alt={title ?? ''} className="h-10 w-10 rounded-full object-cover" />
+            ) : (
+                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-orbit-primary/10 text-sm font-semibold text-orbit-primary">
+                    {(title ?? '?').slice(0, 1).toUpperCase()}
+                </span>
+            )}
+            <div className="min-w-0">
+                <p className="truncate text-sm font-medium text-gray-900 dark:text-gray-100">{title}</p>
+                {subTitle ? <p className="truncate text-xs text-gray-500">{subTitle}</p> : null}
+            </div>
+        </div>
+    );
+
+    return url ? (
+        <a href={url} className="block">
+            {content}
+        </a>
+    ) : (
+        content
+    );
+}
+
+export function FacepileLayout({ node }: LayoutComponentProps) {
+    const images = (node.data.images as string[] | undefined) ?? [];
+
+    return (
+        <div className="flex -space-x-2">
+            {images.map((image, index) => (
+                <img
+                    key={index}
+                    src={image}
+                    alt=""
+                    className="h-8 w-8 rounded-full border-2 border-white object-cover dark:border-gray-800"
+                />
+            ))}
+        </div>
+    );
+}
+
+interface MenuEntry {
+    label: string;
+    url?: string;
+    active?: boolean;
+}
+
+export function SideMenuLayout({ node }: LayoutComponentProps) {
+    const items = (node.data.items as MenuEntry[] | undefined) ?? [];
+
+    return (
+        <nav className="space-y-0.5">
+            {items.map((item, index) => (
+                <a
+                    key={item.url ?? index}
+                    href={item.url ?? '#'}
+                    className={cn(
+                        'block rounded-md px-3 py-2 text-sm',
+                        item.active
+                            ? 'bg-orbit-primary/10 font-medium text-orbit-primary'
+                            : 'text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800',
+                    )}
+                >
+                    {item.label}
+                </a>
+            ))}
+        </nav>
+    );
+}
+
+export function TabMenuLayout({ node }: LayoutComponentProps) {
+    const items = (node.data.items as MenuEntry[] | undefined) ?? [];
+
+    return (
+        <nav className="flex gap-1 border-b border-gray-200 dark:border-gray-700">
+            {items.map((item, index) => (
+                <a
+                    key={item.url ?? index}
+                    href={item.url ?? '#'}
+                    className={cn(
+                        'px-3 py-2 text-sm',
+                        item.active
+                            ? 'border-b-2 border-orbit-primary font-medium text-orbit-primary'
+                            : 'text-gray-500 hover:text-gray-700 dark:text-gray-400',
+                    )}
+                >
+                    {item.label}
+                </a>
+            ))}
+        </nav>
+    );
+}
+
+export function BrowsingLayout({ node }: LayoutComponentProps) {
+    const url = node.data.url as string | undefined;
+
+    if (!url) {
+        return null;
+    }
+
+    return (
+        <Card>
+            <iframe
+                src={url}
+                title={(node.data.title as string) ?? 'Browsing'}
+                className="h-[60vh] w-full rounded-xl"
+            />
+        </Card>
+    );
+}
+
+export function ContentLayout({ node, data, screen }: LayoutComponentProps) {
+    return <LayoutChildren nodes={node.children} data={data} screen={screen} className="space-y-4" />;
+}
+
+export function AccordionLayout({ node, data, screen }: LayoutComponentProps) {
+    const [openKeys, setOpenKeys] = useState<Record<string, boolean>>({});
+
+    const toggle = (key: string) => {
+        setOpenKeys((current) => ({ ...current, [key]: !current[key] }));
+    };
+
+    return (
+        <Card>
+            <div className="divide-y divide-gray-100 dark:divide-gray-800">
+                {node.children.map((child, index) => {
+                    const open = openKeys[child.key] ?? index === 0;
+                    const title = (child.data.title as string | undefined) ?? `Section ${index + 1}`;
+
+                    return (
+                        <div key={child.key}>
+                            <button
+                                type="button"
+                                onClick={() => toggle(child.key)}
+                                className="flex w-full items-center justify-between px-5 py-3 text-left text-sm font-medium text-gray-900 dark:text-gray-100"
+                            >
+                                {title}
+                                <span className="text-gray-400">{open ? '−' : '+'}</span>
+                            </button>
+                            {open ? (
+                                <div className="px-5 pb-4">
+                                    <LayoutNodeRenderer node={child} data={data} screen={screen} />
+                                </div>
+                            ) : null}
+                        </div>
+                    );
+                })}
+            </div>
+        </Card>
+    );
+}
+
+export function BlockLayout({ node, data, screen }: LayoutComponentProps) {
+    const title = node.data.title as string | null;
+    const description = node.data.description as string | null;
+
+    return (
+        <Card>
+            {title || description ? (
+                <div className="border-b border-gray-100 px-5 py-3 dark:border-gray-700">
+                    {title ? (
+                        <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">{title}</h3>
+                    ) : null}
+                    {description ? (
+                        <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">{description}</p>
+                    ) : null}
+                </div>
+            ) : null}
+            <CardBody>
+                <LayoutChildren nodes={node.children} data={data} screen={screen} className="space-y-4" />
+            </CardBody>
+        </Card>
+    );
+}
+
+export function CardLayout({ node, data, screen }: LayoutComponentProps) {
+    const title = node.data.title as string | null;
+    const image = node.data.image as string | null;
+
+    return (
+        <Card>
+            {image ? <img src={image} alt={title ?? ''} className="h-40 w-full rounded-t-xl object-cover" /> : null}
+            <CardHeader title={title} />
+            <CardBody>
+                {node.data.description ? (
+                    <p className="mb-3 text-sm text-gray-500 dark:text-gray-400">{String(node.data.description)}</p>
+                ) : null}
+                <LayoutChildren nodes={node.children} data={data} screen={screen} className="space-y-4" />
+            </CardBody>
+        </Card>
+    );
+}
+
+/** All layout registry slots. */
+export const layoutComponents: Record<string, LayoutComponent> = {
+    rows: RowsLayout,
+    columns: ColumnsLayout,
+    split: SplitLayout,
+    blank: StackLayout,
+    wrapper: StackLayout,
+    block: BlockLayout,
+    accordion: AccordionLayout,
+    tabs: TabsLayout,
+    'tab-pane': TabPaneLayout,
+    table: TableLayout,
+    legend: LegendLayout,
+    modal: ModalLayout,
+    selection: SelectionLayout,
+    listener: ListenerLayout,
+    metric: MetricLayout,
+    chart: ChartLayout,
+    sortable: SortableLayout,
+    persona: PersonaLayout,
+    facepile: FacepileLayout,
+    'side-menu': SideMenuLayout,
+    'tab-menu': TabMenuLayout,
+    browsing: BrowsingLayout,
+    content: ContentLayout,
+    card: CardLayout,
+    'settings-hub': SettingsHubLayout,
+};

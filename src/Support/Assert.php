@@ -1,0 +1,42 @@
+<?php
+
+declare(strict_types=1);
+
+namespace CmsOrbit\Core\Support;
+
+use Illuminate\Support\Collection;
+
+class Assert
+{
+    /**
+     * Check if the given array is an id array.
+     */
+    public static function isIdArray(mixed $array): bool
+    {
+        return self::isArrayClosure($array, static fn ($value) => is_string($value) || is_int($value));
+    }
+
+    /**
+     * Check if the given array is an object array.
+     */
+    public static function isObjectArray(mixed $array): bool
+    {
+        return self::isArrayClosure($array, 'is_object');
+    }
+
+    /**
+     * Check if the given array passes the callback test.
+     */
+    public static function isArrayClosure(mixed $array, ?callable $callback): bool
+    {
+        if (is_a($array, Collection::class)) {
+            $array = $array->all();
+        }
+
+        if (! is_array($array)) {
+            return false;
+        }
+
+        return count($array) === count(array_filter($array, $callback));
+    }
+}

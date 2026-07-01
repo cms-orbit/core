@@ -1,0 +1,34 @@
+<?php
+
+declare(strict_types=1);
+
+namespace CmsOrbit\Core\Attachment\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+/**
+ * This class represents the relation between attachments and any model that can have them.
+ */
+class Attachmentable extends Model
+{
+    /**
+     * The primary key for the model.
+     *
+     * @var bool|null
+     */
+    protected $primaryKey = null;
+
+    /**
+     * Indicates whether the model should be timestamped.
+     *
+     * @var bool
+     */
+    public $timestamps = false;
+
+    /**
+     * The table associated with the model.
+     *
+     * @var string
+     */
+    protected $table = 'attachmentable';
+}
