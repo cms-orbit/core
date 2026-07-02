@@ -8,7 +8,7 @@ use CmsOrbit\Core\Entities\Concerns\RendersAccessBadges;
 use CmsOrbit\Core\Foundation\Entity\Entity;
 use CmsOrbit\Core\Foundation\Models\Role;
 use CmsOrbit\Core\Screen\Fields\Input;
-use CmsOrbit\Core\Screen\Fields\Select;
+use CmsOrbit\Core\Screen\Fields\PermissionMatrix;
 use CmsOrbit\Core\Screen\Sight;
 use CmsOrbit\Core\Screen\TD;
 use CmsOrbit\Core\Support\Facades\Orbit;
@@ -40,6 +40,11 @@ class RoleEntity extends Entity
         return __('Access Control');
     }
 
+    public function sectionKey(): string
+    {
+        return 'access-control';
+    }
+
     public function sort(): int
     {
         return 1100;
@@ -52,10 +57,9 @@ class RoleEntity extends Entity
     {
         return [
             Input::make('name')->title(__('Name'))->required()->placeholder(__('Editor')),
-            Select::make('permissions')
+            PermissionMatrix::make('permissions')
                 ->title(__('Permissions'))
-                ->multiple()
-                ->options($this->permissionOptions())
+                ->permissions(Orbit::getPermission())
                 ->help(__('Every user assigned this role inherits these permissions.')),
         ];
     }
@@ -110,17 +114,6 @@ class RoleEntity extends Entity
             'name' => $request->input('name'),
             'permissions' => $this->permissionMap($request),
         ])->save();
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    protected function permissionOptions(): array
-    {
-        return Orbit::getPermission()
-            ->collapse()
-            ->mapWithKeys(fn (array $item) => [$item['slug'] => $item['description']])
-            ->all();
     }
 
     /**

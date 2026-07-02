@@ -368,7 +368,12 @@ abstract class Screen extends Controller
 
         $method = $request->route()->parameter('method', 'view');
 
-        if (! $request->isMethodSafe()) {
+        // Form submissions encode the action in the trailing {method} segment.
+        // Prefer the named parameter; only fall back to the last positional
+        // parameter for exotic routes without a `method` param. (Entity CRUD
+        // routes add an `entity` default that would otherwise be picked up by
+        // Arr::last, misrouting e.g. "save" to a non-existent "roles" method.)
+        if (! $request->isMethodSafe() && ! $request->route()->hasParameter('method')) {
             $method = Arr::last($request->route()->parameters(), null, 'view');
         }
 

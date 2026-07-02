@@ -12,12 +12,13 @@ import { MapField } from './fields/map';
 import { MarkdownField } from './fields/markdown';
 import { MatrixField } from './fields/matrix';
 import { GroupField, UtmField, ViewFieldField } from './fields/misc';
+import { PermissionMatrixField } from './fields/permission-matrix';
 import { QuillField } from './fields/quill';
 import { NumberRangeField, RangeField } from './fields/range';
 import { attr, str } from './fields/shared';
 import { AttachField, PictureField } from './fields/upload';
 import type { FieldComponent } from './registry';
-import { FieldShell, inputClass } from './ui/field-shell';
+import { FieldShell, fieldInputClass } from './ui/field-shell';
 
 export function InputField(props: FieldComponentProps) {
     const { name, value, errors, onChange } = props;
@@ -35,7 +36,7 @@ export function InputField(props: FieldComponentProps) {
                 name={name ?? undefined}
                 type={attr<string>(props, 'type') ?? 'text'}
                 placeholder={attr<string>(props, 'placeholder')}
-                className={inputClass}
+                className={fieldInputClass(Boolean(errors[0]))}
                 value={str(value)}
                 onChange={(event) => onChange?.(event.target.value)}
             />
@@ -59,7 +60,7 @@ export function TextAreaField(props: FieldComponentProps) {
                 name={name ?? undefined}
                 rows={attr<number>(props, 'rows') ?? 4}
                 placeholder={attr<string>(props, 'placeholder')}
-                className={inputClass}
+                className={fieldInputClass(Boolean(errors[0]))}
                 value={str(value)}
                 onChange={(event) => onChange?.(event.target.value)}
             />
@@ -76,7 +77,7 @@ export function CheckBoxField(props: FieldComponentProps) {
                 <input
                     name={name ?? undefined}
                     type="checkbox"
-                    className="h-4 w-4 rounded border-gray-300 text-orbit-primary focus:ring-orbit-primary"
+                    className="h-4 w-4 rounded border-gray-300 text-orbit-primary-600 focus:ring-2 focus:ring-orbit-primary-500/40 dark:border-white/20 dark:bg-gray-900"
                     checked={Boolean(value)}
                     onChange={(event) => onChange?.(event.target.checked)}
                 />
@@ -100,7 +101,7 @@ export function SwitcherField(props: FieldComponentProps) {
                         checked={Boolean(value)}
                         onChange={(event) => onChange?.(event.target.checked)}
                     />
-                    <span className="absolute inset-0 rounded-full bg-gray-300 transition peer-checked:bg-orbit-primary dark:bg-gray-600" />
+                    <span className="absolute inset-0 rounded-full bg-gray-300 transition peer-checked:bg-orbit-primary-600 dark:bg-gray-600" />
                     <span className="absolute left-0.5 h-4 w-4 rounded-full bg-white transition peer-checked:translate-x-4" />
                 </span>
                 {attr<string>(props, 'placeholder') ?? attr<string>(props, 'title')}
@@ -146,6 +147,7 @@ export const fieldComponents: Record<string, FieldComponent> = {
     'simple-m-d-e': MarkdownField,
     code: CodeField,
     matrix: MatrixField,
+    'permission-matrix': PermissionMatrixField,
     map: MapField,
     utm: UtmField,
     group: GroupField,

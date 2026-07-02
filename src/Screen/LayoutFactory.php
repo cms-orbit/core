@@ -12,6 +12,7 @@ use CmsOrbit\Core\Screen\Layouts\Chart;
 use CmsOrbit\Core\Screen\Layouts\Columns;
 use CmsOrbit\Core\Screen\Layouts\Component;
 use CmsOrbit\Core\Screen\Layouts\Legend;
+use CmsOrbit\Core\Screen\Layouts\LocaleTabs;
 use CmsOrbit\Core\Screen\Layouts\Metric;
 use CmsOrbit\Core\Screen\Layouts\Modal;
 use CmsOrbit\Core\Screen\Layouts\Rows;
@@ -120,6 +121,17 @@ class LayoutFactory
     public static function tabs(array $layouts): Tabs
     {
         return new class($layouts) extends Tabs {};
+    }
+
+    /**
+     * Translatable fields grouped into one tab per content locale.
+     *
+     * @param  Field[]  $fields
+     * @param  array<int, string>|null  $locales
+     */
+    public static function localeTabs(array $fields, ?array $locales = null): LocaleTabs
+    {
+        return LocaleTabs::make($fields, $locales);
     }
 
     /**

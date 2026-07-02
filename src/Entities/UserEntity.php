@@ -11,6 +11,7 @@ use CmsOrbit\Core\Foundation\Models\User;
 use CmsOrbit\Core\Screen\Fields\Group;
 use CmsOrbit\Core\Screen\Fields\Input;
 use CmsOrbit\Core\Screen\Fields\Password;
+use CmsOrbit\Core\Screen\Fields\PermissionMatrix;
 use CmsOrbit\Core\Screen\Fields\Select;
 use CmsOrbit\Core\Screen\Sight;
 use CmsOrbit\Core\Screen\TD;
@@ -44,6 +45,11 @@ class UserEntity extends Entity
     public function section(): string
     {
         return __('Access Control');
+    }
+
+    public function sectionKey(): string
+    {
+        return 'access-control';
     }
 
     public function sort(): int
@@ -85,18 +91,16 @@ class UserEntity extends Entity
                 ->placeholder('••••••••')
                 ->help(__('Leave blank to keep the current password.')),
 
-            Group::make([
-                Select::make('roles')
-                    ->title(__('Roles'))
-                    ->multiple()
-                    ->fromModel(Orbit::model(Role::class), 'name')
-                    ->help(__('Roles grant their permissions to the user.')),
-                Select::make('permissions')
-                    ->title(__('Direct permissions'))
-                    ->multiple()
-                    ->options($this->permissionOptions())
-                    ->help(__('Granted on top of the roles above.')),
-            ])->widthColumns('1fr 1fr'),
+            Select::make('roles')
+                ->title(__('Roles'))
+                ->multiple()
+                ->fromModel(Orbit::model(Role::class), 'name')
+                ->help(__('Roles grant their permissions to the user.')),
+
+            PermissionMatrix::make('permissions')
+                ->title(__('Direct permissions'))
+                ->permissions(Orbit::getPermission())
+                ->help(__('Granted on top of the roles above.')),
         ];
     }
 
@@ -170,20 +174,6 @@ class UserEntity extends Entity
         $model->save();
 
         $model->replaceRoles($request->input('roles', []));
-    }
-
-    /**
-     * Flatten the registered permission groups into a `slug => description` list
-     * used as the select options.
-     *
-     * @return array<string, string>
-     */
-    protected function permissionOptions(): array
-    {
-        return Orbit::getPermission()
-            ->collapse()
-            ->mapWithKeys(fn (array $item) => [$item['slug'] => $item['description']])
-            ->all();
     }
 
     /**
