@@ -260,6 +260,16 @@ abstract class Entity
     }
 
     /**
+     * Stable section identifier used to group menu items and resolve the
+     * section icon from {@see Orbit::registerSection()}. When null, items are
+     * grouped by the translated {@see section()} label only.
+     */
+    public function sectionKey(): ?string
+    {
+        return null;
+    }
+
+    /**
      * Sort weight (lower = higher in the menu).
      */
     public function sort(): int
@@ -395,14 +405,18 @@ abstract class Entity
         $routeName = 'orbit.entities.'.static::uriKey().'.index';
         $url = Route::has($routeName) ? route($routeName) : '#';
 
-        return [
-            Menu::make($this->label())
-                ->icon($this->icon())
-                ->url($url)
-                ->sort($this->sort())
-                ->set('section', $this->section())
-                ->set('permission', $this->permissionKey()),
-        ];
+        $menu = Menu::make($this->label())
+            ->icon($this->icon())
+            ->url($url)
+            ->sort($this->sort())
+            ->set('section', $this->section())
+            ->set('permission', $this->permissionKey());
+
+        if ($this->sectionKey() !== null) {
+            $menu->set('sectionKey', $this->sectionKey());
+        }
+
+        return [$menu];
     }
 
     /**

@@ -17,6 +17,15 @@ trait ManagesMenu
     protected array $menuItems = [];
 
     /**
+     * Menu sections submitted by Core and satellite packages, keyed by a stable
+     * section identifier (see {@see Entity::sectionKey()}).
+     *
+     * @var array<string, array{icon: string, label: ?string, sort: int}>
+     */
+    #[FlushOctaneState]
+    protected array $menuSections = [];
+
+    /**
      * Register a menu element with the Dashboard.
      *
      * @param  Menu  $menu  The menu element to add.
@@ -31,6 +40,32 @@ trait ManagesMenu
         $this->menuItems[] = $menu;
 
         return $this;
+    }
+
+    /**
+     * Register a menu section for the admin icon rail / section nav. Packages
+     * call this from their service provider; entities link items via
+     * {@see Entity::sectionKey()}.
+     */
+    public function registerSection(string $key, string $icon, ?string $label = null, int $sort = 5000): static
+    {
+        $this->menuSections[$key] = [
+            'icon' => $icon,
+            'label' => $label,
+            'sort' => $sort,
+        ];
+
+        return $this;
+    }
+
+    /**
+     * All registered menu sections keyed by section identifier.
+     *
+     * @return array<string, array{icon: string, label: ?string, sort: int}>
+     */
+    public function getSections(): array
+    {
+        return $this->menuSections;
     }
 
     /**
@@ -116,6 +151,7 @@ trait ManagesMenu
             'url' => $menu->get('href'),
             'badge' => $this->serializeMenuBadge($menu),
             'section' => $menu->get('section'),
+            'sectionKey' => $menu->get('sectionKey'),
             'sort' => $menu->get('sort', 0),
             'divider' => (bool) $menu->get('divider', false),
             'active' => $menu->get('active'),

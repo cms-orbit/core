@@ -26,9 +26,14 @@ abstract class DocumentEntity extends Entity
         return 'bs.file-earmark-text';
     }
 
+    public function sectionKey(): string
+    {
+        return 'documents';
+    }
+
     public function section(): string
     {
-        return __('Content');
+        return __('Documents');
     }
 
     /**

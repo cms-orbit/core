@@ -7,7 +7,9 @@ namespace CmsOrbit\Core\Foundation\Providers;
 use CmsOrbit\Core\Entities\DemoEntity;
 use CmsOrbit\Core\Entities\RoleEntity;
 use CmsOrbit\Core\Entities\UserEntity;
+use CmsOrbit\Core\Foundation\Entity\Entity;
 use CmsOrbit\Core\Foundation\Entity\EntityRegistry;
+use CmsOrbit\Core\Support\Facades\Orbit;
 use Illuminate\Support\ServiceProvider;
 
 /**
@@ -19,7 +21,7 @@ class EntityServiceProvider extends ServiceProvider
     /**
      * Admin entities shipped with the package itself.
      *
-     * @var array<int, class-string<\CmsOrbit\Core\Foundation\Entity\Entity>>
+     * @var array<int, class-string<Entity>>
      */
     protected array $entities = [
         UserEntity::class,
@@ -47,6 +49,8 @@ class EntityServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        Orbit::registerSection('access-control', 'bs.shield-lock', __('Access Control'), 1000);
+
         $this->app->booted(function () {
             app(EntityRegistry::class)->boot();
         });

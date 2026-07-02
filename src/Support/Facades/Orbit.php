@@ -26,6 +26,8 @@ use Illuminate\Support\Facades\Facade;
  * @method static self setCurrentScreen(Screen $screen, bool $partialRequest = false)
  * @method static Screen|null getCurrentScreen()
  * @method static bool isPartialRequest()
+ * @method static self registerSection(string $key, string $icon, ?string $label = null, int $sort = 5000)
+ * @method static array<string, array{icon: string, label: ?string, sort: int}> getSections()
  */
 class Orbit extends Facade
 {
