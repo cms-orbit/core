@@ -62,6 +62,27 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Localization
+    |--------------------------------------------------------------------------
+    |
+    | Controls the admin panel interface language and the content locales that
+    | translatable fields expose. "default" is the initial admin UI language
+    | (Korean out of the box); "fallback" is used when a key is missing.
+    | "supported" lists the locales offered in the language switcher, while
+    | "content" lists the locales used for translatable content fields. Stored
+    | Localization settings (the "Localization" config group) override these.
+    |
+    */
+
+    'locale' => [
+        'default' => env('ORBIT_LOCALE', 'ko'),
+        'fallback' => env('ORBIT_FALLBACK_LOCALE', 'en'),
+        'supported' => ['ko', 'en'],
+        'content' => ['ko', 'en'],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Authentication Pages
     |--------------------------------------------------------------------------
     */

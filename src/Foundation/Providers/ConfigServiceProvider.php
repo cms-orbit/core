@@ -9,6 +9,7 @@ use CmsOrbit\Core\Foundation\ItemPermission;
 use CmsOrbit\Core\Screen\Actions\Menu;
 use CmsOrbit\Core\Support\Facades\Config;
 use CmsOrbit\Core\Support\Facades\Orbit;
+use CmsOrbit\Core\Support\Locale;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 
@@ -18,6 +19,19 @@ use Illuminate\Support\ServiceProvider;
  */
 class ConfigServiceProvider extends ServiceProvider
 {
+    /**
+     * Available admin layout modes (value => label). The colour settings below
+     * are maintained per mode while branding (name/logo/favicon) stays common.
+     *
+     * @var array<string, string>
+     */
+    public const LAYOUT_MODES = [
+        'sidebar-split' => 'Split sidebar',
+        'sidebar-single' => 'Single sidebar',
+        'topbar' => 'Top bar',
+        'hybrid' => 'Hybrid',
+    ];
+
     public function register(): void
     {
         $this->app->singleton(ConfigRegistry::class, fn () => new ConfigRegistry);
@@ -36,6 +50,28 @@ class ConfigServiceProvider extends ServiceProvider
      */
     protected function registerDefaultGroups(): void
     {
+        // Localization -----------------------------------------------------
+        Config::registerGroup('Localization', 950, [
+            'icon' => 'bs.translate',
+            'description' => 'Admin interface language and translatable content locales.',
+        ]);
+        Config::registerItem('Localization', 'locale.default', 'select', config('orbit.locale.default', 'ko'), 'default', [
+            'title' => 'Default admin language',
+            'options' => Locale::all(),
+        ]);
+        Config::registerItem('Localization', 'locale.fallback', 'select', config('orbit.locale.fallback', 'en'), 'default', [
+            'title' => 'Fallback language',
+            'options' => Locale::all(),
+        ]);
+        Config::registerItem('Localization', 'locale.supported', 'multiselect', config('orbit.locale.supported', ['ko', 'en']), 'default', [
+            'title' => 'Available admin languages',
+            'options' => Locale::all(),
+        ]);
+        Config::registerItem('Localization', 'locale.content', 'multiselect', config('orbit.locale.content', ['ko', 'en']), 'default', [
+            'title' => 'Content locales',
+            'options' => Locale::all(),
+        ]);
+
         // SEO --------------------------------------------------------------
         Config::registerGroup('SEO', 900, [
             'icon' => 'bs.search',
@@ -70,6 +106,22 @@ class ConfigServiceProvider extends ServiceProvider
         Config::registerItem('Appearance', 'branding.color_primary', 'color', '#17ce91', 'colors', ['title' => 'Primary']);
         Config::registerItem('Appearance', 'branding.color_secondary', 'color', '#64748b', 'colors', ['title' => 'Secondary']);
         Config::registerItem('Appearance', 'branding.color_accent', 'color', '#fc8024', 'colors', ['title' => 'Accent']);
+
+        // Layout mode + per-mode colours (branding above stays common) --------
+        Config::registerSection('Appearance', 'layout', ['title' => 'Layout', 'priority' => 25]);
+        Config::registerItem('Appearance', 'layout.mode', 'select', 'sidebar-split', 'layout', [
+            'title' => 'Layout mode',
+            'options' => self::LAYOUT_MODES,
+        ]);
+
+        $priority = 19;
+        foreach (self::LAYOUT_MODES as $mode => $label) {
+            $section = 'theme-'.$mode;
+            Config::registerSection('Appearance', $section, ['title' => $label.' colours', 'priority' => $priority--]);
+            Config::registerItem('Appearance', "theme.{$mode}.color_primary", 'color', '#17ce91', $section, ['title' => 'Primary']);
+            Config::registerItem('Appearance', "theme.{$mode}.color_secondary", 'color', '#64748b', $section, ['title' => 'Secondary']);
+            Config::registerItem('Appearance', "theme.{$mode}.color_accent", 'color', '#fc8024', $section, ['title' => 'Accent']);
+        }
 
         // Document --------------------------------------------------------
         Config::registerGroup('Document', 700, [

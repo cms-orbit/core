@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CmsOrbit\Core\Foundation\Http\Middleware;
 
-use Carbon\Carbon;
 use Closure;
 use CmsOrbit\Core\Access\Impersonation;
 use CmsOrbit\Core\Screen\Screen;
@@ -41,8 +40,6 @@ class Access
      */
     public function handle(Request $request, Closure $next, string $permission = 'orbit.index')
     {
-        Carbon::setLocale(config('app.locale'));
-
         if ($this->guard->guest()) {
             return $this->redirectToLogin($request);
         }

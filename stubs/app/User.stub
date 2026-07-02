@@ -1,0 +1,19 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Models;
+
+use CmsOrbit\Core\Foundation\Models\User as OrbitUser;
+
+/**
+ * Application user model.
+ *
+ * Extends Orbit's base user (permissions, presenter, filters, locale) so the
+ * admin panel works out of the box. Add your own relationships, casts and
+ * business logic here — the base class stays untouched during upgrades.
+ */
+class User extends OrbitUser
+{
+    //
+}

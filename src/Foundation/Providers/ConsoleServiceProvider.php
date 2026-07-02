@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CmsOrbit\Core\Foundation\Providers;
 
 use CmsOrbit\Core\Foundation\Commands\AdminCommand;
+use CmsOrbit\Core\Foundation\Commands\AiCommand;
 use CmsOrbit\Core\Foundation\Commands\ChartCommand;
 use CmsOrbit\Core\Foundation\Commands\DocumentMakeCommand;
 use CmsOrbit\Core\Foundation\Commands\EntityMakeCommand;
@@ -37,6 +38,7 @@ class ConsoleServiceProvider extends ServiceProvider
         InstallCommand::class,
         PublishCommand::class,
         AdminCommand::class,
+        AiCommand::class,
         FilterCommand::class,
         RowsCommand::class,
         ScreenCommand::class,
@@ -67,7 +69,26 @@ class ConsoleServiceProvider extends ServiceProvider
             ->registerTranslationsPublisher()
             ->registerConfigPublisher()
             ->registerAssetsPublisher()
+            ->registerAppStubsPublisher()
             ->commands($this->commands);
+    }
+
+    /**
+     * Publish the host application scaffolding stubs (OrbitProvider, etc.).
+     *
+     * Referenced by {@see InstallCommand}
+     * via the `orbit-app-stubs` tag. Individual `.stub` files are mapped to
+     * their final `.php` destinations so `vendor:publish` renames them.
+     *
+     * @return $this
+     */
+    protected function registerAppStubsPublisher(): self
+    {
+        $this->publishes([
+            Orbit::path('stubs/app/OrbitProvider.stub') => app_path('Orbit/OrbitProvider.php'),
+        ], 'orbit-app-stubs');
+
+        return $this;
     }
 
     /**

@@ -1,0 +1,21 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Orbit;
+
+use CmsOrbit\Core\Foundation\OrbitServiceProvider;
+use CmsOrbit\Core\Support\Facades\Orbit;
+
+/**
+ * Application entry point for Orbit customisation.
+ *
+ * Register entities, menus, permissions and platform tweaks here.
+ */
+class OrbitProvider extends OrbitServiceProvider
+{
+    public function boot(): void
+    {
+        Orbit::registerEntities(base_path('entities'));
+    }
+}

@@ -2,8 +2,12 @@
 
 declare(strict_types=1);
 
+use CmsOrbit\Core\Foundation\Http\Controllers\LocaleController;
 use CmsOrbit\Core\Foundation\Http\Controllers\LoginController;
 use Illuminate\Support\Facades\Route;
+
+// Admin interface locale switcher (works for guests on the login screen too).
+Route::post('locale', [LocaleController::class, 'switch'])->name('locale.switch');
 
 // Auth web routes
 if (config('orbit.auth', true)) {

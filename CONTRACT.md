@@ -48,6 +48,7 @@ interface LayoutNode {
 - `legend`:    `{ title, target, columns: ColumnNode[] }`
 - `selection`: `{ title, fields: FieldNode[] }`
 - `tabs`:      `{ titles: string[] }` (children are the tab panes)
+- `locale-tabs`: `{ titles: string[], locales: { code, label }[], activeTab }` (one `tab-pane` child per content locale; inner fields are name-scoped per locale, e.g. `ko[title]`)
 - `modal`:     `{ key, title, size, async, applyButton, closeButton, … }`
 - `columns` / `split` / `accordion` / `blank` / `block` / `wrapper`: `{}` (content lives in `children`)
 - custom (`Layout::component`/`react`): `{ component, props }`
@@ -68,6 +69,10 @@ interface FieldNode {
   props?: Record<string, unknown>; // present for custom ReactField nodes
 }
 ```
+
+Custom field props (`props`) in use:
+
+- `permission-matrix`: `{ groups: { group: string, permissions: { slug, label }[] }[] }`. Value is a `{slug:true}` map or a slug array; the component submits the checked slugs as an array (grouped checkboxes with per-group "select all").
 
 ## ColumnNode (TD / Sight)
 

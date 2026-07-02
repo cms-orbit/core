@@ -60,6 +60,7 @@ class InstallCommand extends Command
             })
             ->createEntitiesDirectory()
             ->createOrbitProvider()
+            ->executeCommand('orbit:ai')
             ->showMeLove();
 
         $this->info('Completed!');

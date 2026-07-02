@@ -48,6 +48,7 @@ class ConfigFieldFactory
         $field = match ($item->getType()) {
             'textarea' => TextArea::make($name)->rows(4),
             'select' => Select::make($name)->options(self::options($item)),
+            'multiselect' => Select::make($name)->options(self::options($item))->multiple(),
             'switcher' => Switcher::make($name)->sendTrueOrFalse(),
             'number' => Input::make($name)->type('number'),
             'color' => Input::make($name)->type('color'),
