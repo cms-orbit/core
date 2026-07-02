@@ -2,11 +2,13 @@ import { useState } from 'react';
 import type { ColumnNode, FieldNode, LayoutComponentProps } from './contract';
 import { ChartLayout } from './layouts/chart';
 import { ListenerLayout } from './layouts/listener';
+import { LocaleTabsLayout } from './layouts/locale-tabs';
 import { ModalLayout } from './layouts/modal';
 import { SelectionLayout } from './layouts/selection';
 import { SettingsHubLayout } from './layouts/settings-hub';
 import { SortableLayout } from './layouts/sortable';
 import { cn } from './lib/cn';
+import { useT } from './lib/i18n';
 import type { LayoutComponent } from './registry';
 import {
     FieldRenderer,
@@ -14,6 +16,8 @@ import {
     LayoutNodeRenderer,
 } from './screen-renderer';
 import { Card, CardBody, CardHeader } from './ui/card';
+import { EmptyState, SkeletonRows } from './ui/empty-state';
+import { Table, TableBody, TableCell, TableHead, TableHeaderCell, TableRow } from './ui/table';
 
 function asFields(value: unknown): FieldNode[] {
     return Array.isArray(value) ? (value as FieldNode[]) : [];
@@ -90,17 +94,18 @@ export function TabsLayout({ node, data, screen }: LayoutComponentProps) {
 
     return (
         <Card>
-            <div className="flex gap-1 border-b border-gray-100 px-3 dark:border-gray-700">
+            <div className="flex gap-1 overflow-x-auto border-b border-gray-100 px-3 dark:border-white/10">
                 {panes.map((pane, index) => (
                     <button
                         key={pane.key}
                         type="button"
                         onClick={() => setActive(index)}
-                        className={
+                        className={cn(
+                            'whitespace-nowrap border-b-2 px-3 py-2.5 text-sm transition',
                             index === active
-                                ? 'border-b-2 border-orbit-primary px-3 py-2 text-sm font-medium text-orbit-primary'
-                                : 'px-3 py-2 text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400'
-                        }
+                                ? 'border-orbit-primary-600 font-medium text-orbit-primary-600'
+                                : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400',
+                        )}
                     >
                         {titles[index] ?? (pane.data.title as string | undefined) ?? `Tab ${index + 1}`}
                     </button>
@@ -124,58 +129,53 @@ function cellValue(row: Record<string, unknown>, column: ColumnNode): unknown {
 }
 
 export function TableLayout({ node, data }: LayoutComponentProps) {
+    const t = useT();
     const columns = asColumns(node.data.columns);
     const target = node.data.target as string | undefined;
-    const rows = asRows(target ? data[target] : undefined);
+    const hasTarget = target != null;
+    const raw = hasTarget ? data[target] : undefined;
+    /** A missing target key means the prop is still deferred (Inertia v3). */
+    const isDeferred = hasTarget && raw === undefined;
+    const rows = asRows(raw);
 
     return (
         <Card>
             <CardHeader title={node.data.title as string | null} />
-            <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                    <thead className="bg-gray-50 dark:bg-gray-900/50">
-                        <tr>
+            {isDeferred ? (
+                <CardBody>
+                    <SkeletonRows rows={5} />
+                </CardBody>
+            ) : rows.length === 0 ? (
+                <EmptyState
+                    heading={(node.data.textNotFound as string) ?? t('No records found')}
+                    description={node.data.textNotFoundSubtitle as string | undefined}
+                />
+            ) : (
+                <Table>
+                    <TableHead>
+                        <TableRow>
                             {columns.map((column) => (
-                                <th
-                                    key={column.slug}
-                                    className="px-4 py-2 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400"
-                                >
-                                    {column.title}
-                                </th>
+                                <TableHeaderCell key={column.slug}>{column.title}</TableHeaderCell>
                             ))}
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
-                        {rows.length === 0 ? (
-                            <tr>
-                                <td
-                                    colSpan={columns.length || 1}
-                                    className="px-4 py-8 text-center text-sm text-gray-400"
-                                >
-                                    {(node.data.textNotFound as string) ?? 'No records found'}
-                                </td>
-                            </tr>
-                        ) : (
-                            rows.map((row, rowIndex) => (
-                                <tr key={rowIndex}>
-                                    {columns.map((column) => (
-                                        <td
-                                            key={column.slug}
-                                            className="px-4 py-2 text-sm text-gray-700 dark:text-gray-200"
-                                        >
-                                            {column.rendered != null ? (
-                                                <span dangerouslySetInnerHTML={{ __html: column.rendered }} />
-                                            ) : (
-                                                String(cellValue(row, column) ?? '')
-                                            )}
-                                        </td>
-                                    ))}
-                                </tr>
-                            ))
-                        )}
-                    </tbody>
-                </table>
-            </div>
+                        </TableRow>
+                    </TableHead>
+                    <TableBody>
+                        {rows.map((row, rowIndex) => (
+                            <TableRow key={rowIndex}>
+                                {columns.map((column) => (
+                                    <TableCell key={column.slug}>
+                                        {column.rendered != null ? (
+                                            <span dangerouslySetInnerHTML={{ __html: column.rendered }} />
+                                        ) : (
+                                            String(cellValue(row, column) ?? '')
+                                        )}
+                                    </TableCell>
+                                ))}
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            )}
         </Card>
     );
 }
@@ -457,6 +457,7 @@ export const layoutComponents: Record<string, LayoutComponent> = {
     accordion: AccordionLayout,
     tabs: TabsLayout,
     'tab-pane': TabPaneLayout,
+    'locale-tabs': LocaleTabsLayout,
     table: TableLayout,
     legend: LegendLayout,
     modal: ModalLayout,

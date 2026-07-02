@@ -15,6 +15,7 @@ import {
 } from 'recharts';
 import type { LayoutComponentProps } from '../contract';
 import { Card, CardBody, CardHeader } from '../ui/card';
+import { EmptyState } from '../ui/empty-state';
 
 interface ChartDataset {
     name?: string;
@@ -80,7 +81,7 @@ export function ChartLayout({ node }: LayoutComponentProps) {
                     <p className="mb-3 text-sm text-gray-500 dark:text-gray-400">{description}</p>
                 ) : null}
                 {rows.length === 0 ? (
-                    <p className="py-8 text-center text-sm text-gray-400">No chart data.</p>
+                    <EmptyState icon="bs.bar-chart" heading="No chart data." />
                 ) : (
                     <ResponsiveContainer width="100%" height={height}>
                         {type === 'pie' || type === 'percentage' ? (

@@ -1,6 +1,7 @@
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import type { FormEvent } from 'react';
 import { cn } from '../../../lib/cn';
+import { useT } from '../../../lib/i18n';
 import type { OrbitBrand } from '../../../theme/branding';
 import { useBrandTheme } from '../../../theme/branding';
 import { UiButton } from '../../../ui/button';
@@ -29,6 +30,7 @@ export default function Login({
     lockUser,
 }: LoginPageProps) {
     const page = usePage<SharedProps>();
+    const t = useT();
     const brand = page.props.orbit?.brand;
     const brandStyle = useBrandTheme(brand);
     const brandName = brand?.name ?? appName;
@@ -50,7 +52,7 @@ export default function Login({
             style={brandStyle}
             className="flex min-h-screen items-center justify-center bg-gray-100 px-4 py-12 text-gray-900 dark:bg-gray-950 dark:text-gray-100"
         >
-            <Head title={`${brandName} · ${isLockUser ? 'Unlock' : 'Sign in'}`} />
+            <Head title={`${brandName} · ${isLockUser ? t('Unlock') : t('Sign in')}`} />
 
             <div className="w-full max-w-sm">
                 <div className="mb-6 flex flex-col items-center gap-3 text-center">
@@ -61,8 +63,8 @@ export default function Login({
                     )}
                     <p className="text-sm text-gray-500 dark:text-gray-400">
                         {isLockUser && lockUser
-                            ? `Welcome back, ${lockUser.name}.`
-                            : 'Sign in to your dashboard.'}
+                            ? t('Welcome back, :name.', { name: lockUser.name })
+                            : t('Sign in to your dashboard.')}
                     </p>
                 </div>
 
@@ -75,7 +77,7 @@ export default function Login({
                             htmlFor="email"
                             className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-200"
                         >
-                            Email
+                            {t('Email')}
                         </label>
                         <input
                             id="email"
@@ -98,7 +100,7 @@ export default function Login({
                             htmlFor="password"
                             className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-200"
                         >
-                            Password
+                            {t('Password')}
                         </label>
                         <input
                             id="password"
@@ -122,7 +124,7 @@ export default function Login({
                             onChange={(event) => setData('remember', event.target.checked)}
                             className="h-4 w-4 rounded border-gray-300 text-orbit-primary focus:ring-orbit-primary"
                         />
-                        Remember me
+                        {t('Remember Me')}
                     </label>
 
                     <UiButton
@@ -131,13 +133,13 @@ export default function Login({
                         disabled={processing}
                         className="w-full"
                     >
-                        {processing ? 'Signing in…' : 'Sign in'}
+                        {processing ? t('Signing in…') : t('Sign in')}
                     </UiButton>
 
                     {isLockUser ? (
                         <p className="mt-4 text-center text-sm text-gray-500 dark:text-gray-400">
                             <Link href={resetUrl} className="text-orbit-primary hover:underline">
-                                Sign in as a different user
+                                {t('Sign in with another user.')}
                             </Link>
                         </p>
                     ) : null}

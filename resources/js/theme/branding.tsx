@@ -8,6 +8,8 @@ export interface BrandColors {
 
 export type DarkModeSetting = boolean | 'system';
 
+export type LayoutMode = 'sidebar-split' | 'sidebar-single' | 'topbar' | 'hybrid';
+
 export interface OrbitBrand {
     name?: string;
     logo?: string | null;
@@ -18,6 +20,8 @@ export interface OrbitBrand {
     palette?: string | null;
     colors?: BrandColors | null;
     darkMode?: DarkModeSetting | null;
+    /** Active admin layout mode; colours are resolved per mode server-side. */
+    layout?: LayoutMode | null;
 }
 
 /** Built-in palette presets. Backend exposes the same names in branding config. */
@@ -32,6 +36,112 @@ export const PALETTE_PRESETS: Record<string, Required<BrandColors>> = {
 };
 
 const DEFAULT_PALETTE = PALETTE_PRESETS.orbit;
+
+/** Shade → [lightness, chroma] constants, ported from Filament's Color::generatePalette(). */
+const SHADE_CONSTANTS: Record<number, [number, number]> = {
+    50: [0.97717647058824, 0.01395454545455],
+    100: [0.95035294117647, 0.03272727272727],
+    200: [0.90547058823529, 0.06318181818182],
+    300: [0.84047058823529, 0.10604545454546],
+    400: [0.75352941176471, 0.15027272727273],
+    500: [0.68270588235294, 0.17009090909091],
+    600: [0.59782352941176, 0.16913636363636],
+    700: [0.51494117647059, 0.14940909090909],
+    800: [0.44611764705882, 0.12331818181818],
+    900: [0.39458823529412, 0.09963636363636],
+    950: [0.27788235294118, 0.07136363636364],
+};
+
+export const SHADE_KEYS = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950] as const;
+
+/** Parse `#rgb`/`#rrggbb`/`rgb(r,g,b)` into normalised sRGB components (0–1). */
+function parseSrgb(color: string): [number, number, number] | null {
+    const value = color.trim().replace(/\s+/g, '');
+
+    const hexMatch = value.match(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i);
+    if (hexMatch) {
+        let hex = hexMatch[1];
+        if (hex.length === 3) {
+            hex = hex.split('').map((c) => c + c).join('');
+        }
+        const int = parseInt(hex, 16);
+        return [((int >> 16) & 255) / 255, ((int >> 8) & 255) / 255, (int & 255) / 255];
+    }
+
+    const rgbMatch = value.match(/^rgba?\((\d+),(\d+),(\d+)/i);
+    if (rgbMatch) {
+        return [Number(rgbMatch[1]) / 255, Number(rgbMatch[2]) / 255, Number(rgbMatch[3]) / 255];
+    }
+
+    return null;
+}
+
+/** Convert an sRGB colour to OKLCH `[lightness, chroma, hue°]` (Filament algorithm). */
+function srgbToOklch(color: string): [number, number, number] | null {
+    const parsed = parseSrgb(color);
+    if (!parsed) {
+        return null;
+    }
+
+    const linearize = (channel: number) =>
+        channel <= 0.04045 ? channel / 12.92 : Math.pow((channel + 0.055) / 1.055, 2.4);
+
+    const [red, green, blue] = parsed.map(linearize) as [number, number, number];
+
+    const long = 0.4122214708 * red + 0.5363325363 * green + 0.0514459929 * blue;
+    const medium = 0.2119034982 * red + 0.6806995451 * green + 0.1073969566 * blue;
+    const short = 0.0883024619 * red + 0.2817188376 * green + 0.6299787005 * blue;
+
+    const longCubeRoot = Math.cbrt(long);
+    const mediumCubeRoot = Math.cbrt(medium);
+    const shortCubeRoot = Math.cbrt(short);
+
+    const lightness =
+        0.2104542553 * longCubeRoot + 0.793617785 * mediumCubeRoot - 0.0040720468 * shortCubeRoot;
+    const opponentA =
+        1.9779984951 * longCubeRoot - 2.428592205 * mediumCubeRoot + 0.4505937099 * shortCubeRoot;
+    const opponentB =
+        0.0259040371 * longCubeRoot + 0.7827717662 * mediumCubeRoot - 0.808675766 * shortCubeRoot;
+
+    const chroma = Math.sqrt(opponentA * opponentA + opponentB * opponentB);
+    let hue = (Math.atan2(opponentB, opponentA) * 180) / Math.PI;
+    if (hue < 0) {
+        hue += 360;
+    }
+
+    return [lightness, chroma, hue];
+}
+
+/**
+ * Generate an 11-step OKLCH shade palette from a single base colour, matching
+ * Filament's Color::generatePalette(): fixed lightness/chroma per shade, base
+ * hue preserved (chroma dropped for near-grey inputs).
+ */
+export function generateShades(color: string): Record<number, string> {
+    const oklch = srgbToOklch(color);
+    const shades: Record<number, string> = {};
+
+    if (!oklch) {
+        SHADE_KEYS.forEach((shade) => {
+            shades[shade] = color;
+        });
+
+        return shades;
+    }
+
+    const [, chroma, hue] = oklch;
+    const isAchromatic = chroma < 0.03;
+    const roundedHue = Math.round(hue * 1000) / 1000;
+
+    SHADE_KEYS.forEach((shade) => {
+        const [lightness, shadeChroma] = SHADE_CONSTANTS[shade];
+        const l = Math.round(lightness * 1000) / 1000;
+        const c = isAchromatic ? 0 : Math.round(shadeChroma * 1000) / 1000;
+        shades[shade] = `oklch(${l} ${c} ${roundedHue})`;
+    });
+
+    return shades;
+}
 
 export function resolveBrandColors(brand: OrbitBrand | undefined): Required<BrandColors> {
     const preset =
@@ -93,13 +203,20 @@ export function useBrandTheme(brand: OrbitBrand | undefined): React.CSSPropertie
         applyFavicon(brand?.favicon);
     }, [brand?.favicon]);
 
-    return useMemo(
-        () =>
-            ({
-                '--color-orbit-primary': colors.primary,
-                '--color-orbit-secondary': colors.secondary,
-                '--color-orbit-accent': colors.accent,
-            }) as React.CSSProperties,
-        [colors],
-    );
+    return useMemo(() => {
+        const style: Record<string, string> = {
+            '--color-orbit-primary': colors.primary,
+            '--color-orbit-secondary': colors.secondary,
+            '--color-orbit-accent': colors.accent,
+        };
+
+        (['primary', 'secondary', 'accent'] as const).forEach((token) => {
+            const shades = generateShades(colors[token]);
+            SHADE_KEYS.forEach((shade) => {
+                style[`--color-orbit-${token}-${shade}`] = shades[shade];
+            });
+        });
+
+        return style as React.CSSProperties;
+    }, [colors]);
 }
