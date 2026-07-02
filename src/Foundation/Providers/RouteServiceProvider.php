@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CmsOrbit\Core\Foundation\Providers;
 
 use CmsOrbit\Core\Foundation\Http\Middleware\Access;
+use CmsOrbit\Core\Foundation\Http\Middleware\SetOrbitLocale;
 use CmsOrbit\Core\Support\Facades\Orbit;
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Route;
@@ -18,6 +19,7 @@ class RouteServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Route::middlewareGroup('orbit', [
+            SetOrbitLocale::class,
             Access::class,
         ]);
 
@@ -42,11 +44,13 @@ class RouteServiceProvider extends ServiceProvider
             ->middleware(config('orbit.middleware.private'))
             ->group(Orbit::path('routes/orbit.php'));
 
-        // Public authentication routes.
+        // Public authentication routes. The locale middleware is appended so the
+        // login screen is localised even though auth routes skip the "orbit"
+        // middleware group.
         Route::domain($domain)
             ->prefix($prefix)
             ->as('orbit.')
-            ->middleware(config('orbit.middleware.public'))
+            ->middleware([...config('orbit.middleware.public'), SetOrbitLocale::class])
             ->group(Orbit::path('routes/auth.php'));
 
         // Optional host-application routes file.
