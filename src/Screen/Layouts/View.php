@@ -21,7 +21,7 @@ abstract class View extends Layout
     /**
      * View constructor.
      *
-     * @param  Arrayable|array  $data
+     * @param Arrayable|array $data
      */
     public function __construct(string $template, $data = [])
     {
@@ -43,5 +43,18 @@ abstract class View extends Layout
         $data = array_merge($this->data, $repository->toArray());
 
         return view($this->template, $data);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    protected function serialize(Repository $repository): array
+    {
+        $data = array_merge($this->data, $repository->toArray());
+
+        return [
+            'template' => $this->template,
+            'html'     => view($this->template, $data)->render(),
+        ];
     }
 }

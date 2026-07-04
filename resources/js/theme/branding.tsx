@@ -1,14 +1,16 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 export interface BrandColors {
     primary?: string;
     secondary?: string;
     accent?: string;
+    surface?: string;
+    muted?: string;
 }
 
 export type DarkModeSetting = boolean | 'system';
 
-export type LayoutMode = 'sidebar-split' | 'sidebar-single' | 'topbar' | 'hybrid';
+export type LayoutMode = 'palette-split' | 'sidebar-single' | 'topbar' | 'hybrid';
 
 export interface OrbitBrand {
     name?: string;
@@ -22,17 +24,22 @@ export interface OrbitBrand {
     darkMode?: DarkModeSetting | null;
     /** Active admin layout mode; colours are resolved per mode server-side. */
     layout?: LayoutMode | null;
+    /** Current active theme token set (`color_*` keys from the backend registry). */
+    tokens?: Record<string, string> | null;
+    /** Optional light/dark token sets for dual-tone layouts. */
+    tokenSchemes?: {
+        light?: Record<string, string> | null;
+        dark?: Record<string, string> | null;
+    };
 }
 
 /** Built-in palette presets. Backend exposes the same names in branding config. */
 export const PALETTE_PRESETS: Record<string, Required<BrandColors>> = {
     orbit: { primary: '#17ce91', secondary: '#64748b', accent: '#fc8024' },
-    indigo: { primary: '#4f46e5', secondary: '#64748b', accent: '#ec4899' },
-    blue: { primary: '#2563eb', secondary: '#475569', accent: '#06b6d4' },
-    emerald: { primary: '#059669', secondary: '#475569', accent: '#f59e0b' },
-    rose: { primary: '#e11d48', secondary: '#475569', accent: '#8b5cf6' },
-    violet: { primary: '#7c3aed', secondary: '#64748b', accent: '#f43f5e' },
-    slate: { primary: '#0f172a', secondary: '#64748b', accent: '#3b82f6' },
+    midnight: { primary: '#4f46e5', secondary: '#64748b', accent: '#ec4899' },
+    forest: { primary: '#059669', secondary: '#475569', accent: '#f59e0b' },
+    sunset: { primary: '#e11d48', secondary: '#475569', accent: '#f97316' },
+    custom: { primary: '#17ce91', secondary: '#64748b', accent: '#fc8024' },
 };
 
 const DEFAULT_PALETTE = PALETTE_PRESETS.orbit;
@@ -151,7 +158,22 @@ export function resolveBrandColors(brand: OrbitBrand | undefined): Required<Bran
         primary: brand?.colors?.primary ?? preset.primary,
         secondary: brand?.colors?.secondary ?? preset.secondary,
         accent: brand?.colors?.accent ?? preset.accent,
+        surface: brand?.colors?.surface ?? '#ffffff',
+        muted: brand?.colors?.muted ?? '#f1f5f9',
     };
+}
+
+function resolveActiveThemeTokens(brand: OrbitBrand | undefined): Record<string, string> {
+    if (brand?.tokenSchemes && typeof document !== 'undefined') {
+        const isDark = document.documentElement.classList.contains('dark');
+        const scheme = isDark ? brand.tokenSchemes.dark : brand.tokenSchemes.light;
+
+        if (scheme) {
+            return scheme;
+        }
+    }
+
+    return brand?.tokens ?? {};
 }
 
 function applyDarkMode(setting: DarkModeSetting | null | undefined) {
@@ -193,11 +215,28 @@ function applyFavicon(favicon: string | null | undefined) {
  * style object to apply on the shell root so descendants inherit tokens.
  */
 export function useBrandTheme(brand: OrbitBrand | undefined): React.CSSProperties {
+    const [toneRevision, setToneRevision] = useState(0);
     const colors = useMemo(() => resolveBrandColors(brand), [brand]);
+    const tokens = useMemo(() => resolveActiveThemeTokens(brand), [brand, toneRevision]);
 
     useEffect(() => {
         applyDarkMode(brand?.darkMode);
     }, [brand?.darkMode]);
+
+    useEffect(() => {
+        if (!brand?.tokenSchemes || typeof document === 'undefined') {
+            return;
+        }
+
+        const root = document.documentElement;
+        const observer = new MutationObserver(() => {
+            setToneRevision((value) => value + 1);
+        });
+
+        observer.observe(root, { attributes: true, attributeFilter: ['class'] });
+
+        return () => observer.disconnect();
+    }, [brand?.tokenSchemes]);
 
     useEffect(() => {
         applyFavicon(brand?.favicon);
@@ -208,7 +247,13 @@ export function useBrandTheme(brand: OrbitBrand | undefined): React.CSSPropertie
             '--color-orbit-primary': colors.primary,
             '--color-orbit-secondary': colors.secondary,
             '--color-orbit-accent': colors.accent,
+            '--color-orbit-surface': colors.surface ?? '#ffffff',
+            '--color-orbit-muted': colors.muted ?? '#f1f5f9',
         };
+
+        Object.entries(tokens).forEach(([key, value]) => {
+            style[`--color-orbit-${key.replace(/^color_/, '').replace(/_/g, '-')}`] = value;
+        });
 
         (['primary', 'secondary', 'accent'] as const).forEach((token) => {
             const shades = generateShades(colors[token]);
@@ -218,5 +263,5 @@ export function useBrandTheme(brand: OrbitBrand | undefined): React.CSSPropertie
         });
 
         return style as React.CSSProperties;
-    }, [colors]);
+    }, [colors, tokens]);
 }

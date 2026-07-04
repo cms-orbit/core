@@ -20,4 +20,20 @@ class ViewField extends Field
 
         return $this;
     }
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    public function toArray(): ?array
+    {
+        $node = parent::toArray();
+
+        if ($node === null || $this->view === null) {
+            return $node;
+        }
+
+        $node['attributes']['html'] = view($this->view, $this->getAttributes())->render();
+
+        return $node;
+    }
 }

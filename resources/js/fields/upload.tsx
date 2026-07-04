@@ -36,7 +36,7 @@ async function uploadTo(url: string, files: FileList | File[], extra: Record<str
 }
 
 export function AttachField(props: FieldComponentProps) {
-    const { errors, onChange } = props;
+    const { errors, onChange, onAssetsChange } = props;
     const multiple = bool(attr(props, 'multiple'));
     const uploadUrl = attr<string>(props, 'uploadUrl');
     const group = attr<string>(props, 'group');
@@ -51,6 +51,7 @@ export function AttachField(props: FieldComponentProps) {
     const commit = (next: MediaItem[]) => {
         setAssets(next);
         onChange?.(next.map((item) => item.id));
+        onAssetsChange?.(next);
     };
 
     const addAssets = (incoming: MediaItem[]) => {

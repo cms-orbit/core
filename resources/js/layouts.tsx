@@ -5,6 +5,8 @@ import { ListenerLayout } from './layouts/listener';
 import { LocaleTabsLayout } from './layouts/locale-tabs';
 import { ModalLayout } from './layouts/modal';
 import { SelectionLayout } from './layouts/selection';
+import { DesignSettingsLayout } from './layouts/design-settings';
+import { SeoSettingsLayout } from './layouts/seo-settings';
 import { SettingsHubLayout } from './layouts/settings-hub';
 import { SortableLayout } from './layouts/sortable';
 import { cn } from './lib/cn';
@@ -446,6 +448,16 @@ export function CardLayout({ node, data, screen }: LayoutComponentProps) {
     );
 }
 
+export function ViewLayout({ node }: LayoutComponentProps) {
+    const html = node.data.html as string | undefined;
+
+    if (!html) {
+        return null;
+    }
+
+    return <div className="orbit-view-layout" dangerouslySetInnerHTML={{ __html: html }} />;
+}
+
 /** All layout registry slots. */
 export const layoutComponents: Record<string, LayoutComponent> = {
     rows: RowsLayout,
@@ -474,4 +486,7 @@ export const layoutComponents: Record<string, LayoutComponent> = {
     content: ContentLayout,
     card: CardLayout,
     'settings-hub': SettingsHubLayout,
+    'design-settings': DesignSettingsLayout,
+    'seo-settings': SeoSettingsLayout,
+    view: ViewLayout,
 };

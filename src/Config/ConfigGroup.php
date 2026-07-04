@@ -68,6 +68,36 @@ class ConfigGroup
     }
 
     /**
+     * Permission slugs that grant access to this config group.
+     *
+     * @return string[]
+     */
+    public function accessiblePermissions(): array
+    {
+        $permissions = ['orbit.configs', $this->getPermission()];
+
+        if ($this->uriKey === 'admin-design') {
+            $permissions[] = 'orbit.configs.appearance';
+            $permissions[] = 'orbit.configs.branding';
+            $permissions[] = 'orbit.configs.theme';
+        }
+
+        return $permissions;
+    }
+
+    /**
+     * Whether the given user may view and edit this config group.
+     */
+    public function isAccessibleBy(?object $user): bool
+    {
+        if ($user === null || ! method_exists($user, 'hasAnyAccess')) {
+            return true;
+        }
+
+        return $user->hasAnyAccess($this->accessiblePermissions());
+    }
+
+    /**
      * The per-group permission slug submitted to Core.
      */
     public function getPermission(): string

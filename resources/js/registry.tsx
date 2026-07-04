@@ -1,4 +1,4 @@
-import type { ComponentType } from 'react';
+import type { ComponentType, ReactNode } from 'react';
 import type {
     CustomComponentProps,
     FieldComponentProps,
@@ -10,8 +10,10 @@ export type LayoutComponent = ComponentType<LayoutComponentProps>;
 export type ActionComponent = ComponentType<FieldComponentProps>;
 export type CustomComponent = ComponentType<CustomComponentProps>;
 export type AnyComponent = ComponentType<Record<string, unknown>>;
+export type ShellLayoutComponent = ComponentType<Record<string, unknown>>;
 
 const layoutRegistry: Record<string, LayoutComponent> = {};
+const shellLayoutRegistry: Record<string, ShellLayoutComponent> = {};
 const fieldRegistry: Record<string, FieldComponent> = {};
 const actionRegistry: Record<string, ActionComponent> = {};
 /** Custom components are visible to every renderer (layout/field/action/screen). */
@@ -23,6 +25,14 @@ export function registerLayout(type: string, component: LayoutComponent): void {
 
 export function registerLayouts(map: Record<string, LayoutComponent>): void {
     Object.assign(layoutRegistry, map);
+}
+
+export function registerShellLayout(mode: string, component: ShellLayoutComponent): void {
+    shellLayoutRegistry[mode] = component;
+}
+
+export function resolveShellLayout(mode: string): ShellLayoutComponent | undefined {
+    return shellLayoutRegistry[mode];
 }
 
 export function registerField(name: string, component: FieldComponent): void {

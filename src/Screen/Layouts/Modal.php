@@ -63,19 +63,19 @@ class Modal extends Layout
     public function __construct(string $key, array $layouts = [])
     {
         $this->variables = [
-            'apply' => __('Apply'),
-            'close' => __('Close'),
-            'size' => '',
-            'type' => self::TYPE_CENTER,
-            'key' => $key,
-            'title' => $key,
-            'turbo' => true,
-            'commandBar' => [],
+            'apply'              => __('Apply'),
+            'close'              => __('Close'),
+            'size'               => '',
+            'type'               => self::TYPE_CENTER,
+            'key'                => $key,
+            'title'              => $key,
+            'turbo'              => true,
+            'commandBar'         => [],
             'withoutApplyButton' => false,
             'withoutCloseButton' => false,
-            'open' => false,
-            'method' => null,
-            'staticBackdrop' => false,
+            'open'               => false,
+            'method'             => null,
+            'staticBackdrop'     => false,
         ];
 
         $this->layouts = $layouts;
@@ -92,8 +92,8 @@ class Modal extends Layout
     protected function serialize(Repository $repository): array
     {
         return array_merge($this->variables, [
-            'commandBar' => $this->buildCommandBarArray($repository),
-            'deferredRoute' => route('orbit.async'),
+            'commandBar'     => $this->buildCommandBarArray($repository),
+            'deferredRoute'  => route('orbit.async'),
             'deferrerParams' => $this->getDeferrerDataLoadingParameters(),
         ]);
     }
@@ -113,12 +113,21 @@ class Modal extends Layout
     }
 
     /**
+     * React layout key. The {@see $type} property on this class stores the
+     * modal placement variant (center / slide-right), not the serializer type.
+     */
+    public function getType(): string
+    {
+        return 'modal';
+    }
+
+    /**
      * @return mixed
      */
     public function build(Repository $repository)
     {
         $this->variables = array_merge($this->variables, [
-            'deferredRoute' => route('orbit.async'),
+            'deferredRoute'  => route('orbit.async'),
             'deferrerParams' => $this->getDeferrerDataLoadingParameters(),
         ]);
 
@@ -241,7 +250,8 @@ class Modal extends Layout
      * If the provided method name does not start with the `async` prefix, it will be automatically added.
      * Then the `deferred` method is called with the processed method name.
      *
-     * @param  string  $method  The name of the method to be called asynchronously.
+     * @param string $method The name of the method to be called asynchronously.
+     *
      * @return $this Returns the current instance of the object for method chaining.
      */
     public function async(string $method): self
@@ -257,7 +267,8 @@ class Modal extends Layout
     /**
      * This method sets the method to be called in a deferred manner.
      *
-     * @param  string  $method  The name of the method to be called later when needed.
+     * @param string $method The name of the method to be called later when needed.
+     *
      * @return $this Returns the current instance of the object for method chaining.
      */
     public function deferred(string $method): self
@@ -283,8 +294,8 @@ class Modal extends Layout
         }
 
         return [
-            '_screen' => Crypt::encryptString(get_class($screen)),
-            '_call' => $this->dataLoadingMethod,
+            '_screen'   => Crypt::encryptString(get_class($screen)),
+            '_call'     => $this->dataLoadingMethod,
             '_template' => $this->getSlug(),
         ];
     }

@@ -55,7 +55,7 @@ export function UtmField(props: FieldComponentProps) {
                 onClick={() => setExpanded((current) => !current)}
                 className="mt-1 text-xs text-orbit-primary hover:underline"
             >
-                {expanded ? 'Hide UTM parameters' : 'Edit UTM parameters'}
+                {expanded ? 'UTM 파라미터 숨기기' : 'UTM 파라미터 편집'}
             </button>
             {expanded ? (
                 <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">

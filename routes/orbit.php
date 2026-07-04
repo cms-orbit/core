@@ -12,7 +12,6 @@ use CmsOrbit\Core\Crud\Screens\ViewScreen;
 use CmsOrbit\Core\Foundation\Entity\Entity;
 use CmsOrbit\Core\Foundation\Entity\EntityRegistry;
 use CmsOrbit\Core\Foundation\Http\Controllers\AsyncController;
-use CmsOrbit\Core\Foundation\Screens\MainScreen;
 use CmsOrbit\Core\Foundation\Http\Controllers\AttachmentController;
 use CmsOrbit\Core\Foundation\Http\Controllers\ChoicesController;
 use CmsOrbit\Core\Foundation\Http\Controllers\IndexController;
@@ -21,6 +20,7 @@ use CmsOrbit\Core\Foundation\Http\Controllers\NotificationController;
 use CmsOrbit\Core\Foundation\Http\Controllers\SearchController;
 use CmsOrbit\Core\Foundation\Http\Controllers\SitemapController;
 use CmsOrbit\Core\Foundation\Http\Controllers\SortableController;
+use CmsOrbit\Core\Foundation\Screens\MainScreen;
 use Illuminate\Support\Facades\Route;
 use Tabuna\Breadcrumbs\Trail;
 
@@ -211,6 +211,15 @@ Route::screen('configs/{group}', ConfigGroupScreen::class)
 Route::get('sitemap.xml', [SitemapController::class, 'index'])
     ->withoutMiddleware(config('orbit.middleware.private'))
     ->name('sitemap');
+
+/*
+|--------------------------------------------------------------------------
+| Demo / example screens (non-production by default)
+|--------------------------------------------------------------------------
+*/
+if (config('orbit.demo.enabled', false)) {
+    require __DIR__.'/demo.php';
+}
 
 /*
 |--------------------------------------------------------------------------

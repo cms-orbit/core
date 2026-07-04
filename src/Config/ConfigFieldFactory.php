@@ -6,10 +6,12 @@ namespace CmsOrbit\Core\Config;
 
 use CmsOrbit\Core\Screen\Field;
 use CmsOrbit\Core\Screen\Fields\Attach;
+use CmsOrbit\Core\Screen\Fields\Color;
 use CmsOrbit\Core\Screen\Fields\Input;
 use CmsOrbit\Core\Screen\Fields\Select;
 use CmsOrbit\Core\Screen\Fields\Switcher;
 use CmsOrbit\Core\Screen\Fields\TextArea;
+use Illuminate\Support\Facades\Route;
 
 /**
  * Maps a ConfigItem type to a concrete Field for the auto-rendered group-edit
@@ -46,14 +48,14 @@ class ConfigFieldFactory
         $help = $item->getDescription();
 
         $field = match ($item->getType()) {
-            'textarea' => TextArea::make($name)->rows(4),
-            'select' => Select::make($name)->options(self::options($item)),
+            'textarea'    => TextArea::make($name)->rows(4),
+            'select'      => Select::make($name)->options(self::options($item)),
             'multiselect' => Select::make($name)->options(self::options($item))->multiple(),
-            'switcher' => Switcher::make($name)->sendTrueOrFalse(),
-            'number' => Input::make($name)->type('number'),
-            'color' => Input::make($name)->type('color'),
-            'attach' => Attach::make($name),
-            default => Input::make($name),
+            'switcher'    => Switcher::make($name)->sendTrueOrFalse(),
+            'number'      => Input::make($name)->type('number'),
+            'color'       => Color::make($name),
+            'attach'      => self::makeAttachField($name),
+            default       => Input::make($name),
         };
 
         return $field
@@ -75,5 +77,16 @@ class ConfigFieldFactory
         }
 
         return $options;
+    }
+
+    protected static function makeAttachField(string $name): Attach
+    {
+        $field = Attach::make($name);
+
+        if (Route::has('orbit.media.upload')) {
+            $field->uploadUrl(route('orbit.media.upload'));
+        }
+
+        return $field;
     }
 }

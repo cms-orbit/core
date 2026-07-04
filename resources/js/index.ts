@@ -6,9 +6,10 @@
  * `registerComponents` escape hatch) for host apps and packages.
  */
 import { actionComponents } from './actions';
+import { ColorPickerField } from './fields/custom';
 import { fieldComponents } from './fields';
 import { layoutComponents } from './layouts';
-import { registerActions, registerFields, registerLayouts } from './registry';
+import { registerActions, registerComponents, registerFields, registerLayouts } from './registry';
 
 let registered = false;
 
@@ -23,6 +24,9 @@ export function registerOrbitComponents(): void {
     registerLayouts(layoutComponents);
     registerFields(fieldComponents);
     registerActions(actionComponents);
+    registerComponents({
+        ColorPicker: ColorPickerField,
+    });
 }
 
 registerOrbitComponents();

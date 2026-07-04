@@ -48,7 +48,7 @@ return [
     */
 
     'middleware' => [
-        'public' => ['web'],
+        'public'  => ['web'],
         'private' => ['web', 'orbit'],
     ],
 
@@ -75,10 +75,10 @@ return [
     */
 
     'locale' => [
-        'default' => env('ORBIT_LOCALE', 'ko'),
-        'fallback' => env('ORBIT_FALLBACK_LOCALE', 'en'),
+        'default'   => env('ORBIT_LOCALE', 'ko'),
+        'fallback'  => env('ORBIT_FALLBACK_LOCALE', 'en'),
         'supported' => ['ko', 'en'],
-        'content' => ['ko', 'en'],
+        'content'   => ['ko', 'en'],
     ],
 
     /*
@@ -95,7 +95,7 @@ return [
     |--------------------------------------------------------------------------
     */
 
-    'index' => 'orbit.main',
+    'index'   => 'orbit.main',
     'profile' => 'orbit.profile',
 
     /*
@@ -106,7 +106,7 @@ return [
 
     'resource' => [
         'stylesheets' => [],
-        'scripts' => [],
+        'scripts'     => [],
     ],
 
     /*
@@ -135,7 +135,7 @@ return [
     */
 
     'attachment' => [
-        'disk' => env('ORBIT_FILESYSTEM_DISK', 'public'),
+        'disk'      => env('ORBIT_FILESYSTEM_DISK', 'public'),
         'generator' => Generator::class,
     ],
 
@@ -146,7 +146,7 @@ return [
     */
 
     'notifications' => [
-        'enabled' => true,
+        'enabled'  => true,
         'interval' => 60,
     ],
 
@@ -163,7 +163,9 @@ return [
     */
 
     'demo' => [
-        'enabled' => (bool) env('ORBIT_DEMO', env('APP_ENV', 'production') !== 'production'),
+        'enabled' => env('ORBIT_DEMO') !== null
+            ? filter_var(env('ORBIT_DEMO'), FILTER_VALIDATE_BOOLEAN)
+            : env('APP_ENV', 'production') !== 'production',
         'section' => 'Demo',
     ],
 

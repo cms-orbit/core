@@ -9,12 +9,11 @@ import { useOptionalOrbitForm } from './form-context';
 import {
     MissingComponent,
     resolveAction,
+    resolveComponent,
     resolveField,
-    resolveLayout
-    
-    
+    resolveLayout,
 } from './registry';
-import type {FieldComponent, LayoutComponent} from './registry';
+import type { ActionComponent, CustomComponent, FieldComponent, LayoutComponent } from './registry';
 
 type DataScope = Record<string, unknown>;
 
@@ -41,15 +40,38 @@ export function FieldRenderer({
         );
     }
 
-    const Component = resolveField(node.component) as FieldComponent | undefined;
+    const FieldComponentImpl = resolveField(node.component) as FieldComponent | undefined;
+    const ActionComponentImpl = FieldComponentImpl
+        ? undefined
+        : (resolveAction(node.component) as ActionComponent | undefined);
+    const CustomComponentImpl =
+        FieldComponentImpl || ActionComponentImpl
+            ? undefined
+            : (resolveComponent(node.component) as CustomComponent | undefined);
 
-    if (!Component) {
+    if (!FieldComponentImpl && !ActionComponentImpl && !CustomComponentImpl) {
         return <MissingComponent kind="field" name={node.component} />;
     }
 
     const value = form ? form.getValue(node.name) ?? node.value : node.value;
     const error = form?.getError(node.name);
     const errors = error ? [error] : node.errors;
+    const onChange = form ? (next: unknown) => form.setValue(node.name, next) : undefined;
+
+    if (CustomComponentImpl) {
+        return (
+            <CustomComponentImpl
+                data={data}
+                value={value}
+                name={node.name}
+                attributes={node.attributes}
+                errors={errors}
+                onChange={onChange}
+                screen={screen}
+                props={node.props}
+            />
+        );
+    }
 
     const componentProps: FieldComponentProps = {
         node,
@@ -58,9 +80,11 @@ export function FieldRenderer({
         name: node.name,
         attributes: node.attributes,
         errors,
-        onChange: form ? (next) => form.setValue(node.name, next) : undefined,
+        onChange,
         screen,
     };
+
+    const Component = (FieldComponentImpl ?? ActionComponentImpl) as FieldComponent;
 
     return <Component {...componentProps} />;
 }

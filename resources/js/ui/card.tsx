@@ -5,7 +5,7 @@ export function Card({ className, children }: { className?: string; children: Re
     return (
         <div
             className={cn(
-                'rounded-xl border border-gray-200 bg-white shadow-sm dark:border-white/10 dark:bg-gray-900',
+                'rounded-lg border border-gray-200 bg-white dark:border-white/10 dark:bg-gray-900',
                 className,
             )}
         >

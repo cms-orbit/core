@@ -61,13 +61,13 @@ export function FieldShell({
 }
 
 const inputBase =
-    'block w-full rounded-lg border bg-white px-3 py-2 text-sm text-gray-900 shadow-sm transition placeholder:text-gray-400 focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:opacity-70 dark:bg-gray-900 dark:text-gray-100 dark:disabled:bg-white/5';
+    'block w-full rounded-md border bg-white px-3 py-2 text-sm text-gray-900 transition placeholder:text-gray-400 focus:outline-none focus:ring-1 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:opacity-70 dark:bg-gray-900 dark:text-gray-100 dark:disabled:bg-white/5';
 
 const inputNeutral =
-    'border-gray-300 focus:border-orbit-primary-500 focus:ring-orbit-primary-500/30 dark:border-white/10';
+    'border-gray-200 focus:border-orbit-primary-500 focus:ring-orbit-primary-500/20 dark:border-white/10';
 
 const inputInvalid =
-    'border-red-400 focus:border-red-500 focus:ring-red-500/30 dark:border-red-500/50';
+    'border-red-400 focus:border-red-500 focus:ring-red-500/20 dark:border-red-500/50';
 
 /** Base input styling (neutral state). Kept for backwards compatibility. */
 export const inputClass = cn(inputBase, inputNeutral);

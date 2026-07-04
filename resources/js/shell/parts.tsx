@@ -32,6 +32,7 @@ export interface SharedOrbit {
     menu?: OrbitMenuItem[];
     sections?: Record<string, OrbitMenuSectionRegistry>;
     permissions?: string[];
+    home?: string | null;
     user?: { id: number | string; name?: string; email?: string } | null;
     flash?: { message?: string | null; type?: string | null };
     brand?: OrbitBrand;
@@ -63,6 +64,10 @@ export interface LayoutViewProps extends DashboardContentProps {
 }
 
 export const UNSECTIONED = '__general__';
+
+function toneVar(name: string, fallback: string): string {
+    return `var(--color-orbit-${name}, ${fallback})`;
+}
 
 /** Section name → rail/nav glyph. Falls back to the first item's icon. */
 export const SECTION_ICONS: Record<string, string> = {
@@ -121,7 +126,7 @@ export function buildSections(
         if (!map.has(key)) {
             map.set(key, {
                 key,
-                label: registered?.label ?? label || 'General',
+                label: registered?.label ?? (label || 'General'),
                 icon:
                     registered?.icon ??
                     SECTION_ICONS[label] ??

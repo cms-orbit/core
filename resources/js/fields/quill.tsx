@@ -1,70 +1,11 @@
-import Quill from 'quill';
-import { useEffect, useRef } from 'react';
-import 'quill/dist/quill.snow.css';
+import { useEffect, useState, type ComponentType } from 'react';
 import type { FieldComponentProps } from '../contract';
-import { FieldShell } from '../ui/field-shell';
+import { FieldShell, fieldInputClass } from '../ui/field-shell';
 import { attr, str } from './shared';
 
-const TOOLBAR_GROUPS: Record<string, unknown[]> = {
-    text: ['bold', 'italic', 'underline', 'strike'],
-    color: [{ color: [] }, { background: [] }],
-    quote: ['blockquote', 'code-block'],
-    header: [{ header: [1, 2, 3, 4, false] }],
-    list: [{ list: 'ordered' }, { list: 'bullet' }],
-    format: [{ align: [] }, 'clean'],
-    media: ['link', 'image', 'video'],
-};
-
-function buildToolbar(toolbar: unknown): unknown[] {
-    if (!Array.isArray(toolbar) || toolbar.length === 0) {
-        return Object.values(TOOLBAR_GROUPS);
-    }
-
-    return toolbar
-        .map((group) => TOOLBAR_GROUPS[str(group)])
-        .filter((group): group is unknown[] => Array.isArray(group));
-}
-
-/** Rich text editor backed by Quill 2 (replaces Orchid's Quill integration). */
-export function QuillField(props: FieldComponentProps) {
-    const { value, errors, onChange } = props;
-    const editorRef = useRef<HTMLDivElement>(null);
-    const quillRef = useRef<Quill | null>(null);
-    const onChangeRef = useRef(onChange);
-
-    useEffect(() => {
-        onChangeRef.current = onChange;
-    }, [onChange]);
-
-    const toolbar = attr(props, 'toolbar');
+function QuillPlaceholder(props: FieldComponentProps) {
+    const { name, value, errors, onChange } = props;
     const height = attr<string>(props, 'height') ?? '300px';
-
-    useEffect(() => {
-        if (!editorRef.current || quillRef.current) {
-            return;
-        }
-
-        const quill = new Quill(editorRef.current, {
-            theme: 'snow',
-            placeholder: attr<string>(props, 'placeholder'),
-            readOnly: Boolean(attr(props, 'readonly') || attr(props, 'disabled')),
-            modules: { toolbar: buildToolbar(toolbar) },
-        });
-
-        const initial = str(value);
-
-        if (initial) {
-            quill.clipboard.dangerouslyPasteHTML(initial);
-        }
-
-        quill.on('text-change', () => {
-            onChangeRef.current?.(quill.root.innerHTML);
-        });
-
-        quillRef.current = quill;
-        // Quill is initialized once; subsequent value/onChange handled via refs.
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
 
     return (
         <FieldShell
@@ -72,10 +13,36 @@ export function QuillField(props: FieldComponentProps) {
             help={attr<string>(props, 'help')}
             required={attr<boolean>(props, 'required')}
             error={errors[0]}
+            htmlFor={attr<string>(props, 'id')}
         >
-            <div className="rounded-md border border-gray-300 dark:border-gray-700">
-                <div ref={editorRef} style={{ minHeight: height }} />
-            </div>
+            <textarea
+                id={attr<string>(props, 'id')}
+                name={name ?? undefined}
+                className={fieldInputClass(Boolean(errors[0]))}
+                style={{ minHeight: height }}
+                placeholder={attr<string>(props, 'placeholder')}
+                value={str(value)}
+                onChange={(event) => onChange?.(event.target.value)}
+            />
         </FieldShell>
     );
+}
+
+/**
+ * SSR-safe Quill wrapper. The Quill bundle loads only in the browser.
+ */
+export function QuillField(props: FieldComponentProps) {
+    const [ClientField, setClientField] = useState<ComponentType<FieldComponentProps> | null>(null);
+
+    useEffect(() => {
+        void import('./quill.client').then((module) => {
+            setClientField(() => module.QuillFieldClient);
+        });
+    }, []);
+
+    if (ClientField) {
+        return <ClientField {...props} />;
+    }
+
+    return <QuillPlaceholder {...props} />;
 }

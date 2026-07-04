@@ -1,5 +1,6 @@
 {
     "name": "cms-orbit/core",
+    "version": "4.0.0-beta2",
     "description": "CMS Orbit core: server-driven Screen/Layout/Field engine rendered via Inertia + React.",
     "keywords": [
         "laravel",

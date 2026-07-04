@@ -36,19 +36,13 @@ class SettingsScreen extends Screen
         $user = Auth::user();
 
         $groups = collect($registry->getGroups())
-            ->filter(function (ConfigGroup $group) use ($user) {
-                if ($user === null || ! method_exists($user, 'hasAccess')) {
-                    return true;
-                }
-
-                return $user->hasAccess($group->getPermission());
-            })
+            ->filter(fn (ConfigGroup $group) => $group->isAccessibleBy($user))
             ->map(fn (ConfigGroup $group) => [
-                'title' => $group->getTitle(),
+                'title'       => $group->getTitle(),
                 'description' => $group->getDescription(),
-                'icon' => $group->getIcon(),
-                'uriKey' => $group->getUriKey(),
-                'url' => route('orbit.configs.group', ['group' => $group->getUriKey()]),
+                'icon'        => $group->getIcon(),
+                'uriKey'      => $group->getUriKey(),
+                'url'         => route('orbit.configs.group', ['group' => $group->getUriKey()]),
             ])
             ->values()
             ->all();

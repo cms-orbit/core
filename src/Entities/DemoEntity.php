@@ -6,6 +6,7 @@ namespace CmsOrbit\Core\Entities;
 
 use CmsOrbit\Core\Foundation\Entity\Entity;
 use CmsOrbit\Core\Foundation\Models\User;
+use CmsOrbit\Core\Screen\Field;
 use CmsOrbit\Core\Screen\Fields\Code;
 use CmsOrbit\Core\Screen\Fields\DateTimer;
 use CmsOrbit\Core\Screen\Fields\Group;
@@ -61,6 +62,11 @@ class DemoEntity extends Entity
         return (string) config('orbit.demo.section', __('Demo'));
     }
 
+    public function sectionKey(): ?string
+    {
+        return 'demo';
+    }
+
     public function sort(): int
     {
         return 100;
@@ -75,7 +81,7 @@ class DemoEntity extends Entity
     }
 
     /**
-     * @return \CmsOrbit\Core\Screen\Field[]
+     * @return Field[]
      */
     public function fields(): array
     {
@@ -89,8 +95,8 @@ class DemoEntity extends Entity
                 Select::make('plan')
                     ->title(__('Select'))
                     ->options([
-                        'free' => __('Free'),
-                        'pro' => __('Pro'),
+                        'free'       => __('Free'),
+                        'pro'        => __('Pro'),
                         'enterprise' => __('Enterprise'),
                     ])
                     ->help(__('A single-choice select.')),
@@ -98,7 +104,7 @@ class DemoEntity extends Entity
                     ->title(__('Radio'))
                     ->options([
                         'monthly' => __('Monthly'),
-                        'yearly' => __('Yearly'),
+                        'yearly'  => __('Yearly'),
                     ]),
             ])->widthColumns('1fr 1fr'),
 
@@ -148,7 +154,7 @@ class DemoEntity extends Entity
     public function rules(Model $model): array
     {
         return [
-            'name' => ['required', 'string', 'max:255'],
+            'name'  => ['required', 'string', 'max:255'],
             'email' => ['nullable', 'string', 'email', 'max:255'],
         ];
     }

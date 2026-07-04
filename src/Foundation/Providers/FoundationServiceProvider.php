@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CmsOrbit\Core\Foundation\Providers;
 
+use CmsOrbit\Core\Demo\DemoServiceProvider;
 use CmsOrbit\Core\Foundation\Orbit;
 use CmsOrbit\Core\Support\Facades\Dashboard;
 use Illuminate\Foundation\Application;
@@ -117,6 +118,7 @@ class FoundationServiceProvider extends ServiceProvider
             // provider so their app->booted() callbacks (which resolve named
             // routes for menus) run after the router refreshes its name lookup.
             RouteServiceProvider::class,
+            DemoServiceProvider::class,
             EntityServiceProvider::class,
             ConfigServiceProvider::class,
             SeoServiceProvider::class,

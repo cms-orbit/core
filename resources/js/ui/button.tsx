@@ -7,12 +7,12 @@ type Size = 'sm' | 'md' | 'lg';
 
 const variants: Record<Variant, string> = {
     primary:
-        'bg-orbit-primary-600 text-white shadow-sm hover:bg-orbit-primary-500 focus-visible:ring-orbit-primary-500/50',
+        'bg-orbit-primary-600 text-white hover:bg-orbit-primary-500 focus-visible:ring-orbit-primary-500/50',
     default:
-        'bg-white text-gray-700 border border-gray-300 shadow-sm hover:bg-gray-50 focus-visible:ring-gray-400/40 dark:bg-white/5 dark:text-gray-100 dark:border-white/10 dark:hover:bg-white/10',
-    danger: 'bg-red-600 text-white shadow-sm hover:bg-red-500 focus-visible:ring-red-500/50',
-    success: 'bg-green-600 text-white shadow-sm hover:bg-green-500 focus-visible:ring-green-500/50',
-    warning: 'bg-amber-500 text-white shadow-sm hover:bg-amber-400 focus-visible:ring-amber-500/50',
+        'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 focus-visible:ring-gray-400/40 dark:bg-white/5 dark:text-gray-100 dark:border-white/10 dark:hover:bg-white/10',
+    danger: 'bg-red-600 text-white hover:bg-red-500 focus-visible:ring-red-500/50',
+    success: 'bg-green-600 text-white hover:bg-green-500 focus-visible:ring-green-500/50',
+    warning: 'bg-amber-500 text-white hover:bg-amber-400 focus-visible:ring-amber-500/50',
     ghost: 'text-gray-600 hover:bg-gray-100 focus-visible:ring-gray-400/40 dark:text-gray-300 dark:hover:bg-white/10',
     link: 'text-orbit-primary-600 hover:text-orbit-primary-500 hover:underline dark:text-orbit-primary-400',
 };

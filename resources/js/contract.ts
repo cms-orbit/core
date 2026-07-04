@@ -3,6 +3,8 @@
  * Keep in sync with ../../CONTRACT.md and the PHP serialization layer.
  */
 
+import type { MediaItem } from './media/types';
+
 export interface Breadcrumb {
     label: string;
     url: string | null;
@@ -71,6 +73,8 @@ export interface FieldComponentProps {
     attributes: Record<string, unknown>;
     errors: string[];
     onChange?: (value: unknown) => void;
+    /** Optional hook used by AttachField when the selected media assets change. */
+    onAssetsChange?: (assets: MediaItem[]) => void;
     screen?: ScreenContext;
 }
 

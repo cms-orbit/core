@@ -5,6 +5,7 @@ import {
     SelectField,
     TimeZoneField,
 } from './fields/choice';
+import { ColorField } from './fields/color';
 import { CodeField } from './fields/code';
 import { CropperField } from './fields/cropper';
 import { DateRangeField, DateTimerField } from './fields/date';
@@ -126,6 +127,7 @@ export { SelectField };
  */
 export const fieldComponents: Record<string, FieldComponent> = {
     input: InputField,
+    color: ColorField,
     password: InputField,
     'text-area': TextAreaField,
     select: SelectField,
@@ -150,6 +152,7 @@ export const fieldComponents: Record<string, FieldComponent> = {
     'permission-matrix': PermissionMatrixField,
     map: MapField,
     utm: UtmField,
+    'u-t-m': UtmField,
     group: GroupField,
     'view-field': ViewFieldField,
 };
