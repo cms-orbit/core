@@ -2,6 +2,7 @@ import type { LayoutViewProps } from '../parts';
 import {
     Breadcrumbs,
     HeaderActions,
+    IconRail,
     MobileMenuButton,
     PageBody,
     SidebarPanel,
@@ -9,11 +10,17 @@ import {
 } from '../parts';
 
 /**
- * Single classic sidebar: one column lists every section (header + items),
- * no icon rail.
+ * Palette split sidebar: compact rail + secondary sidebar, both themed with
+ * dedicated surface and active-state tokens.
  */
-export function SingleLayoutView({ orbit, brand, currentPath, breadcrumbs, ...content }: LayoutViewProps) {
-    const { sections, mobileOpen, setMobileOpen } = useMenuState(
+export function PaletteSplitLayoutView({
+    orbit,
+    brand,
+    currentPath,
+    breadcrumbs,
+    ...content
+}: LayoutViewProps) {
+    const { sections, activeKey, setSelectedKey, mobileOpen, setMobileOpen, selectedSection } = useMenuState(
         orbit.menu ?? [],
         currentPath,
         orbit.sections ?? {},
@@ -28,12 +35,20 @@ export function SingleLayoutView({ orbit, brand, currentPath, breadcrumbs, ...co
                 color: 'var(--color-orbit-secondary, #0f172a)',
             }}
         >
+            <IconRail
+                brand={brand}
+                homeUrl={homeUrl}
+                sections={sections}
+                selectedKey={selectedSection?.key ?? null}
+                activeKey={activeKey}
+                onSelect={setSelectedKey}
+            />
+
             <div className="hidden md:block">
                 <SidebarPanel
                     brand={brand}
                     homeUrl={homeUrl}
-                    sections={sections}
-                    showAllSections
+                    section={selectedSection}
                     currentPath={currentPath}
                     user={orbit.user ?? null}
                 />
@@ -65,11 +80,19 @@ export function SingleLayoutView({ orbit, brand, currentPath, breadcrumbs, ...co
                         aria-hidden
                     />
                     <div className="relative z-10 flex h-full">
-                        <SidebarPanel
+                        <IconRail
                             brand={brand}
                             homeUrl={homeUrl}
                             sections={sections}
-                            showAllSections
+                            selectedKey={selectedSection?.key ?? null}
+                            activeKey={activeKey}
+                            onSelect={setSelectedKey}
+                            variant="mobile"
+                        />
+                        <SidebarPanel
+                            brand={brand}
+                            homeUrl={homeUrl}
+                            section={selectedSection}
                             currentPath={currentPath}
                             user={orbit.user ?? null}
                         />

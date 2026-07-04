@@ -1,13 +1,15 @@
 import { Link, router } from '@inertiajs/react';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 import type { Breadcrumb } from '../contract';
 import { cn } from '../lib/cn';
+import type { OrbitI18n } from '../lib/i18n';
 import { useT } from '../lib/i18n';
-import type { OrbitBrand } from '../theme/branding';
+import type { DarkModeSetting, OrbitBrand } from '../theme/branding';
 import { Icon } from '../ui/icon';
 import { LanguageSwitcher } from '../ui/language-switcher';
 import { NotificationCenter } from '../ui/notification';
+import { ThemeModeSwitcher } from '../ui/theme-mode-switcher';
 
 export interface OrbitMenuItem {
     label: string;
@@ -36,7 +38,7 @@ export interface SharedOrbit {
     user?: { id: number | string; name?: string; email?: string } | null;
     flash?: { message?: string | null; type?: string | null };
     brand?: OrbitBrand;
-    i18n?: import('../lib/i18n').OrbitI18n;
+    i18n?: OrbitI18n;
 }
 
 export interface MenuSection {
@@ -161,18 +163,27 @@ export function useMenuState(
         return match?.key ?? sections[0]?.key ?? null;
     }, [sections, currentPath]);
 
-    const [selectedKey, setSelectedKey] = useState<string | null>(activeKey);
-    const [mobileOpen, setMobileOpen] = useState(false);
+    const [selectionState, setSelectionState] = useState<{ path: string; key: string | null } | null>(null);
+    const [mobileOpenState, setMobileOpenState] = useState<{ path: string; open: boolean }>({
+        path: currentPath,
+        open: false,
+    });
 
-    useEffect(() => {
-        if (activeKey) {
-            setSelectedKey(activeKey);
-        }
-    }, [activeKey]);
+    const selectedKey =
+        selectionState?.path === currentPath
+            ? selectionState.key
+            : activeKey ?? sections[0]?.key ?? null;
+    const mobileOpen = mobileOpenState.path === currentPath ? mobileOpenState.open : false;
 
-    useEffect(() => {
-        setMobileOpen(false);
-    }, [currentPath]);
+    const setSelectedKey = (key: string | null) => {
+        setSelectionState({ path: currentPath, key });
+    };
+
+    const setMobileOpen = (value: boolean | ((open: boolean) => boolean)) => {
+        const next = typeof value === 'function' ? value(mobileOpen) : value;
+
+        setMobileOpenState({ path: currentPath, open: next });
+    };
 
     const selectedSection =
         sections.find((section) => section.key === selectedKey) ?? sections[0] ?? null;
@@ -191,6 +202,7 @@ export function useMenuState(
 /** Discord-style primary icon rail: brand mark + section icons. */
 export function IconRail({
     brand,
+    homeUrl = '/main',
     sections,
     selectedKey,
     activeKey,
@@ -198,6 +210,7 @@ export function IconRail({
     variant = 'desktop',
 }: {
     brand?: OrbitBrand;
+    homeUrl?: string;
     sections: MenuSection[];
     selectedKey: string | null;
     activeKey: string | null;
@@ -209,25 +222,30 @@ export function IconRail({
     return (
         <aside
             className={cn(
-                'w-16 shrink-0 flex-col items-center gap-1 border-r border-gray-200 bg-white py-3 dark:border-gray-800 dark:bg-gray-950',
+                'w-16 shrink-0 flex-col items-center gap-1 py-3',
                 variant === 'mobile' ? 'flex' : 'hidden md:flex',
             )}
+            style={{
+                backgroundColor: toneVar('rail-bg', '#ffffff'),
+                borderRight: `1px solid ${toneVar('rail-border', '#e2e8f0')}`,
+            }}
         >
             <Link
-                href="/"
-                className="mb-2 flex h-11 w-11 items-center justify-center rounded-2xl bg-orbit-primary/10 transition hover:rounded-xl"
+                href={homeUrl}
+                className="mb-2 flex h-11 w-11 items-center justify-center rounded-2xl transition hover:rounded-xl"
                 title={brand?.name ?? 'Orbit'}
+                style={{ backgroundColor: toneVar('rail-active-bg', 'rgba(23, 206, 145, 0.12)') }}
             >
                 {brand?.symbol ? (
                     <img src={brand.symbol} alt={brand?.name ?? 'Orbit'} className="h-6 w-6" />
                 ) : (
-                    <span className="text-sm font-bold text-orbit-primary">
+                    <span className="text-sm font-bold" style={{ color: toneVar('primary', '#17ce91') }}>
                         {(brand?.name ?? 'O').charAt(0)}
                     </span>
                 )}
             </Link>
 
-            <div className="mb-1 h-px w-8 bg-gray-200 dark:bg-gray-800" />
+            <div className="mb-1 h-px w-8" style={{ backgroundColor: toneVar('rail-border', '#e2e8f0') }} />
 
             <nav className="flex flex-1 flex-col items-center gap-1">
                 {sections.map((section) => {
@@ -242,17 +260,21 @@ export function IconRail({
                             title={t(section.label)}
                             className={cn(
                                 'group relative flex h-11 w-11 items-center justify-center rounded-2xl transition hover:rounded-xl',
-                                isSelected
-                                    ? 'bg-orbit-primary text-white'
-                                    : 'text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800',
                             )}
+                            style={{
+                                backgroundColor: isSelected ? toneVar('rail-active-bg', '#17ce91') : 'transparent',
+                                color: isSelected
+                                    ? toneVar('rail-active-fg', '#ffffff')
+                                    : toneVar('rail-icon', '#64748b'),
+                            }}
                         >
                             <span
                                 className={cn(
-                                    'absolute -left-3 w-1 rounded-r-full bg-orbit-primary transition-all',
+                                    'absolute -left-3 w-1 rounded-r-full transition-all',
                                     isActive || isSelected ? 'opacity-100' : 'opacity-0',
                                     isSelected ? 'h-8' : 'h-5',
                                 )}
+                                style={{ backgroundColor: toneVar('primary', '#17ce91') }}
                             />
                             <Icon name={section.icon} className="text-xl" />
                         </button>
@@ -264,14 +286,21 @@ export function IconRail({
 }
 
 /** Brand wordmark row used at the top of sidebars. */
-export function BrandWordmark({ brand }: { brand?: OrbitBrand }) {
+export function BrandWordmark({ brand, homeUrl = '/main' }: { brand?: OrbitBrand; homeUrl?: string }) {
     return (
-        <div className="flex h-14 items-center gap-2 border-b border-gray-200 px-4 dark:border-gray-800">
-            {brand?.logo ? (
-                <img src={brand.logo} alt={brand?.name ?? 'Orbit'} className="h-5 w-auto" />
-            ) : (
-                <span className="text-lg font-semibold">{brand?.name ?? 'Orbit'}</span>
-            )}
+        <div
+            className="flex h-14 items-center gap-2 border-b px-4"
+            style={{ borderColor: toneVar('nav-border', '#e2e8f0') }}
+        >
+            <Link href={homeUrl} className="flex items-center gap-2" title={brand?.name ?? 'Orbit'}>
+                {brand?.logo ? (
+                    <img src={brand.logo} alt={brand?.name ?? 'Orbit'} className="h-5 w-auto" />
+                ) : (
+                    <span className="text-lg font-semibold" style={{ color: toneVar('secondary', '#0f172a') }}>
+                        {brand?.name ?? 'Orbit'}
+                    </span>
+                )}
+            </Link>
         </div>
     );
 }
@@ -289,13 +318,20 @@ export function SectionNav({
     const t = useT();
 
     if (!section) {
-        return <p className="px-3 py-2 text-sm text-gray-400">{t('No menu items.')}</p>;
+        return (
+            <p className="px-3 py-2 text-sm" style={{ color: toneVar('nav-muted', '#94a3b8') }}>
+                {t('No menu items.')}
+            </p>
+        );
     }
 
     return (
         <>
             {showHeader ? (
-                <p className="px-3 pb-1 text-xs font-semibold uppercase tracking-wide text-gray-400">
+                <p
+                    className="px-3 pb-1 text-xs font-semibold uppercase tracking-wide"
+                    style={{ color: toneVar('nav-muted', '#94a3b8') }}
+                >
                     {t(section.label)}
                 </p>
             ) : null}
@@ -311,6 +347,7 @@ export function SectionNav({
 /** Secondary sidebar panel: brand wordmark + a section's grouped menu + user. */
 export function SidebarPanel({
     brand,
+    homeUrl = '/main',
     section,
     sections,
     currentPath,
@@ -318,6 +355,7 @@ export function SidebarPanel({
     showAllSections = false,
 }: {
     brand?: OrbitBrand;
+    homeUrl?: string;
     section?: MenuSection | null;
     sections?: MenuSection[];
     currentPath: string;
@@ -325,8 +363,14 @@ export function SidebarPanel({
     showAllSections?: boolean;
 }) {
     return (
-        <aside className="flex h-full w-60 shrink-0 flex-col border-r border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
-            <BrandWordmark brand={brand} />
+        <aside
+            className="flex h-full w-60 shrink-0 flex-col"
+            style={{
+                backgroundColor: toneVar('nav-bg', '#ffffff'),
+                borderRight: `1px solid ${toneVar('nav-border', '#e2e8f0')}`,
+            }}
+        >
+            <BrandWordmark brand={brand} homeUrl={homeUrl} />
 
             <div className="flex-1 space-y-3 overflow-y-auto px-2 py-3">
                 {showAllSections && sections
@@ -336,7 +380,7 @@ export function SidebarPanel({
                     : <SectionNav section={section ?? null} currentPath={currentPath} />}
             </div>
 
-            <div className="border-t border-gray-200 p-3 dark:border-gray-800">
+            <div className="border-t p-3" style={{ borderColor: toneVar('nav-border', '#e2e8f0') }}>
                 <UserMenu user={user} compact />
             </div>
         </aside>
@@ -350,7 +394,10 @@ export function SidebarItem({ item, currentPath }: { item: OrbitMenuItem; curren
     if (hasChildren) {
         return (
             <div className="pt-2">
-                <p className="px-3 pb-1 text-xs font-semibold uppercase tracking-wide text-gray-400">
+                <p
+                    className="px-3 pb-1 text-xs font-semibold uppercase tracking-wide"
+                    style={{ color: toneVar('nav-muted', '#94a3b8') }}
+                >
                     {t(item.label)}
                 </p>
                 <div className="space-y-0.5">
@@ -364,7 +411,9 @@ export function SidebarItem({ item, currentPath }: { item: OrbitMenuItem; curren
 
     return (
         <>
-            {item.divider ? <div className="my-2 h-px bg-gray-100 dark:bg-gray-800" /> : null}
+            {item.divider ? (
+                <div className="my-2 h-px" style={{ backgroundColor: toneVar('nav-border', '#e2e8f0') }} />
+            ) : null}
             <SidebarLink item={item} currentPath={currentPath} />
         </>
     );
@@ -381,14 +430,25 @@ export function SidebarLink({ item, currentPath }: { item: OrbitMenuItem; curren
                 <span className="truncate">{t(item.label)}</span>
             </span>
             {item.badge != null ? (
-                <span className="rounded-full bg-gray-200 px-2 text-xs dark:bg-gray-700">{item.badge}</span>
+                <span
+                    className="rounded-full px-2 text-xs"
+                    style={{
+                        backgroundColor: toneVar('nav-muted', '#f1f5f9'),
+                        color: toneVar('secondary', '#0f172a'),
+                    }}
+                >
+                    {item.badge}
+                </span>
             ) : null}
         </>
     );
 
     if (!item.url) {
         return (
-            <div className="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-gray-400">
+            <div
+                className="px-3 py-2 text-xs font-semibold uppercase tracking-wide"
+                style={{ color: toneVar('nav-muted', '#94a3b8') }}
+            >
                 {t(item.label)}
             </div>
         );
@@ -399,10 +459,12 @@ export function SidebarLink({ item, currentPath }: { item: OrbitMenuItem; curren
             href={item.url}
             className={cn(
                 'flex items-center justify-between rounded-md px-3 py-2 text-sm',
-                active
-                    ? 'bg-orbit-primary/10 font-medium text-orbit-primary'
-                    : 'text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800',
+                active ? 'font-medium' : '',
             )}
+            style={{
+                backgroundColor: active ? toneVar('nav-active-bg', 'rgba(23, 206, 145, 0.12)') : 'transparent',
+                color: active ? toneVar('nav-active-fg', '#0f766e') : toneVar('secondary', '#475569'),
+            }}
         >
             {content}
         </Link>
@@ -420,15 +482,27 @@ export function UserMenu({ user, compact = false }: { user: SharedOrbit['user'];
     if (compact) {
         return (
             <div className="flex items-center gap-2">
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-orbit-primary/10 text-sm font-semibold text-orbit-primary">
+                <span
+                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-semibold"
+                    style={{
+                        backgroundColor: toneVar('nav-active-bg', 'rgba(23, 206, 145, 0.12)'),
+                        color: toneVar('primary', '#17ce91'),
+                    }}
+                >
                     {(name ?? '?').charAt(0).toUpperCase()}
                 </span>
-                <span className="min-w-0 flex-1 truncate text-sm text-gray-700 dark:text-gray-200">{name}</span>
+                <span
+                    className="min-w-0 flex-1 truncate text-sm"
+                    style={{ color: toneVar('secondary', '#0f172a') }}
+                >
+                    {name}
+                </span>
                 <button
                     type="button"
                     onClick={logout}
                     title={t('Log out')}
-                    className="rounded-md p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-gray-800"
+                    className="rounded-md p-1.5"
+                    style={{ color: toneVar('nav-muted', '#94a3b8') }}
                 >
                     <Icon name="bs.box-arrow-right" className="text-base" />
                 </button>
@@ -438,12 +512,15 @@ export function UserMenu({ user, compact = false }: { user: SharedOrbit['user'];
 
     return (
         <div className="flex items-center gap-2">
-            <span className="hidden text-sm text-gray-500 sm:inline dark:text-gray-400">{name}</span>
+            <span className="hidden text-sm sm:inline" style={{ color: toneVar('secondary', '#475569') }}>
+                {name}
+            </span>
             <button
                 type="button"
                 onClick={logout}
                 title={t('Log out')}
-                className="rounded-md p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-gray-800"
+                className="rounded-md p-1.5"
+                style={{ color: toneVar('nav-muted', '#94a3b8') }}
             >
                 <Icon name="bs.box-arrow-right" className="text-base" />
             </button>
@@ -457,12 +534,12 @@ export function Breadcrumbs({ items }: { items?: Breadcrumb[] }) {
     }
 
     return (
-        <nav className="flex items-center gap-1.5 truncate text-sm text-gray-500 dark:text-gray-400">
+        <nav className="flex items-center gap-1.5 truncate text-sm" style={{ color: toneVar('secondary', '#64748b') }}>
             {items.map((crumb, index) => (
                 <span key={`${crumb.label}-${index}`} className="flex items-center gap-1.5">
-                    {index > 0 ? <span className="text-gray-300">/</span> : null}
+                    {index > 0 ? <span style={{ color: toneVar('nav-border', '#cbd5e1') }}>/</span> : null}
                     {crumb.url ? (
-                        <Link href={crumb.url} className="hover:text-gray-700 dark:hover:text-gray-200">
+                        <Link href={crumb.url}>
                             {crumb.label}
                         </Link>
                     ) : (
@@ -475,9 +552,16 @@ export function Breadcrumbs({ items }: { items?: Breadcrumb[] }) {
 }
 
 /** Right-aligned header actions shared across layouts. */
-export function HeaderActions({ user }: { user: SharedOrbit['user'] }) {
+export function HeaderActions({
+    user,
+    darkMode,
+}: {
+    user: SharedOrbit['user'];
+    darkMode?: DarkModeSetting | null;
+}) {
     return (
         <div className="flex items-center gap-3">
+            <ThemeModeSwitcher defaultMode={darkMode} />
             <LanguageSwitcher />
             <NotificationCenter />
             <UserMenu user={user} />
@@ -493,7 +577,8 @@ export function MobileMenuButton({ onClick }: { onClick: () => void }) {
         <button
             type="button"
             onClick={onClick}
-            className="rounded-md p-1.5 text-gray-500 hover:bg-gray-100 md:hidden dark:hover:bg-gray-800"
+            className="rounded-md p-1.5 md:hidden"
+            style={{ color: toneVar('secondary', '#64748b') }}
             aria-label={t('Toggle menu')}
         >
             <Icon name="bs.list" className="text-xl" />
@@ -504,14 +589,20 @@ export function MobileMenuButton({ onClick }: { onClick: () => void }) {
 /** The main content region with the page title/description/actions header. */
 export function PageBody({ title, description, actions, children }: DashboardContentProps) {
     return (
-        <main className="flex-1 p-4 md:p-6">
+        <main className="flex-1 p-4 md:p-6" style={{ backgroundColor: toneVar('page-bg', '#f8fafc') }}>
             <div className="mx-auto max-w-6xl">
                 {title || actions ? (
                     <div className="mb-5 flex flex-wrap items-start justify-between gap-4">
                         <div className="min-w-0">
-                            {title ? <h1 className="truncate text-xl font-semibold">{title}</h1> : null}
+                            {title ? (
+                                <h1 className="truncate text-xl font-semibold" style={{ color: toneVar('secondary', '#0f172a') }}>
+                                    {title}
+                                </h1>
+                            ) : null}
                             {description ? (
-                                <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{description}</p>
+                                <p className="mt-1 text-sm" style={{ color: toneVar('secondary', '#64748b') }}>
+                                    {description}
+                                </p>
                             ) : null}
                         </div>
                         {actions ? <div className="shrink-0">{actions}</div> : null}

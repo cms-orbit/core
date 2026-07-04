@@ -1,5 +1,5 @@
-import type { BrandColors, LayoutMode } from './branding';
 import { cn } from '../lib/cn';
+import type { BrandColors, LayoutMode } from './branding';
 
 export interface LayoutPreviewProps {
     mode: LayoutMode;
@@ -30,7 +30,17 @@ function Bar({
     return <rect x={x} y={y} width={w} height={h} rx={rx} fill={fill} />;
 }
 
-function SplitPreview({ colors, w, h, scale }: { colors: Required<BrandColors>; w: number; h: number; scale: number }) {
+function PaletteSplitPreview({
+    colors,
+    w,
+    h,
+    scale,
+}: {
+    colors: Required<BrandColors>;
+    w: number;
+    h: number;
+    scale: number;
+}) {
     const rail = 14 * scale;
     const side = 36 * scale;
     const header = 14 * scale;
@@ -118,6 +128,8 @@ function PreviewSvg({
 
     const body = (() => {
         switch (mode) {
+            case 'palette-split':
+                return <PaletteSplitPreview colors={colors} w={w} h={h} scale={scale} />;
             case 'sidebar-single':
                 return <SinglePreview colors={colors} w={w} h={h} scale={scale} />;
             case 'topbar':
@@ -125,7 +137,7 @@ function PreviewSvg({
             case 'hybrid':
                 return <HybridPreview colors={colors} w={w} h={h} scale={scale} />;
             default:
-                return <SplitPreview colors={colors} w={w} h={h} scale={scale} />;
+                return <PaletteSplitPreview colors={colors} w={w} h={h} scale={scale} />;
         }
     })();
 
@@ -162,9 +174,8 @@ export function LayoutPreview({ mode, colors, className, variant = 'snippet' }: 
 }
 
 export const LAYOUT_MODE_LABELS: Record<LayoutMode, string> = {
-    'sidebar-split': 'Split sidebar',
+    'palette-split': 'Palette split sidebar',
     'sidebar-single': 'Single sidebar',
     topbar: 'Top bar',
     hybrid: 'Hybrid',
-    'palette-split': 'Palette split sidebar',
 };

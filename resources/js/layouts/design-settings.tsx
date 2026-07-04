@@ -1,18 +1,15 @@
-import { useMemo } from 'react';
+import { useState } from 'react';
 import type { FieldNode, LayoutComponentProps } from '../contract';
 import { ColorField } from '../fields/color';
 import { useOptionalOrbitForm } from '../form-context';
-import { readLayoutData } from '../lib/layout-data';
 import { cn } from '../lib/cn';
+import { readLayoutData } from '../lib/layout-data';
 import type { MediaItem } from '../media/types';
 import { FieldRenderer } from '../screen-renderer';
 import type { LayoutMode } from '../theme/branding';
-import {
-    type LayoutThemeDefinition,
-    type LayoutThemes,
-    toPreviewColors,
-} from '../theme/layout-themes';
 import { LAYOUT_MODE_LABELS, LayoutPreview } from '../theme/layout-previews';
+import { toPreviewColors } from '../theme/layout-themes';
+import type { LayoutThemeDefinition, LayoutThemeToken, LayoutThemes } from '../theme/layout-themes';
 import { Card, CardBody, CardHeader } from '../ui/card';
 
 const IDENTITY_KEYS = [
@@ -25,11 +22,26 @@ const IDENTITY_KEYS = [
 
 const TOKEN_DEFAULTS: Record<string, string> = {
     color_primary: '#17ce91',
-    color_secondary: '#64748b',
+    color_secondary: '#0f172a',
     color_accent: '#fc8024',
-    color_surface: '#f8fafc',
-    color_muted: '#94a3b8',
+    color_page_bg: '#f8fafc',
+    color_panel_bg: '#ffffff',
+    color_panel_border: '#e2e8f0',
+    color_header_bg: '#ffffff',
+    color_header_border: '#e2e8f0',
+    color_nav_bg: '#ffffff',
+    color_nav_border: '#e2e8f0',
+    color_nav_muted: '#f1f5f9',
+    color_nav_active_bg: '#ecfdf5',
+    color_nav_active_fg: '#0f766e',
+    color_rail_bg: '#ffffff',
+    color_rail_border: '#e2e8f0',
+    color_rail_icon: '#64748b',
+    color_rail_active_bg: '#17ce91',
+    color_rail_active_fg: '#ffffff',
 };
+
+type Tone = 'light' | 'dark';
 
 function asFields(value: unknown): FieldNode[] {
     return Array.isArray(value) ? (value as FieldNode[]) : [];
@@ -89,6 +101,60 @@ function resolveMediaUrl(value: unknown): string | null {
     return null;
 }
 
+function groupTokens(theme: LayoutThemeDefinition | undefined): Array<[string, LayoutThemeToken[]]> {
+    if (!theme) {
+        return [];
+    }
+
+    const groups = new Map<string, LayoutThemeToken[]>();
+
+    theme.tokens.forEach((token) => {
+        const group = token.group ?? 'General';
+        groups.set(group, [...(groups.get(group) ?? []), token]);
+    });
+
+    return Array.from(groups.entries());
+}
+
+function ToneToggle({
+    value,
+    onChange,
+}: {
+    value: Tone;
+    onChange: (tone: Tone) => void;
+}) {
+    return (
+        <div className="inline-flex rounded-full border border-gray-200 bg-gray-50 p-1 dark:border-white/10 dark:bg-white/5">
+            {([
+                ['light', 'Light'],
+                ['dark', 'Dark'],
+            ] as const).map(([tone, label]) => {
+                const active = value === tone;
+
+                return (
+                    <button
+                        key={tone}
+                        type="button"
+                        onClick={() => onChange(tone)}
+                        className={cn(
+                            'rounded-full px-3 py-1 text-xs font-medium transition',
+                            active
+                                ? 'bg-white text-gray-900 shadow-sm dark:bg-gray-900 dark:text-gray-100'
+                                : 'text-gray-500 dark:text-gray-400',
+                        )}
+                    >
+                        {label}
+                    </button>
+                );
+            })}
+        </div>
+    );
+}
+
+function tokenSwatches(colors: Record<string, string>, tokens: LayoutThemeToken[]): string[] {
+    return tokens.slice(0, 6).map((token) => colors[token.key]).filter(Boolean);
+}
+
 /** Unified admin design settings: identity, layout theme presets and live preview. */
 export function DesignSettingsLayout({ node }: LayoutComponentProps) {
     const layoutData = readLayoutData(node);
@@ -102,18 +168,17 @@ export function DesignSettingsLayout({ node }: LayoutComponentProps) {
         (field): field is FieldNode => field !== undefined,
     );
 
-    const selectedMode = (config[configKey('layout.mode')] as LayoutMode | undefined) ?? 'sidebar-split';
+    const selectedMode = (config[configKey('layout.mode')] as LayoutMode | undefined) ?? 'palette-split';
     const activeTheme = layoutThemes[selectedMode];
     const layoutPalette = String(config[configKey(`theme.${selectedMode}.palette`)] ?? '');
-    const layoutColors = useMemo(
-        () => (activeTheme ? readLayoutTokenColors(config, selectedMode, activeTheme, 'light') : {}),
-        [activeTheme, config, selectedMode],
-    );
-    const layoutColorsDark = useMemo(
-        () => (activeTheme?.dualTone ? readLayoutTokenColors(config, selectedMode, activeTheme, 'dark') : {}),
-        [activeTheme, config, selectedMode],
-    );
-    const previewColors = useMemo(() => toPreviewColors(layoutColors), [layoutColors]);
+    const [previewTone, setPreviewTone] = useState<Tone>('light');
+    const layoutColors = activeTheme ? readLayoutTokenColors(config, selectedMode, activeTheme, 'light') : {};
+    const layoutColorsDark =
+        activeTheme?.dualTone ? readLayoutTokenColors(config, selectedMode, activeTheme, 'dark') : {};
+    const activePreviewTone = activeTheme?.dualTone ? previewTone : 'light';
+    const activeToneColors = activePreviewTone === 'dark' ? layoutColorsDark : layoutColors;
+    const previewColors = toPreviewColors(activeToneColors);
+    const tokenGroups = groupTokens(activeTheme);
 
     const brandName = String(config[configKey('branding.name')] ?? 'Orbit');
     const logoUrl = resolveMediaUrl(config[configKey('branding.logo')] ?? findFieldByKey(fields, 'branding.logo')?.value);
@@ -122,6 +187,7 @@ export function DesignSettingsLayout({ node }: LayoutComponentProps) {
     );
 
     const selectMode = (mode: LayoutMode) => {
+        setPreviewTone('light');
         form?.setValue(`config[${configKey('layout.mode')}]`, mode);
     };
 
@@ -182,340 +248,331 @@ export function DesignSettingsLayout({ node }: LayoutComponentProps) {
     };
 
     return (
-        <div className="grid grid-cols-1 gap-6 xl:grid-cols-5">
-            <div className="space-y-6 xl:col-span-2">
-                <Card>
-                    <CardHeader
-                        title="아이덴티티"
-                        description="관리자 페이지 이름, 로고, 파비콘 등 공통 브랜딩 정보입니다."
-                    />
-                    <CardBody className="space-y-4">
-                        {identityFields.length > 0 ? (
-                            identityFields.map((field, index) => (
-                                <FieldRenderer key={field.name ?? index} node={field} data={{}} />
-                            ))
-                        ) : (
-                            <p className="text-sm text-gray-500 dark:text-gray-400">
-                                아이덴티티 필드를 불러오지 못했습니다. 페이지를 새로고침해 주세요.
-                            </p>
-                        )}
-                    </CardBody>
-                </Card>
-
-                <Card>
-                    <CardHeader
-                        title="레이아웃"
-                        description="관리자 셸 레이아웃을 선택한 뒤, 해당 레이아웃 전용 색상 프리셋을 적용합니다."
-                    />
-                    <CardBody className="space-y-4">
-                        <div className="grid grid-cols-2 gap-3">
-                            {(Object.keys(layoutModes) as LayoutMode[]).map((mode) => {
-                                const selected = selectedMode === mode;
-                                const theme = layoutThemes[mode];
-                                const snippetColors = theme
-                                    ? toPreviewColors(readLayoutTokenColors(config, mode, theme, 'light'))
-                                    : previewColors;
-
-                                return (
-                                    <button
-                                        key={mode}
-                                        type="button"
-                                        onClick={() => selectMode(mode)}
-                                        className={cn(
-                                            'rounded-xl border p-2 text-left transition',
-                                            selected
-                                                ? 'border-orbit-primary bg-orbit-primary/5 ring-2 ring-orbit-primary/20'
-                                                : 'border-gray-200 hover:border-gray-300 dark:border-white/10 dark:hover:border-white/20',
-                                        )}
-                                    >
-                                        <LayoutPreview mode={mode} colors={snippetColors} variant="snippet" />
-                                        <span className="mt-2 block px-1 text-xs font-medium text-gray-700 dark:text-gray-200">
-                                            {layoutModes[mode] ?? LAYOUT_MODE_LABELS[mode]}
+        <div className="space-y-6">
+            <section className="space-y-3">
+                <div>
+                    <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">브랜딩</h2>
+                    <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                        브랜드 미리보기와 아이덴티티 입력을 한 화면에서 함께 조정합니다.
+                    </p>
+                </div>
+                <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
+                    <Card className="xl:col-span-1">
+                        <CardHeader title="브랜드 미리보기" description="현재 로고와 선택한 테마가 반영됩니다." />
+                        <CardBody className="space-y-4">
+                            <div
+                                className="rounded-2xl border p-4"
+                                style={{
+                                    backgroundColor: activeToneColors.color_panel_bg ?? '#ffffff',
+                                    borderColor: activeToneColors.color_panel_border ?? '#e2e8f0',
+                                }}
+                            >
+                                <div className="flex items-center gap-3">
+                                    {logoUrl || symbolUrl ? (
+                                        <img
+                                            src={logoUrl ?? symbolUrl ?? ''}
+                                            alt=""
+                                            className="h-12 max-w-[120px] object-contain"
+                                        />
+                                    ) : (
+                                        <span
+                                            className="flex h-12 w-12 items-center justify-center rounded-2xl text-base font-bold text-white"
+                                            style={{ backgroundColor: previewColors.primary }}
+                                        >
+                                            {brandName.slice(0, 1).toUpperCase()}
                                         </span>
-                                    </button>
-                                );
-                            })}
-                        </div>
-
-                        {activeTheme ? (
-                            <div className="space-y-4 border-t border-gray-100 pt-4 dark:border-white/10">
-                                <div>
-                                    <p className="text-xs font-medium text-gray-500 dark:text-gray-400">
-                                        {layoutModes[selectedMode] ?? selectedMode} 색상 프리셋
-                                    </p>
-                                    <p className="mt-1 text-xs text-gray-400 dark:text-gray-500">
-                                        레이아웃마다 필요한 색상 수가 다릅니다. 선택한 레이아웃에 맞는 프리셋만
-                                        표시됩니다.
-                                    </p>
+                                    )}
+                                    <div className="min-w-0 flex-1">
+                                        <p className="truncate text-base font-semibold text-gray-900 dark:text-gray-100">
+                                            {brandName}
+                                        </p>
+                                        <p className="truncate text-xs text-gray-500 dark:text-gray-400">
+                                            {layoutModes[selectedMode] ?? selectedMode}
+                                            {activeTheme?.dualTone ? ` · ${previewTone}` : ''}
+                                        </p>
+                                    </div>
                                 </div>
+                                <div
+                                    className="mt-4 rounded-xl border p-3"
+                                    style={{
+                                        backgroundColor: activeToneColors.color_nav_bg ?? '#ffffff',
+                                        borderColor: activeToneColors.color_nav_border ?? '#e2e8f0',
+                                    }}
+                                >
+                                    <div className="mb-3 flex gap-2">
+                                        {tokenSwatches(activeToneColors, activeTheme?.tokens ?? []).map((color, index) => (
+                                            <span
+                                                key={`brand-swatch-${index}`}
+                                                className="h-3 flex-1 rounded-full"
+                                                style={{ backgroundColor: color }}
+                                            />
+                                        ))}
+                                    </div>
+                                    <div className="space-y-2">
+                                        <div
+                                            className="h-3 rounded-full"
+                                            style={{ backgroundColor: activeToneColors.color_primary ?? '#17ce91', width: '44%' }}
+                                        />
+                                        <div
+                                            className="h-2 rounded-full"
+                                            style={{ backgroundColor: activeToneColors.color_nav_muted ?? '#e2e8f0', width: '70%' }}
+                                        />
+                                        <div
+                                            className="h-2 rounded-full"
+                                            style={{ backgroundColor: activeToneColors.color_nav_muted ?? '#e2e8f0', width: '58%' }}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </CardBody>
+                    </Card>
 
-                                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                                    {Object.entries(activeTheme.presets).map(([key, preset]) => {
-                                        const selected = layoutPalette === key;
-                                        const lightSwatches = Object.values(preset.light ?? preset.colors ?? {});
-                                        const darkSwatches = Object.values(preset.dark ?? {});
+                    <Card className="xl:col-span-2">
+                        <CardHeader
+                            title="아이덴티티"
+                            description="관리자 이름, 로고, 심볼, 파비콘과 기본 다크 모드 사용 여부를 설정합니다."
+                        />
+                        <CardBody className="space-y-4">
+                            {identityFields.length > 0 ? (
+                                identityFields.map((field, index) => (
+                                    <FieldRenderer key={field.name ?? index} node={field} data={{}} />
+                                ))
+                            ) : (
+                                <p className="text-sm text-gray-500 dark:text-gray-400">
+                                    아이덴티티 필드를 불러오지 못했습니다. 페이지를 새로고침해 주세요.
+                                </p>
+                            )}
+                        </CardBody>
+                    </Card>
+                </div>
+            </section>
 
-                                        return (
-                                            <button
-                                                key={key}
-                                                type="button"
-                                                onClick={() => applyLayoutPreset(selectedMode, key)}
-                                                className={cn(
-                                                    'rounded-xl border p-3 text-left transition',
-                                                    selected
-                                                        ? 'border-orbit-primary bg-orbit-primary/5 ring-2 ring-orbit-primary/20'
-                                                        : 'border-gray-200 hover:border-gray-300 dark:border-white/10 dark:hover:border-white/20',
-                                                )}
-                                            >
-                                                <div className="mb-1 flex gap-1">
-                                                    {lightSwatches.map((color, index) => (
-                                                        <span
-                                                            key={`${key}-light-${index}`}
-                                                            className="h-4 flex-1 rounded-md ring-1 ring-black/5"
-                                                            style={{ backgroundColor: color }}
-                                                            title="Light"
-                                                        />
-                                                    ))}
-                                                </div>
-                                                {darkSwatches.length > 0 ? (
+            <section className="space-y-3">
+                <div>
+                    <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">레이아웃 선택</h2>
+                    <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                        레이아웃은 가로 스크롤 카드로 빠르게 비교하고 전환할 수 있습니다.
+                    </p>
+                </div>
+                <div className="-mx-1 overflow-x-auto px-1 pb-1">
+                    <div className="flex min-w-max gap-3">
+                        {(Object.keys(layoutModes) as LayoutMode[]).map((mode) => {
+                            const selected = selectedMode === mode;
+                            const theme = layoutThemes[mode];
+                            const snippetColors = theme
+                                ? toPreviewColors(readLayoutTokenColors(config, mode, theme, 'light'))
+                                : previewColors;
+
+                            return (
+                                <button
+                                    key={mode}
+                                    type="button"
+                                    onClick={() => selectMode(mode)}
+                                    className={cn(
+                                        'w-[172px] shrink-0 rounded-2xl border p-3 text-left transition',
+                                        selected
+                                            ? 'border-orbit-primary bg-orbit-primary/5 ring-2 ring-orbit-primary/20'
+                                            : 'border-gray-200 hover:border-gray-300 dark:border-white/10 dark:hover:border-white/20',
+                                    )}
+                                >
+                                    <LayoutPreview mode={mode} colors={snippetColors} variant="snippet" />
+                                    <span className="mt-2 block text-sm font-medium text-gray-800 dark:text-gray-100">
+                                        {layoutModes[mode] ?? LAYOUT_MODE_LABELS[mode]}
+                                    </span>
+                                    <span className="mt-1 block text-xs text-gray-500 dark:text-gray-400">
+                                        {theme?.tokens.length ?? 0} tokens
+                                        {theme?.dualTone ? ' · dual tone' : ''}
+                                    </span>
+                                </button>
+                            );
+                        })}
+                    </div>
+                </div>
+            </section>
+
+            {activeTheme ? (
+                <section className="space-y-3">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                        <div>
+                            <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">레이아웃 색상 설정</h2>
+                            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                                {layoutModes[selectedMode] ?? selectedMode} 전용 토큰과 프리셋을 세밀하게 조정합니다.
+                            </p>
+                        </div>
+                        {activeTheme.dualTone ? (
+                            <ToneToggle value={previewTone} onChange={setPreviewTone} />
+                        ) : null}
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
+                        <Card className="xl:col-span-1">
+                            <CardHeader
+                                title="레이아웃 미리보기"
+                                description={`${layoutModes[selectedMode] ?? selectedMode}의 ${activeTheme.dualTone ? activePreviewTone : 'light'} 톤입니다.`}
+                            />
+                            <CardBody className="space-y-4">
+                                <LayoutPreview mode={selectedMode} colors={previewColors} variant="live" className="shadow-sm" />
+                                <div className="grid grid-cols-2 gap-3">
+                                    {[
+                                        ['Page', activeToneColors.color_page_bg],
+                                        ['Header', activeToneColors.color_header_bg],
+                                        ['Navigation', activeToneColors.color_nav_bg],
+                                        ['Active', activeToneColors.color_nav_active_bg],
+                                    ].map(([label, color]) => (
+                                        <div
+                                            key={label}
+                                            className="rounded-xl border p-3"
+                                            style={{ borderColor: activeToneColors.color_panel_border ?? '#e2e8f0' }}
+                                        >
+                                            <div
+                                                className="mb-2 h-8 rounded-lg"
+                                                style={{ backgroundColor: color ?? '#ffffff' }}
+                                            />
+                                            <p className="text-xs font-medium text-gray-600 dark:text-gray-300">{label}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            </CardBody>
+                        </Card>
+
+                        <Card className="xl:col-span-2">
+                            <CardHeader
+                                title="컬러 폼"
+                                description="프리셋을 고른 뒤 필요한 토큰만 커스텀하면 자동으로 Custom 상태로 전환됩니다."
+                            />
+                            <CardBody className="space-y-6">
+                                <div className="space-y-3">
+                                    <div>
+                                        <p className="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                                            Presets
+                                        </p>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
+                                        {Object.entries(activeTheme.presets).map(([key, preset]) => {
+                                            const selected = layoutPalette === key;
+                                            const colors = previewTone === 'dark'
+                                                ? Object.values(preset.dark ?? preset.colors ?? {})
+                                                : Object.values(preset.light ?? preset.colors ?? {});
+
+                                            return (
+                                                <button
+                                                    key={key}
+                                                    type="button"
+                                                    onClick={() => applyLayoutPreset(selectedMode, key)}
+                                                    className={cn(
+                                                        'rounded-xl border p-3 text-left transition',
+                                                        selected
+                                                            ? 'border-orbit-primary bg-orbit-primary/5 ring-2 ring-orbit-primary/20'
+                                                            : 'border-gray-200 hover:border-gray-300 dark:border-white/10 dark:hover:border-white/20',
+                                                    )}
+                                                >
                                                     <div className="mb-2 flex gap-1">
-                                                        {darkSwatches.map((color, index) => (
+                                                        {colors.slice(0, 6).map((color, index) => (
                                                             <span
-                                                                key={`${key}-dark-${index}`}
+                                                                key={`${key}-${previewTone}-${index}`}
                                                                 className="h-4 flex-1 rounded-md ring-1 ring-black/5"
                                                                 style={{ backgroundColor: color }}
-                                                                title="Dark"
                                                             />
                                                         ))}
                                                     </div>
-                                                ) : null}
-                                                <span className="block text-xs font-medium text-gray-700 dark:text-gray-200">
-                                                    {preset.label}
-                                                </span>
-                                            </button>
-                                        );
-                                    })}
-                                    <button
-                                        type="button"
-                                        onClick={() => applyLayoutPreset(selectedMode, 'custom')}
-                                        className={cn(
-                                            'rounded-xl border p-3 text-left transition',
-                                            layoutPalette === 'custom'
-                                                ? 'border-orbit-primary bg-orbit-primary/5 ring-2 ring-orbit-primary/20'
-                                                : 'border-gray-200 hover:border-gray-300 dark:border-white/10 dark:hover:border-white/20',
-                                        )}
-                                    >
-                                        <div className="mb-2 flex gap-1">
-                                            {activeTheme.tokens.map((token) => (
-                                                <span
-                                                    key={token.key}
-                                                    className="h-5 flex-1 rounded-md ring-1 ring-black/5"
-                                                    style={{ backgroundColor: layoutColors[token.key] }}
-                                                />
-                                            ))}
-                                        </div>
-                                        <span className="block text-xs font-medium text-gray-700 dark:text-gray-200">
-                                            Custom
-                                        </span>
-                                    </button>
-                                </div>
-
-                                <div
-                                    className={cn(
-                                        'grid gap-4',
-                                        activeTheme.tokens.length <= 2
-                                            ? 'grid-cols-1 sm:grid-cols-2'
-                                            : activeTheme.tokens.length >= 5
-                                              ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'
-                                              : 'grid-cols-1 sm:grid-cols-3',
-                                    )}
-                                >
-                                    {activeTheme.dualTone ? (
-                                        <>
-                                            <p className="col-span-full text-xs font-medium text-gray-500 dark:text-gray-400">
-                                                Light
-                                            </p>
-                                            {activeTheme.tokens.map((token) => {
-                                                const fieldName = `config[${configKey(`theme.${selectedMode}.light.${token.key}`)}]`;
-                                                const value = layoutColors[token.key];
-
-                                                return (
-                                                    <ColorField
-                                                        key={`light-${token.key}`}
-                                                        node={{
-                                                            component: 'color',
-                                                            name: fieldName,
-                                                            value,
-                                                            attributes: { title: token.label },
-                                                            errors: [],
-                                                        }}
-                                                        data={{}}
-                                                        value={value}
-                                                        name={fieldName}
-                                                        attributes={{ title: token.label }}
-                                                        errors={[]}
-                                                        onChange={(next) =>
-                                                            setLayoutColor(selectedMode, token.key, next, 'light')
-                                                        }
-                                                    />
-                                                );
-                                            })}
-                                            <p className="col-span-full text-xs font-medium text-gray-500 dark:text-gray-400">
-                                                Dark
-                                            </p>
-                                            {activeTheme.tokens.map((token) => {
-                                                const fieldName = `config[${configKey(`theme.${selectedMode}.dark.${token.key}`)}]`;
-                                                const value = layoutColorsDark[token.key];
-
-                                                return (
-                                                    <ColorField
-                                                        key={`dark-${token.key}`}
-                                                        node={{
-                                                            component: 'color',
-                                                            name: fieldName,
-                                                            value,
-                                                            attributes: { title: token.label },
-                                                            errors: [],
-                                                        }}
-                                                        data={{}}
-                                                        value={value}
-                                                        name={fieldName}
-                                                        attributes={{ title: token.label }}
-                                                        errors={[]}
-                                                        onChange={(next) =>
-                                                            setLayoutColor(selectedMode, token.key, next, 'dark')
-                                                        }
-                                                    />
-                                                );
-                                            })}
-                                        </>
-                                    ) : (
-                                        activeTheme.tokens.map((token) => {
-                                            const fieldName = `config[${configKey(`theme.${selectedMode}.${token.key}`)}]`;
-                                            const value = layoutColors[token.key];
-
-                                            return (
-                                                <ColorField
-                                                    key={token.key}
-                                                    node={{
-                                                        component: 'color',
-                                                        name: fieldName,
-                                                        value,
-                                                        attributes: { title: token.label },
-                                                        errors: [],
-                                                    }}
-                                                    data={{}}
-                                                    value={value}
-                                                    name={fieldName}
-                                                    attributes={{ title: token.label }}
-                                                    errors={[]}
-                                                    onChange={(next) => setLayoutColor(selectedMode, token.key, next)}
-                                                />
+                                                    <span className="block text-xs font-medium text-gray-700 dark:text-gray-200">
+                                                        {preset.label}
+                                                    </span>
+                                                </button>
                                             );
-                                        })
-                                    )}
-                                </div>
-                            </div>
-                        ) : null}
-                    </CardBody>
-                </Card>
-            </div>
+                                        })}
 
-            <div className="space-y-6 xl:col-span-3">
-                <Card>
-                    <CardHeader
-                        title="레이아웃 미리보기"
-                        description={`${layoutModes[selectedMode] ?? selectedMode} 레이아웃의 실시간 미리보기입니다.`}
-                    />
-                    <CardBody>
-                        <LayoutPreview mode={selectedMode} colors={previewColors} variant="live" className="shadow-sm" />
-                        {activeTheme?.dualTone ? (
-                            <div className="mt-4 grid gap-4 md:grid-cols-2">
-                                <div>
-                                    <p className="mb-2 text-xs font-medium text-gray-500">Light preview</p>
-                                    <div className="rounded-lg border border-gray-200 p-3 dark:border-white/10">
-                                        <div className="flex gap-1">
-                                            {activeTheme.tokens.map((token) => (
-                                                <span
-                                                    key={`preview-light-${token.key}`}
-                                                    className="h-6 flex-1 rounded-md"
-                                                    style={{ backgroundColor: layoutColors[token.key] }}
-                                                />
-                                            ))}
-                                        </div>
-                                    </div>
-                                </div>
-                                <div>
-                                    <p className="mb-2 text-xs font-medium text-gray-500">Dark preview</p>
-                                    <div className="rounded-lg border border-gray-700 bg-gray-900 p-3">
-                                        <div className="flex gap-1">
-                                            {activeTheme.tokens.map((token) => (
-                                                <span
-                                                    key={`preview-dark-${token.key}`}
-                                                    className="h-6 flex-1 rounded-md"
-                                                    style={{ backgroundColor: layoutColorsDark[token.key] }}
-                                                />
-                                            ))}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        ) : null}
-                        <div className="mt-4 flex flex-wrap gap-3">
-                            {activeTheme?.tokens.map((token) => (
-                                <div
-                                    key={token.key}
-                                    className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300"
-                                >
-                                    <span
-                                        className="h-4 w-4 rounded-full ring-1 ring-black/10"
-                                        style={{ backgroundColor: layoutColors[token.key] }}
-                                    />
-                                    {token.label}
-                                </div>
-                            ))}
-                        </div>
-                    </CardBody>
-                </Card>
-
-                <Card>
-                    <CardHeader title="브랜드 미리보기" description="아이덴티티 설정이 반영된 모습입니다." />
-                    <CardBody>
-                        <div className="flex items-center gap-4">
-                            {logoUrl || symbolUrl ? (
-                                <img
-                                    src={logoUrl ?? symbolUrl ?? ''}
-                                    alt=""
-                                    className="h-14 max-w-[120px] object-contain"
-                                />
-                            ) : (
-                                <span
-                                    className="flex h-14 w-14 items-center justify-center rounded-2xl text-lg font-bold text-white shadow-lg"
-                                    style={{ backgroundColor: previewColors.primary }}
-                                >
-                                    {brandName.slice(0, 1).toUpperCase()}
-                                </span>
-                            )}
-                            <div className="min-w-0 flex-1 space-y-2">
-                                <p className="truncate text-lg font-semibold text-gray-900 dark:text-gray-100">
-                                    {brandName}
-                                </p>
-                                <div className="flex flex-wrap gap-2">
-                                    {activeTheme?.tokens.map((token) => (
-                                        <span
-                                            key={token.key}
-                                            className="rounded-full px-2.5 py-0.5 text-xs font-medium text-white"
-                                            style={{ backgroundColor: layoutColors[token.key] }}
+                                        <button
+                                            type="button"
+                                            onClick={() => applyLayoutPreset(selectedMode, 'custom')}
+                                            className={cn(
+                                                'rounded-xl border p-3 text-left transition',
+                                                layoutPalette === 'custom'
+                                                    ? 'border-orbit-primary bg-orbit-primary/5 ring-2 ring-orbit-primary/20'
+                                                    : 'border-gray-200 hover:border-gray-300 dark:border-white/10 dark:hover:border-white/20',
+                                            )}
                                         >
-                                            {token.label}
-                                        </span>
+                                            <div className="mb-2 flex gap-1">
+                                                {tokenSwatches(activeToneColors, activeTheme.tokens).map((color, index) => (
+                                                    <span
+                                                        key={`custom-${index}`}
+                                                        className="h-4 flex-1 rounded-md ring-1 ring-black/5"
+                                                        style={{ backgroundColor: color }}
+                                                    />
+                                                ))}
+                                            </div>
+                                            <span className="block text-xs font-medium text-gray-700 dark:text-gray-200">
+                                                Custom
+                                            </span>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-4">
+                                    {tokenGroups.map(([group, tokens]) => (
+                                        <div
+                                            key={group}
+                                            className="rounded-2xl border border-gray-200 p-4 dark:border-white/10"
+                                        >
+                                            <div className="mb-4 flex items-center justify-between gap-3">
+                                                <div>
+                                                    <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">{group}</h3>
+                                                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                                        {group} 영역의 배경, 보더, 활성 상태를 세밀하게 조정합니다.
+                                                    </p>
+                                                </div>
+                                                <div className="flex gap-1">
+                                                    {tokens.slice(0, 4).map((token) => (
+                                                        <span
+                                                            key={`${group}-${token.key}`}
+                                                            className="h-4 w-4 rounded-full ring-1 ring-black/5"
+                                                            style={{ backgroundColor: activeToneColors[token.key] }}
+                                                        />
+                                                    ))}
+                                                </div>
+                                            </div>
+                                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+                                                {tokens.map((token) => {
+                                                    const fieldName = activeTheme.dualTone
+                                                        ? `config[${configKey(`theme.${selectedMode}.${previewTone}.${token.key}`)}]`
+                                                        : `config[${configKey(`theme.${selectedMode}.${token.key}`)}]`;
+                                                    const value = activeToneColors[token.key];
+
+                                                    return (
+                                                        <ColorField
+                                                            key={`${previewTone}-${token.key}`}
+                                                            node={{
+                                                                component: 'color',
+                                                                name: fieldName,
+                                                                value,
+                                                                attributes: { title: token.label },
+                                                                errors: [],
+                                                            }}
+                                                            data={{}}
+                                                            value={value}
+                                                            name={fieldName}
+                                                            attributes={{ title: token.label }}
+                                                            errors={[]}
+                                                            onChange={(next) =>
+                                                                setLayoutColor(
+                                                                    selectedMode,
+                                                                    token.key,
+                                                                    next,
+                                                                    activeTheme.dualTone ? previewTone : 'single',
+                                                                )
+                                                            }
+                                                        />
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
                                     ))}
                                 </div>
-                            </div>
-                        </div>
-                    </CardBody>
-                </Card>
-            </div>
+                            </CardBody>
+                        </Card>
+                    </div>
+                </section>
+            ) : null}
         </div>
     );
 }

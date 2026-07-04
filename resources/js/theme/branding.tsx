@@ -8,7 +8,10 @@ export interface BrandColors {
     muted?: string;
 }
 
-export type DarkModeSetting = boolean | 'system';
+export type DarkModeSetting = boolean | 'system' | 'light' | 'dark';
+export type ThemeModeOption = 'system' | 'light' | 'dark';
+export const ORBIT_THEME_MODE_EVENT = 'orbit:theme-mode-changed';
+export const ORBIT_THEME_MODE_STORAGE_KEY = 'orbit.theme-mode';
 
 export type LayoutMode = 'palette-split' | 'sidebar-single' | 'topbar' | 'hybrid';
 
@@ -35,11 +38,41 @@ export interface OrbitBrand {
 
 /** Built-in palette presets. Backend exposes the same names in branding config. */
 export const PALETTE_PRESETS: Record<string, Required<BrandColors>> = {
-    orbit: { primary: '#17ce91', secondary: '#64748b', accent: '#fc8024' },
-    midnight: { primary: '#4f46e5', secondary: '#64748b', accent: '#ec4899' },
-    forest: { primary: '#059669', secondary: '#475569', accent: '#f59e0b' },
-    sunset: { primary: '#e11d48', secondary: '#475569', accent: '#f97316' },
-    custom: { primary: '#17ce91', secondary: '#64748b', accent: '#fc8024' },
+    orbit: {
+        primary: '#17ce91',
+        secondary: '#64748b',
+        accent: '#fc8024',
+        surface: '#ffffff',
+        muted: '#f1f5f9',
+    },
+    midnight: {
+        primary: '#4f46e5',
+        secondary: '#64748b',
+        accent: '#ec4899',
+        surface: '#ffffff',
+        muted: '#eef2ff',
+    },
+    forest: {
+        primary: '#059669',
+        secondary: '#475569',
+        accent: '#f59e0b',
+        surface: '#ffffff',
+        muted: '#ecfdf5',
+    },
+    sunset: {
+        primary: '#e11d48',
+        secondary: '#475569',
+        accent: '#f97316',
+        surface: '#ffffff',
+        muted: '#fff1f2',
+    },
+    custom: {
+        primary: '#17ce91',
+        secondary: '#64748b',
+        accent: '#fc8024',
+        surface: '#ffffff',
+        muted: '#f1f5f9',
+    },
 };
 
 const DEFAULT_PALETTE = PALETTE_PRESETS.orbit;
@@ -66,16 +99,21 @@ function parseSrgb(color: string): [number, number, number] | null {
     const value = color.trim().replace(/\s+/g, '');
 
     const hexMatch = value.match(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i);
+
     if (hexMatch) {
         let hex = hexMatch[1];
+
         if (hex.length === 3) {
             hex = hex.split('').map((c) => c + c).join('');
         }
+
         const int = parseInt(hex, 16);
+
         return [((int >> 16) & 255) / 255, ((int >> 8) & 255) / 255, (int & 255) / 255];
     }
 
     const rgbMatch = value.match(/^rgba?\((\d+),(\d+),(\d+)/i);
+
     if (rgbMatch) {
         return [Number(rgbMatch[1]) / 255, Number(rgbMatch[2]) / 255, Number(rgbMatch[3]) / 255];
     }
@@ -86,6 +124,7 @@ function parseSrgb(color: string): [number, number, number] | null {
 /** Convert an sRGB colour to OKLCH `[lightness, chroma, hue°]` (Filament algorithm). */
 function srgbToOklch(color: string): [number, number, number] | null {
     const parsed = parseSrgb(color);
+
     if (!parsed) {
         return null;
     }
@@ -112,6 +151,7 @@ function srgbToOklch(color: string): [number, number, number] | null {
 
     const chroma = Math.sqrt(opponentA * opponentA + opponentB * opponentB);
     let hue = (Math.atan2(opponentB, opponentA) * 180) / Math.PI;
+
     if (hue < 0) {
         hue += 360;
     }
@@ -176,21 +216,57 @@ function resolveActiveThemeTokens(brand: OrbitBrand | undefined): Record<string,
     return brand?.tokens ?? {};
 }
 
-function applyDarkMode(setting: DarkModeSetting | null | undefined) {
+export function normalizeThemeMode(setting: DarkModeSetting | null | undefined): ThemeModeOption {
+    if (setting === 'dark' || setting === true) {
+        return 'dark';
+    }
+
+    if (setting === 'light' || setting === false) {
+        return 'light';
+    }
+
+    return 'system';
+}
+
+export function readStoredThemeMode(): ThemeModeOption | null {
+    if (typeof window === 'undefined') {
+        return null;
+    }
+
+    const stored = window.localStorage.getItem(ORBIT_THEME_MODE_STORAGE_KEY);
+
+    return stored === 'system' || stored === 'light' || stored === 'dark' ? stored : null;
+}
+
+export function resolveThemeMode(setting: DarkModeSetting | null | undefined): ThemeModeOption {
+    return readStoredThemeMode() ?? normalizeThemeMode(setting);
+}
+
+export function storeThemeMode(mode: ThemeModeOption): void {
+    if (typeof window === 'undefined') {
+        return;
+    }
+
+    window.localStorage.setItem(ORBIT_THEME_MODE_STORAGE_KEY, mode);
+    window.dispatchEvent(new CustomEvent(ORBIT_THEME_MODE_EVENT, { detail: mode }));
+}
+
+export function applyDarkMode(setting: DarkModeSetting | null | undefined) {
     if (typeof document === 'undefined') {
         return;
     }
 
     const root = document.documentElement;
+    const mode = normalizeThemeMode(setting);
 
-    if (setting === 'system' || setting === null || setting === undefined) {
+    if (mode === 'system') {
         const prefersDark = window.matchMedia?.('(prefers-color-scheme: dark)').matches;
         root.classList.toggle('dark', Boolean(prefersDark));
 
         return;
     }
 
-    root.classList.toggle('dark', Boolean(setting));
+    root.classList.toggle('dark', mode === 'dark');
 }
 
 function applyFavicon(favicon: string | null | undefined) {
@@ -215,13 +291,15 @@ function applyFavicon(favicon: string | null | undefined) {
  * style object to apply on the shell root so descendants inherit tokens.
  */
 export function useBrandTheme(brand: OrbitBrand | undefined): React.CSSProperties {
-    const [toneRevision, setToneRevision] = useState(0);
+    const [, setThemeModeRevision] = useState(0);
+    const [, setToneRevision] = useState(0);
     const colors = useMemo(() => resolveBrandColors(brand), [brand]);
-    const tokens = useMemo(() => resolveActiveThemeTokens(brand), [brand, toneRevision]);
+    const tokens = resolveActiveThemeTokens(brand);
+    const themeMode = resolveThemeMode(brand?.darkMode);
 
     useEffect(() => {
-        applyDarkMode(brand?.darkMode);
-    }, [brand?.darkMode]);
+        applyDarkMode(themeMode);
+    }, [themeMode]);
 
     useEffect(() => {
         if (!brand?.tokenSchemes || typeof document === 'undefined') {
@@ -237,6 +315,30 @@ export function useBrandTheme(brand: OrbitBrand | undefined): React.CSSPropertie
 
         return () => observer.disconnect();
     }, [brand?.tokenSchemes]);
+
+    useEffect(() => {
+        if (typeof window === 'undefined') {
+            return;
+        }
+
+        const handleThemeModeChange = () => {
+            setThemeModeRevision((value) => value + 1);
+        };
+        const media = window.matchMedia?.('(prefers-color-scheme: dark)');
+        const handleMediaChange = () => {
+            if (resolveThemeMode(brand?.darkMode) === 'system') {
+                setThemeModeRevision((value) => value + 1);
+            }
+        };
+
+        window.addEventListener(ORBIT_THEME_MODE_EVENT, handleThemeModeChange);
+        media?.addEventListener?.('change', handleMediaChange);
+
+        return () => {
+            window.removeEventListener(ORBIT_THEME_MODE_EVENT, handleThemeModeChange);
+            media?.removeEventListener?.('change', handleMediaChange);
+        };
+    }, [brand?.darkMode]);
 
     useEffect(() => {
         applyFavicon(brand?.favicon);
