@@ -1,4 +1,5 @@
 import type { FieldComponentProps } from '../contract';
+import { useT } from '../lib/i18n';
 import { UiButton } from '../ui/button';
 import { FieldShell, inputClass } from '../ui/field-shell';
 import { attr, str } from './shared';
@@ -19,6 +20,7 @@ function readRows(value: unknown): MatrixRow[] {
 
 /** Repeatable key/value (or multi-column) matrix editor. */
 export function MatrixField(props: FieldComponentProps) {
+    const t = useT();
     const { errors, onChange } = props;
     const columns = (attr(props, 'columns') as string[] | undefined) ?? ['key', 'value'];
     const maxRows = Number(attr(props, 'maxRows') ?? 0);
@@ -90,7 +92,7 @@ export function MatrixField(props: FieldComponentProps) {
                                             type="button"
                                             onClick={() => removeRow(rowIndex)}
                                             className="text-gray-400 hover:text-red-600"
-                                            aria-label="Remove row"
+                                            aria-label={t('Remove row')}
                                         >
                                             &times;
                                         </button>
@@ -101,7 +103,7 @@ export function MatrixField(props: FieldComponentProps) {
                         {rows.length === 0 ? (
                             <tr>
                                 <td colSpan={columns.length + 1} className="px-3 py-4 text-center text-sm text-gray-400">
-                                    No rows yet.
+                                    {t('No rows yet.')}
                                 </td>
                             </tr>
                         ) : null}

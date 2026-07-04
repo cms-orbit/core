@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 /**
  * Entity is a model-NOT-inherited admin descriptor.
@@ -171,6 +172,12 @@ abstract class Entity
 
     public function delete(Model $model): void
     {
+        if (! $this->canDelete($model)) {
+            throw ValidationException::withMessages([
+                'resource' => $this->deleteBlockedMessage($model),
+            ]);
+        }
+
         if (method_exists($this, 'onDelete')) {
             $this->onDelete($model);
 
@@ -178,6 +185,16 @@ abstract class Entity
         }
 
         $model->delete();
+    }
+
+    public function canDelete(Model $model): bool
+    {
+        return true;
+    }
+
+    public function deleteBlockedMessage(Model $model): string
+    {
+        return __('This resource cannot be deleted.');
     }
 
     public function restore(Model $model): void
@@ -294,6 +311,14 @@ abstract class Entity
     }
 
     /**
+     * Optional parent menu slug used to nest the entity under a group item.
+     */
+    public function menuParent(): ?string
+    {
+        return null;
+    }
+
+    /**
      * Permission slug prefix submitted to Core (e.g. "orbit.entities.posts").
      */
     public function permissionKey(): string
@@ -356,12 +381,12 @@ abstract class Entity
         $group = ItemPermission::group($this->label());
 
         $map = [
-            'list' => [$base, __('List')],
-            'create' => [$base.'.create', __('Create')],
-            'edit' => [$base.'.edit', __('Edit')],
-            'delete' => [$base.'.delete', __('Delete')],
+            'list'        => [$base, __('List')],
+            'create'      => [$base.'.create', __('Create')],
+            'edit'        => [$base.'.edit', __('Edit')],
+            'delete'      => [$base.'.delete', __('Delete')],
             'forceDelete' => [$base.'.forceDelete', __('Force delete')],
-            'restore' => [$base.'.restore', __('Restore')],
+            'restore'     => [$base.'.restore', __('Restore')],
         ];
 
         foreach ($this->crud() as $feature) {
@@ -381,12 +406,12 @@ abstract class Entity
         $base = $this->permissionKey();
 
         return match ($ability) {
-            'create' => $base.'.create',
+            'create'         => $base.'.create',
             'update', 'edit' => $base.'.edit',
-            'delete' => $base.'.delete',
-            'forceDelete' => $base.'.forceDelete',
-            'restore' => $base.'.restore',
-            default => $base, // viewAny / view
+            'delete'         => $base.'.delete',
+            'forceDelete'    => $base.'.forceDelete',
+            'restore'        => $base.'.restore',
+            default          => $base, // viewAny / view
         };
     }
 
@@ -416,6 +441,10 @@ abstract class Entity
             $menu->set('sectionKey', $this->sectionKey());
         }
 
+        if ($this->menuParent() !== null) {
+            $menu->parent($this->menuParent());
+        }
+
         return [$menu];
     }
 
@@ -431,10 +460,10 @@ abstract class Entity
             ?? $this->singularLabel().' #'.$model->getKey());
 
         return [
-            'label' => $this->singularLabel(),
-            'title' => $title,
+            'label'    => $this->singularLabel(),
+            'title'    => $title,
             'subTitle' => (string) $model->getKey(),
-            'url' => $this->showUrl($model),
+            'url'      => $this->showUrl($model),
         ];
     }
 
@@ -468,7 +497,7 @@ abstract class Entity
     public function seo(Model $model): array
     {
         return [
-            'title' => $model->getAttribute('title') ?? $model->getAttribute('name'),
+            'title'       => $model->getAttribute('title') ?? $model->getAttribute('name'),
             'description' => $model->getAttribute('description')
                 ?? $model->getAttribute('excerpt'),
             'thumbnail' => $model->getAttribute('thumbnail')
@@ -498,7 +527,8 @@ abstract class Entity
      * Resolve the screen class for a given action, falling back to the generic
      * CRUD screen when not overridden.
      *
-     * @param  class-string  $default
+     * @param class-string $default
+     *
      * @return class-string
      */
     public function screenFor(string $action, string $default): string

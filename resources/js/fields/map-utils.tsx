@@ -1,4 +1,5 @@
 import type { FieldComponentProps } from '../contract';
+import { useT } from '../lib/i18n';
 import { FieldShell, inputClass } from '../ui/field-shell';
 import { attr } from './shared';
 
@@ -30,6 +31,8 @@ export function MapLatLngInputs({
     position: LatLng | null;
     onChange?: (value: LatLng) => void;
 }) {
+    const t = useT();
+
     const update = (next: Partial<LatLng>) => {
         const merged = { lat: position?.lat ?? 0, lng: position?.lng ?? 0, ...next };
         onChange?.(merged);
@@ -46,13 +49,13 @@ export function MapLatLngInputs({
                 className="mb-2 flex items-center justify-center rounded-md border border-dashed border-gray-300 bg-gray-50 text-sm text-gray-500 dark:border-gray-700 dark:bg-gray-900/40 dark:text-gray-400"
                 style={{ height: attr<string>(props, 'height') ?? '300px' }}
             >
-                Map preview loads in the browser.
+                {t('Map preview loads in the browser.')}
             </div>
             <div className="flex gap-2">
                 <input
                     type="number"
                     step="any"
-                    placeholder="Latitude"
+                    placeholder={t('Latitude')}
                     className={inputClass}
                     value={position?.lat ?? ''}
                     onChange={(event) => update({ lat: Number(event.target.value) })}
@@ -60,7 +63,7 @@ export function MapLatLngInputs({
                 <input
                     type="number"
                     step="any"
-                    placeholder="Longitude"
+                    placeholder={t('Longitude')}
                     className={inputClass}
                     value={position?.lng ?? ''}
                     onChange={(event) => update({ lng: Number(event.target.value) })}

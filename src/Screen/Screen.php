@@ -41,11 +41,12 @@ abstract class Screen extends Controller
         ModelStateRetrievable;
 
     /**
-     * @param  mixed  ...$arguments
-     * @return mixed
+     * @param mixed ...$arguments
      *
      * @throws BindingResolutionException
      * @throws \ReflectionException
+     *
+     * @return mixed
      *
      * @see static::handle()
      */
@@ -76,6 +77,19 @@ abstract class Screen extends Controller
     public function description(): ?string
     {
         return $this->description ?? null;
+    }
+
+    /**
+     * Per-screen shell metadata consumed by the Inertia admin chrome.
+     *
+     * @return array{chrome?: 'default'|'none', contentWidth?: 'full'|'default'|'wide'|'xwide'|'contained'|null}
+     */
+    public function shell(): array
+    {
+        return [
+            'chrome'       => 'default',
+            'contentWidth' => null,
+        ];
     }
 
     /**
@@ -112,10 +126,11 @@ abstract class Screen extends Controller
      * Builds the screen asynchronously using the given method and template slug.
      *
      *
-     * @return Response
      *
      * @throws BindingResolutionException
      * @throws \ReflectionException
+     *
+     * @return Response
      */
     public function asyncBuild(string $method, string $slug)
     {
@@ -179,10 +194,11 @@ abstract class Screen extends Controller
      * Replaces the Turbo-stream asyncBuild for the Inertia/React frontend.
      *
      *
-     * @return array<string, mixed>
      *
      * @throws BindingResolutionException
      * @throws \ReflectionException
+     *
+     * @return array<string, mixed>
      */
     public function asyncBuildArray(string $method, string $slug): array
     {
@@ -211,8 +227,8 @@ abstract class Screen extends Controller
 
         return [
             'layout' => $layout?->toArray($repository),
-            'data' => $this->serializeRepository($repository),
-            'state' => $this->serializableState(),
+            'data'   => $this->serializeRepository($repository),
+            'state'  => $this->serializableState(),
         ];
     }
 
@@ -221,10 +237,11 @@ abstract class Screen extends Controller
      * subtree as JSON. Replaces the Turbo-stream asyncPartialLayout.
      *
      *
-     * @return array<string, mixed>
      *
      * @throws BindingResolutionException
      * @throws \ReflectionException
+     *
+     * @return array<string, mixed>
      */
     public function asyncPartialLayoutArray(Listener $layout, Request $request): array
     {
@@ -239,8 +256,8 @@ abstract class Screen extends Controller
 
         return [
             'layout' => $layout->toArray($repository),
-            'data' => $this->serializeRepository($repository),
-            'state' => $this->serializableState(),
+            'data'   => $this->serializeRepository($repository),
+            'state'  => $this->serializableState(),
         ];
     }
 
@@ -250,9 +267,10 @@ abstract class Screen extends Controller
      * serialization layer (see CONTRACT.md).
      *
      *
-     * @return \Inertia\Response
      *
      * @throws \Throwable
+     *
+     * @return \Inertia\Response
      */
     public function view(array|Repository $httpQueryArguments = [])
     {
@@ -261,16 +279,17 @@ abstract class Screen extends Controller
             : $this->buildQueryRepository($httpQueryArguments);
 
         return Inertia::render('orbit/screen', [
-            'name' => $this->name(),
-            'description' => $this->description(),
-            'permission' => $this->permission(),
-            'breadcrumbs' => $this->buildBreadcrumbs(),
-            'commandBar' => $this->buildCommandBarArray($repository),
-            'layout' => $this->buildLayoutTree($repository),
-            'data' => $this->serializeRepository($repository),
-            'state' => $this->serializableState(),
-            'screenComponent' => $this->screenComponent(),
-            'formValidateMessage' => $this->formValidateMessage(),
+            'name'                    => $this->name(),
+            'description'             => $this->description(),
+            'shell'                   => $this->shell(),
+            'permission'              => $this->permission(),
+            'breadcrumbs'             => $this->buildBreadcrumbs(),
+            'commandBar'              => $this->buildCommandBarArray($repository),
+            'layout'                  => $this->buildLayoutTree($repository),
+            'data'                    => $this->serializeRepository($repository),
+            'state'                   => $this->serializableState(),
+            'screenComponent'         => $this->screenComponent(),
+            'formValidateMessage'     => $this->formValidateMessage(),
             'needPreventsAbandonment' => $this->needPreventsAbandonment(),
         ]);
     }
@@ -327,7 +346,7 @@ abstract class Screen extends Controller
         return Breadcrumbs::current()
             ->map(fn (Crumb $crumb) => [
                 'label' => $crumb->title(),
-                'url' => $crumb->url(),
+                'url'   => $crumb->url(),
             ])
             ->values()
             ->all();
@@ -355,12 +374,12 @@ abstract class Screen extends Controller
     }
 
     /**
-     * @return RedirectResponse|mixed
-     *
      * @throws BindingResolutionException
      * @throws ContainerExceptionInterface
      * @throws NotFoundExceptionInterface
      * @throws \ReflectionException
+     *
+     * @return RedirectResponse|mixed
      */
     public function handle(Request $request, ...$arguments)
     {
@@ -426,10 +445,11 @@ abstract class Screen extends Controller
      * Calls the specified method with the given parameters.
      *
      *
-     * @return mixed
      *
      * @throws \ReflectionException
      * @throws BindingResolutionException
+     *
+     * @return mixed
      */
     private function callMethod(string $method, array $parameters = [])
     {

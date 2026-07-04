@@ -26,6 +26,7 @@ export function PaletteSplitLayoutView({
         orbit.sections ?? {},
     );
     const homeUrl = orbit.home ?? '/main';
+    const contentWidth = content.contentWidth ?? brand?.contentWidth;
 
     return (
         <div
@@ -49,6 +50,7 @@ export function PaletteSplitLayoutView({
                     brand={brand}
                     homeUrl={homeUrl}
                     section={selectedSection}
+                    sectionHeaderStyle="hidden"
                     currentPath={currentPath}
                     user={orbit.user ?? null}
                 />
@@ -66,10 +68,15 @@ export function PaletteSplitLayoutView({
                         <MobileMenuButton onClick={() => setMobileOpen((open) => !open)} />
                         <Breadcrumbs items={breadcrumbs} />
                     </div>
-                    <HeaderActions user={orbit.user ?? null} darkMode={brand?.darkMode} />
+                    <HeaderActions
+                        user={orbit.user ?? null}
+                        themeMode={brand?.themeMode ?? brand?.darkMode}
+                        themeToggleEnabled={brand?.themeToggleEnabled}
+                        showUserMenu={false}
+                    />
                 </header>
 
-                <PageBody {...content} />
+                <PageBody {...content} contentWidth={contentWidth} />
             </div>
 
             {mobileOpen ? (
@@ -93,6 +100,7 @@ export function PaletteSplitLayoutView({
                             brand={brand}
                             homeUrl={homeUrl}
                             section={selectedSection}
+                            sectionHeaderStyle="hidden"
                             currentPath={currentPath}
                             user={orbit.user ?? null}
                         />

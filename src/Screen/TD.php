@@ -5,11 +5,14 @@ declare(strict_types=1);
 namespace CmsOrbit\Core\Screen;
 
 use CmsOrbit\Core\Screen\Concerns\ComplexFieldConcern;
+use CmsOrbit\Core\Screen\Contracts\Fieldable;
 use CmsOrbit\Core\Screen\Fields\DateRange;
 use CmsOrbit\Core\Screen\Fields\DateTimer;
+use CmsOrbit\Core\Screen\Fields\Group;
 use CmsOrbit\Core\Screen\Fields\Input;
 use CmsOrbit\Core\Screen\Fields\NumberRange;
 use CmsOrbit\Core\Screen\Fields\Select;
+use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
@@ -110,7 +113,7 @@ class TD extends Cell
     protected $callbackFilterValue;
 
     /**
-     * @param  string|int  $width
+     * @param string|int $width
      */
     public function width($width): self
     {
@@ -120,7 +123,7 @@ class TD extends Cell
     }
 
     /**
-     * @param  string  $style
+     * @param string $style
      */
     public function style($style): self
     {
@@ -130,7 +133,7 @@ class TD extends Cell
     }
 
     /**
-     * @param  string  $class
+     * @param string $class
      */
     public function class($class): self
     {
@@ -140,7 +143,7 @@ class TD extends Cell
     }
 
     /**
-     * @param  string|Field  $filter
+     * @param string|Field $filter
      */
     public function filterOptions(iterable $filterOptions): self
     {
@@ -157,8 +160,8 @@ class TD extends Cell
     }
 
     /**
-     * @param  string  $filter
-     * @param  iterable|callable|null  $options
+     * @param string                 $filter
+     * @param iterable|callable|null $options
      */
     public function filter($filter = self::FILTER_TEXT, $options = null): self
     {
@@ -240,24 +243,48 @@ class TD extends Cell
     public function toArray($repository = null): array
     {
         $filter = $this->buildFilter();
+        $rendered = null;
+        $field = null;
+        $actions = null;
+
+        if ($this->render !== null && $repository !== null) {
+            $value = $this->handler($repository);
+
+            if ($value instanceof Group && collect($value->getGroup())->every(fn ($item) => $item instanceof Action)) {
+                $actions = collect($value->getGroup())
+                    ->map(fn (Action $action) => $action->toArray())
+                    ->filter()
+                    ->values()
+                    ->all();
+            } elseif ($value instanceof Action) {
+                $actions = [$value->toArray()];
+            } elseif ($value instanceof Fieldable) {
+                $field = $value->toArray();
+            } else {
+                $rendered = $value instanceof Htmlable ? $value->toHtml() : (string) $value;
+            }
+        }
 
         return [
-            'name' => $this->name,
-            'column' => $this->column,
-            'title' => $this->title,
-            'slug' => $this->sluggable(),
-            'align' => $this->align,
-            'width' => is_numeric($this->width) ? $this->width.'px' : $this->width,
-            'sort' => (bool) ($this->sort ?? false),
-            'sortUrl' => $this->buildSortUrl(),
-            'filter' => $filter?->toArray(),
-            'filterString' => $this->buildFilterString(),
-            'popover' => $this->popover,
-            'defaultHidden' => $this->defaultHidden,
+            'name'            => $this->name,
+            'column'          => $this->column,
+            'title'           => $this->title,
+            'slug'            => $this->sluggable(),
+            'align'           => $this->align,
+            'width'           => is_numeric($this->width) ? $this->width.'px' : $this->width,
+            'sort'            => (bool) ($this->sort ?? false),
+            'sortUrl'         => $this->buildSortUrl(),
+            'filter'          => $filter?->toArray(),
+            'filterString'    => $this->buildFilterString(),
+            'popover'         => $this->popover,
+            'defaultHidden'   => $this->defaultHidden,
             'allowUserHidden' => $this->allowUserHidden,
-            'colspan' => $this->colspan,
-            'class' => $this->class,
-            'style' => $this->style,
+            'colspan'         => $this->colspan,
+            'class'           => $this->class,
+            'style'           => $this->style,
+            'rendered'        => $rendered,
+            'field'           => $field,
+            'actions'         => $actions,
         ];
     }
 
@@ -269,16 +296,16 @@ class TD extends Cell
     public function buildTh()
     {
         return view('orbit::partials.layouts.th', [
-            'width' => is_numeric($this->width) ? $this->width.'px' : $this->width,
-            'align' => $this->align,
-            'sort' => $this->sort,
-            'sortUrl' => $this->buildSortUrl(),
-            'column' => $this->column,
-            'title' => $this->title,
-            'filter' => $this->buildFilter(),
+            'width'        => is_numeric($this->width) ? $this->width.'px' : $this->width,
+            'align'        => $this->align,
+            'sort'         => $this->sort,
+            'sortUrl'      => $this->buildSortUrl(),
+            'column'       => $this->column,
+            'title'        => $this->title,
+            'filter'       => $this->buildFilter(),
             'filterString' => $this->buildFilterString(),
-            'slug' => $this->sluggable(),
-            'popover' => $this->popover,
+            'slug'         => $this->sluggable(),
+            'popover'      => $this->popover,
         ]);
     }
 
@@ -305,11 +332,11 @@ class TD extends Cell
     protected function detectConstantFilter(string $filter): Field
     {
         $input = match ($filter) {
-            self::FILTER_DATE_RANGE => DateRange::make()->disableMobile(),
+            self::FILTER_DATE_RANGE   => DateRange::make()->disableMobile(),
             self::FILTER_NUMBER_RANGE => NumberRange::make(),
-            self::FILTER_SELECT => Select::make()->options($this->filterOptions)->multiple(),
-            self::FILTER_DATE => DateTimer::make()->inline()->format('Y-m-d'),
-            default => Input::make()->type($filter),
+            self::FILTER_SELECT       => Select::make()->options($this->filterOptions)->multiple(),
+            self::FILTER_DATE         => DateTimer::make()->inline()->format('Y-m-d'),
+            default                   => Input::make()->type($filter),
         };
 
         return $input;
@@ -318,7 +345,8 @@ class TD extends Cell
     /**
      * Builds content for the column.
      *
-     * @param  Repository|Model  $repository
+     * @param Repository|Model $repository
+     *
      * @return Factory|View
      */
     public function buildTd($repository, ?object $loop = null)
@@ -326,13 +354,13 @@ class TD extends Cell
         $value = $this->render ? $this->handler($repository, $loop) : $repository->getContent($this->name);
 
         return view('orbit::partials.layouts.td', [
-            'align' => $this->align,
-            'value' => $value,
-            'render' => $this->render,
-            'slug' => $this->sluggable(),
-            'width' => is_numeric($this->width) ? $this->width.'px' : $this->width,
-            'style' => $this->style,
-            'class' => $this->class,
+            'align'   => $this->align,
+            'value'   => $value,
+            'render'  => $this->render,
+            'slug'    => $this->sluggable(),
+            'width'   => is_numeric($this->width) ? $this->width.'px' : $this->width,
+            'style'   => $this->style,
+            'class'   => $this->class,
             'colspan' => $this->colspan,
         ]);
     }
@@ -354,8 +382,8 @@ class TD extends Cell
         }
 
         return view('orbit::partials.layouts.selectedTd', [
-            'title' => $this->title,
-            'slug' => $this->sluggable(),
+            'title'         => $this->title,
+            'slug'          => $this->sluggable(),
             'defaultHidden' => var_export($this->defaultHidden, true),
         ]);
     }
@@ -393,7 +421,7 @@ class TD extends Cell
     }
 
     /**
-     * @param  TD[]  $columns
+     * @param TD[] $columns
      */
     public static function isShowVisibleColumns($columns): bool
     {

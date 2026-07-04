@@ -7,6 +7,7 @@ namespace CmsOrbit\Core\Config;
 use CmsOrbit\Core\Screen\Field;
 use CmsOrbit\Core\Screen\Fields\Attach;
 use CmsOrbit\Core\Screen\Fields\Color;
+use CmsOrbit\Core\Screen\Fields\Cropper;
 use CmsOrbit\Core\Screen\Fields\Input;
 use CmsOrbit\Core\Screen\Fields\Select;
 use CmsOrbit\Core\Screen\Fields\Switcher;
@@ -58,9 +59,21 @@ class ConfigFieldFactory
             default       => Input::make($name),
         };
 
-        return $field
+        $field = $field
             ->title($title)
             ->help($help);
+
+        $customizer = $item->getAttribute('field');
+
+        if ($customizer instanceof \Closure) {
+            $customized = $customizer($field, $item);
+
+            if ($customized instanceof Field) {
+                $field = $customized;
+            }
+        }
+
+        return $field;
     }
 
     /**
@@ -79,9 +92,69 @@ class ConfigFieldFactory
         return $options;
     }
 
-    protected static function makeAttachField(string $name): Attach
+    protected static function makeAttachField(string $name): Field
     {
-        $field = Attach::make($name);
+        if (str_contains($name, 'branding__logo') || str_contains($name, 'branding__symbol') || str_contains($name, 'branding__favicon')) {
+            return self::makeBrandImageField($name);
+        }
+
+        $field = Attach::make($name)
+            ->accept('image/*')
+            ->set('returnObjects', true);
+
+        if (str_contains($name, 'branding__favicon')) {
+            $field
+                ->group('branding')
+                ->set('purpose', 'favicon')
+                ->set('crop', true)
+                ->set('placeholder', 'PNG 파비콘 업로드');
+        } elseif (str_contains($name, 'branding__logo') || str_contains($name, 'branding__symbol')) {
+            $field
+                ->group('branding')
+                ->set('crop', true)
+                ->set('placeholder', '브랜드 이미지 업로드');
+        }
+
+        if (Route::has('orbit.media.upload')) {
+            $field->uploadUrl(route('orbit.media.upload'));
+        }
+
+        return $field;
+    }
+
+    protected static function makeBrandImageField(string $name): Field
+    {
+        /** @var Cropper $field */
+        $field = Cropper::make($name)
+            ->targetId()
+            ->set('returnObjects', true)
+            ->set('group', 'branding')
+            ->set('groups', 'branding')
+            ->acceptedFiles('image/png,image/jpeg,image/webp,image/svg+xml');
+
+        if (str_contains($name, 'branding__favicon')) {
+            $field
+                ->width(512)
+                ->height(512)
+                ->minCanvas(192)
+                ->maxCanvas(1024)
+                ->set('purpose', 'favicon')
+                ->placeholder('PNG 파비콘 업로드');
+        } elseif (str_contains($name, 'branding__symbol')) {
+            $field
+                ->width(512)
+                ->height(512)
+                ->minCanvas(192)
+                ->maxCanvas(1024)
+                ->set('purpose', 'symbol')
+                ->placeholder('심볼 이미지 업로드');
+        } else {
+            $field
+                ->maxWidth(2400)
+                ->maxHeight(1200)
+                ->set('purpose', 'logo')
+                ->placeholder('로고 이미지 업로드');
+        }
 
         if (Route::has('orbit.media.upload')) {
             $field->uploadUrl(route('orbit.media.upload'));

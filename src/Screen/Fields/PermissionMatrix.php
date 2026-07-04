@@ -13,8 +13,9 @@ use Illuminate\Support\Collection;
  * grouped by their submitting entity/section, each group carrying a "select
  * all" toggle. Restores the Orbit 3.1 UX (previously a flat multi-select).
  *
- * The field submits an array of the checked permission slugs, which the Role
- * entity maps to the `{slug: true}` storage shape via its `onSave()`.
+ * The field can also receive inherited role permissions, allowing the user
+ * entity to expose `inherit / allow / deny` overrides while still reusing the
+ * same grouped permission UI.
  *
  * @method static PermissionMatrix make(string $name)
  */
@@ -49,6 +50,18 @@ class PermissionMatrix extends Field
     }
 
     /**
+     * Permissions already inherited through another source (for example roles).
+     *
+     * @param iterable<string, mixed> $permissions
+     */
+    public function inheritedPermissions(iterable $permissions): static
+    {
+        return $this->set('inheritedPermissions', collect($permissions)
+            ->mapWithKeys(fn ($enabled, $slug) => [(string) $slug => (bool) $enabled])
+            ->all());
+    }
+
+    /**
      * @return array<string, mixed>|null
      */
     public function toArray(): ?array
@@ -59,7 +72,10 @@ class PermissionMatrix extends Field
             return null;
         }
 
-        $node['props'] = ['groups' => $this->buildGroups()];
+        $node['props'] = [
+            'groups'               => $this->buildGroups(),
+            'inheritedPermissions' => $this->get('inheritedPermissions', []),
+        ];
 
         return $node;
     }
@@ -76,10 +92,10 @@ class PermissionMatrix extends Field
 
         return collect($groups)
             ->map(fn ($items, $group) => [
-                'group' => __((string) $group),
+                'group'       => __((string) $group),
                 'permissions' => collect($items)
                     ->map(fn (array $item) => [
-                        'slug' => (string) $item['slug'],
+                        'slug'  => (string) $item['slug'],
                         'label' => __((string) ($item['description'] ?? $item['slug'])),
                     ])
                     ->values()

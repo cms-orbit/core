@@ -6,7 +6,10 @@ import { Icon } from './icon';
 export function Table({ className, children }: { className?: string; children: ReactNode }) {
     return (
         <div className="overflow-x-auto">
-            <table className={cn('min-w-full divide-y divide-gray-200 dark:divide-white/10', className)}>
+            <table
+                className={cn('min-w-full divide-y', className)}
+                style={{ borderColor: 'var(--color-orbit-panel-border, #e2e8f0)' }}
+            >
                 {children}
             </table>
         </div>
@@ -14,11 +17,11 @@ export function Table({ className, children }: { className?: string; children: R
 }
 
 export function TableHead({ children }: { children: ReactNode }) {
-    return <thead className="bg-gray-50 dark:bg-white/5">{children}</thead>;
+    return <thead style={{ backgroundColor: 'var(--color-orbit-nav-section-bg, #f8fafc)' }}>{children}</thead>;
 }
 
 export function TableBody({ children }: { children: ReactNode }) {
-    return <tbody className="divide-y divide-gray-100 dark:divide-white/5">{children}</tbody>;
+    return <tbody style={{ borderColor: 'var(--color-orbit-panel-border, #e2e8f0)' }}>{children}</tbody>;
 }
 
 export function TableRow({
@@ -33,7 +36,8 @@ export function TableRow({
 } & React.HTMLAttributes<HTMLTableRowElement>) {
     return (
         <tr
-            className={cn(interactive && 'cursor-pointer hover:bg-gray-50 dark:hover:bg-white/5', className)}
+            className={cn(interactive && 'cursor-pointer', className)}
+            style={interactive ? { backgroundColor: 'transparent' } : undefined}
             {...props}
         >
             {children}
@@ -65,17 +69,18 @@ export function TableHeaderCell({
     return (
         <th
             className={cn(
-                'px-4 py-2.5 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400',
+                'px-4 py-2.5 text-xs font-semibold uppercase tracking-wide',
                 alignClass,
                 className,
             )}
+            style={{ color: 'var(--color-orbit-nav-group-fg, #64748b)' }}
             {...props}
         >
             {sortable ? (
                 <button
                     type="button"
                     onClick={onSort}
-                    className="inline-flex items-center gap-1 hover:text-gray-700 dark:hover:text-gray-200"
+                    className="inline-flex items-center gap-1"
                 >
                     {children}
                     <Icon
@@ -99,7 +104,11 @@ export function TableCell({ align = 'left', className, children, ...props }: Cel
     const alignClass = align === 'right' ? 'text-right' : align === 'center' ? 'text-center' : 'text-left';
 
     return (
-        <td className={cn('px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200', alignClass, className)} {...props}>
+        <td
+            className={cn('px-4 py-2.5 text-sm', alignClass, className)}
+            style={{ color: 'var(--color-orbit-secondary, #334155)' }}
+            {...props}
+        >
             {children}
         </td>
     );

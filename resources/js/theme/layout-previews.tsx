@@ -1,9 +1,10 @@
 import { cn } from '../lib/cn';
-import type { BrandColors, LayoutMode } from './branding';
+import type { LayoutMode } from './branding';
+import type { LayoutPreviewColors } from './layout-themes';
 
 export interface LayoutPreviewProps {
     mode: LayoutMode;
-    colors: Required<BrandColors>;
+    colors: LayoutPreviewColors;
     className?: string;
     /** Miniature card vs large live preview frame. */
     variant?: 'snippet' | 'live';
@@ -19,6 +20,8 @@ function Bar({
     h,
     fill,
     rx = 2,
+    stroke,
+    strokeWidth = 0,
 }: {
     x: number;
     y: number;
@@ -26,8 +29,10 @@ function Bar({
     h: number;
     fill: string;
     rx?: number;
+    stroke?: string;
+    strokeWidth?: number;
 }) {
-    return <rect x={x} y={y} width={w} height={h} rx={rx} fill={fill} />;
+    return <rect x={x} y={y} width={w} height={h} rx={rx} fill={fill} stroke={stroke} strokeWidth={strokeWidth} />;
 }
 
 function PaletteSplitPreview({
@@ -36,7 +41,7 @@ function PaletteSplitPreview({
     h,
     scale,
 }: {
-    colors: Required<BrandColors>;
+    colors: LayoutPreviewColors;
     w: number;
     h: number;
     scale: number;
@@ -47,69 +52,121 @@ function PaletteSplitPreview({
 
     return (
         <>
-            <Bar x={0} y={0} w={rail} h={h} fill={colors.secondary} rx={0} />
-            <Bar x={3 * scale} y={6 * scale} w={8 * scale} h={8 * scale} fill={colors.primary} rx={2} />
-            <Bar x={3 * scale} y={20 * scale} w={8 * scale} h={8 * scale} fill={colors.secondary} rx={2} />
-            <Bar x={rail} y={0} w={side} h={h} fill="#f8fafc" />
+            <Bar x={0} y={0} w={rail} h={h} fill={colors.railBg} rx={0} />
+            <Bar x={3 * scale} y={6 * scale} w={8 * scale} h={8 * scale} fill={colors.railActiveBg} rx={2} />
+            <Bar x={3 * scale} y={20 * scale} w={8 * scale} h={8 * scale} fill={colors.railIcon} rx={2} />
+            <Bar x={rail} y={0} w={side} h={h} fill={colors.navBg} stroke={colors.navBorder} strokeWidth={scale} />
             <Bar x={rail + 6 * scale} y={8 * scale} w={side - 12 * scale} h={4 * scale} fill={colors.primary} rx={1} />
-            <Bar x={rail + 6 * scale} y={18 * scale} w={side - 12 * scale} h={3 * scale} fill="#e2e8f0" rx={1} />
-            <Bar x={rail + side} y={0} w={w - rail - side} h={header} fill="#ffffff" />
-            <Bar x={rail + side + 8 * scale} y={header + 10 * scale} w={w - rail - side - 16 * scale} h={h - header - 20 * scale} fill="#ffffff" rx={3 * scale} />
+            <Bar x={rail + 6 * scale} y={20 * scale} w={10 * scale} h={2 * scale} fill={colors.navGroupFg} rx={1} />
+            <Bar x={rail + 4 * scale} y={26 * scale} w={side - 8 * scale} h={8 * scale} fill={colors.navActiveBg} rx={2 * scale} />
+            <Bar x={rail + 8 * scale} y={29 * scale} w={side - 22 * scale} h={2 * scale} fill={colors.navActiveFg} rx={1} />
+            <Bar x={rail + side} y={0} w={w - rail - side} h={header} fill={colors.headerBg} stroke={colors.headerBorder} strokeWidth={scale} />
+            <Bar
+                x={rail + side + 8 * scale}
+                y={header + 10 * scale}
+                w={w - rail - side - 16 * scale}
+                h={h - header - 20 * scale}
+                fill={colors.panelBg}
+                stroke={colors.panelBorder}
+                strokeWidth={scale}
+                rx={3 * scale}
+            />
             <Bar x={rail + side + 14 * scale} y={header + 18 * scale} w={24 * scale} h={4 * scale} fill={colors.accent} rx={1} />
+            <Bar
+                x={rail + side + 14 * scale}
+                y={header + 28 * scale}
+                w={w - rail - side - 32 * scale}
+                h={3 * scale}
+                fill={colors.secondary}
+                rx={1}
+            />
         </>
     );
 }
 
-function SinglePreview({ colors, w, h, scale }: { colors: Required<BrandColors>; w: number; h: number; scale: number }) {
+function SinglePreview({ colors, w, h, scale }: { colors: LayoutPreviewColors; w: number; h: number; scale: number }) {
     const side = 44 * scale;
     const header = 14 * scale;
 
     return (
         <>
-            <Bar x={0} y={0} w={side} h={h} fill="#f8fafc" />
+            <Bar x={0} y={0} w={side} h={h} fill={colors.navBg} stroke={colors.navBorder} strokeWidth={scale} />
             <Bar x={8 * scale} y={8 * scale} w={side - 16 * scale} h={6 * scale} fill={colors.primary} rx={2} />
-            <Bar x={8 * scale} y={20 * scale} w={side - 16 * scale} h={3 * scale} fill="#e2e8f0" rx={1} />
-            <Bar x={8 * scale} y={28 * scale} w={side - 16 * scale} h={3 * scale} fill="#e2e8f0" rx={1} />
-            <Bar x={side} y={0} w={w - side} h={header} fill="#ffffff" />
-            <Bar x={side + 8 * scale} y={header + 10 * scale} w={w - side - 16 * scale} h={h - header - 20 * scale} fill="#ffffff" rx={3 * scale} />
+            <Bar x={8 * scale} y={20 * scale} w={side - 16 * scale} h={scale} fill={colors.navSectionBorder} rx={1} />
+            <Bar x={8 * scale} y={23 * scale} w={5 * scale} h={5 * scale} fill={colors.primary} rx={1.5 * scale} />
+            <Bar x={16 * scale} y={24 * scale} w={14 * scale} h={2 * scale} fill={colors.navSectionFg} rx={1} />
+            <Bar x={8 * scale} y={30 * scale} w={12 * scale} h={2 * scale} fill={colors.navGroupFg} rx={1} />
+            <Bar x={8 * scale} y={35 * scale} w={side - 16 * scale} h={4 * scale} fill={colors.navActiveBg} rx={1} />
+            <Bar x={side} y={0} w={w - side} h={header} fill={colors.headerBg} stroke={colors.headerBorder} strokeWidth={scale} />
+            <Bar
+                x={side + 8 * scale}
+                y={header + 10 * scale}
+                w={w - side - 16 * scale}
+                h={h - header - 20 * scale}
+                fill={colors.panelBg}
+                stroke={colors.panelBorder}
+                strokeWidth={scale}
+                rx={3 * scale}
+            />
             <Bar x={side + 14 * scale} y={header + 18 * scale} w={28 * scale} h={4 * scale} fill={colors.accent} rx={1} />
+            <Bar x={side + 14 * scale} y={header + 28 * scale} w={w - side - 30 * scale} h={3 * scale} fill={colors.secondary} rx={1} />
         </>
     );
 }
 
-function TopbarPreview({ colors, w, h, scale }: { colors: Required<BrandColors>; w: number; h: number; scale: number }) {
+function TopbarPreview({ colors, w, h, scale }: { colors: LayoutPreviewColors; w: number; h: number; scale: number }) {
     const header = 16 * scale;
     const sub = 10 * scale;
 
     return (
         <>
-            <Bar x={0} y={0} w={w} h={header} fill="#ffffff" />
+            <Bar x={0} y={0} w={w} h={header} fill={colors.headerBg} stroke={colors.headerBorder} strokeWidth={scale} />
             <Bar x={8 * scale} y={5 * scale} w={20 * scale} h={6 * scale} fill={colors.primary} rx={2} />
-            <Bar x={34 * scale} y={6 * scale} w={16 * scale} h={4 * scale} fill={colors.secondary} rx={1} />
-            <Bar x={54 * scale} y={6 * scale} w={16 * scale} h={4 * scale} fill="#e2e8f0" rx={1} />
-            <Bar x={0} y={header} w={w} h={sub} fill="#f1f5f9" />
-            <Bar x={8 * scale} y={header + 3 * scale} w={20 * scale} h={4 * scale} fill={colors.primary} rx={1} />
-            <Bar x={32 * scale} y={header + 3 * scale} w={16 * scale} h={4 * scale} fill="#cbd5e1" rx={1} />
-            <Bar x={8 * scale} y={header + sub + 8 * scale} w={w - 16 * scale} h={h - header - sub - 16 * scale} fill="#ffffff" rx={3 * scale} />
+            <Bar x={34 * scale} y={6 * scale} w={16 * scale} h={3 * scale} fill={colors.navSectionFg} rx={1} />
+            <Bar x={54 * scale} y={6 * scale} w={14 * scale} h={3 * scale} fill={colors.navGroupFg} rx={1} />
+            <Bar x={0} y={header} w={w} h={sub} fill={colors.navBg} stroke={colors.navBorder} strokeWidth={scale} />
+            <Bar x={8 * scale} y={header + 3 * scale} w={20 * scale} h={4 * scale} fill={colors.navActiveBg} rx={1} />
+            <Bar x={32 * scale} y={header + 4 * scale} w={16 * scale} h={2 * scale} fill={colors.navGroupFg} rx={1} />
+            <Bar
+                x={8 * scale}
+                y={header + sub + 8 * scale}
+                w={w - 16 * scale}
+                h={h - header - sub - 16 * scale}
+                fill={colors.panelBg}
+                stroke={colors.panelBorder}
+                strokeWidth={scale}
+                rx={3 * scale}
+            />
             <Bar x={14 * scale} y={header + sub + 16 * scale} w={32 * scale} h={4 * scale} fill={colors.accent} rx={1} />
+            <Bar x={14 * scale} y={header + sub + 26 * scale} w={w - 28 * scale} h={3 * scale} fill={colors.secondary} rx={1} />
         </>
     );
 }
 
-function HybridPreview({ colors, w, h, scale }: { colors: Required<BrandColors>; w: number; h: number; scale: number }) {
+function HybridPreview({ colors, w, h, scale }: { colors: LayoutPreviewColors; w: number; h: number; scale: number }) {
     const header = 16 * scale;
     const side = 40 * scale;
 
     return (
         <>
-            <Bar x={0} y={0} w={w} h={header} fill="#ffffff" />
+            <Bar x={0} y={0} w={w} h={header} fill={colors.headerBg} stroke={colors.headerBorder} strokeWidth={scale} />
             <Bar x={8 * scale} y={5 * scale} w={18 * scale} h={6 * scale} fill={colors.primary} rx={2} />
-            <Bar x={32 * scale} y={6 * scale} w={14 * scale} h={4 * scale} fill={colors.secondary} rx={1} />
-            <Bar x={0} y={header} w={side} h={h - header} fill="#f8fafc" />
-            <Bar x={8 * scale} y={header + 8 * scale} w={side - 16 * scale} h={4 * scale} fill={colors.primary} rx={1} />
-            <Bar x={8 * scale} y={header + 18 * scale} w={side - 16 * scale} h={3 * scale} fill="#e2e8f0" rx={1} />
-            <Bar x={side + 8 * scale} y={header + 10 * scale} w={w - side - 16 * scale} h={h - header - 20 * scale} fill="#ffffff" rx={3 * scale} />
+            <Bar x={32 * scale} y={6 * scale} w={14 * scale} h={3 * scale} fill={colors.navSectionFg} rx={1} />
+            <Bar x={0} y={header} w={side} h={h - header} fill={colors.navBg} stroke={colors.navBorder} strokeWidth={scale} />
+            <Bar x={8 * scale} y={header + 12 * scale} w={12 * scale} h={2 * scale} fill={colors.navGroupFg} rx={1} />
+            <Bar x={8 * scale} y={header + 18 * scale} w={side - 16 * scale} h={4 * scale} fill={colors.navActiveBg} rx={1} />
+            <Bar
+                x={side + 8 * scale}
+                y={header + 10 * scale}
+                w={w - side - 16 * scale}
+                h={h - header - 20 * scale}
+                fill={colors.panelBg}
+                stroke={colors.panelBorder}
+                strokeWidth={scale}
+                rx={3 * scale}
+            />
             <Bar x={side + 14 * scale} y={header + 18 * scale} w={28 * scale} h={4 * scale} fill={colors.accent} rx={1} />
+            <Bar x={side + 14 * scale} y={header + 28 * scale} w={w - side - 28 * scale} h={3 * scale} fill={colors.secondary} rx={1} />
         </>
     );
 }
@@ -120,7 +177,7 @@ function PreviewSvg({
     dimensions,
 }: {
     mode: LayoutMode;
-    colors: Required<BrandColors>;
+    colors: LayoutPreviewColors;
     dimensions: { width: number; height: number };
 }) {
     const { width: w, height: h } = dimensions;
@@ -149,7 +206,7 @@ function PreviewSvg({
             className="block"
             aria-hidden
         >
-            <rect width={w} height={h} fill="#f1f5f9" rx={scale * 4} />
+            <rect width={w} height={h} fill={colors.pageBg} rx={scale * 4} />
             {body}
         </svg>
     );

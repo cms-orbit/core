@@ -9,14 +9,13 @@ use CmsOrbit\Core\Demo\Layouts\ChartBarExample;
 use CmsOrbit\Core\Demo\Layouts\ChartLineExample;
 use CmsOrbit\Core\Screen\Actions\Button;
 use CmsOrbit\Core\Screen\Actions\ModalToggle;
-use CmsOrbit\Core\Screen\Components\Cells\Currency;
-use CmsOrbit\Core\Screen\Components\Cells\DateTimeSplit;
 use CmsOrbit\Core\Screen\Fields\Input;
 use CmsOrbit\Core\Screen\Repository;
 use CmsOrbit\Core\Screen\TD;
 use CmsOrbit\Core\Support\Facades\Layout;
 use CmsOrbit\Core\Support\Facades\Toast;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 
 class ExampleScreen extends DemoScreen
@@ -127,13 +126,13 @@ class ExampleScreen extends DemoScreen
 
                 TD::make('price', __('Price'))
                     ->width('100')
-                    ->component(Currency::class, before: '$')
+                    ->render(fn (Repository $model) => '$ '.number_format((float) $model->get('price'), 2))
                     ->alignRight()
                     ->sort(),
 
                 TD::make('created_at', __('Created'))
                     ->width('100')
-                    ->component(DateTimeSplit::class)
+                    ->render(fn (Repository $model) => Carbon::parse($model->get('created_at'))->format('Y-m-d H:i'))
                     ->alignRight(),
             ]),
 

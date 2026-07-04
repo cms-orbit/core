@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { cn } from '../lib/cn';
+import { useT } from '../lib/i18n';
 import { UiButton } from '../ui/button';
 import { Overlay } from '../ui/overlay';
 import { deleteMedia, listMedia, uploadMedia } from './api';
@@ -38,6 +39,7 @@ export function MediaLibraryDialog({
     group,
     endpoints: endpointsOverride,
 }: MediaLibraryDialogProps) {
+    const t = useT();
     const endpoints = useMediaEndpoints(endpointsOverride);
     const [items, setItems] = useState<MediaItem[]>([]);
     const [loading, setLoading] = useState(false);
@@ -54,10 +56,10 @@ export function MediaLibraryDialog({
         listMedia(endpoints, { type, search, group })
             .then((response) => setItems(response.data))
             .catch((reason: unknown) =>
-                setError(reason instanceof Error ? reason.message : 'Failed to load media'),
+                setError(reason instanceof Error ? reason.message : t('Failed to load media')),
             )
             .finally(() => setLoading(false));
-    }, [endpoints, type, search, group]);
+    }, [endpoints, type, search, group, t]);
 
     useEffect(() => {
         if (open) {
@@ -97,7 +99,7 @@ export function MediaLibraryDialog({
         uploadMedia(endpoints, files, group ? { group } : {})
             .then((uploaded) => setItems((current) => [...uploaded, ...current]))
             .catch((reason: unknown) =>
-                setError(reason instanceof Error ? reason.message : 'Upload failed'),
+                setError(reason instanceof Error ? reason.message : t('Upload failed')),
             )
             .finally(() => setLoading(false));
     };
@@ -114,7 +116,7 @@ export function MediaLibraryDialog({
                 });
             })
             .catch((reason: unknown) =>
-                setError(reason instanceof Error ? reason.message : 'Delete failed'),
+                setError(reason instanceof Error ? reason.message : t('Delete failed')),
             );
     };
 
@@ -125,14 +127,14 @@ export function MediaLibraryDialog({
             open={open}
             onClose={onClose}
             size="xl"
-            title="Media library"
+            title={t('Media library')}
             footer={
                 <>
                     <span className="mr-auto text-xs text-gray-400">
-                        {selectedItems.length > 0 ? `${selectedItems.length} selected` : null}
+                        {selectedItems.length > 0 ? t(':count selected', { count: selectedItems.length }) : null}
                     </span>
                     <UiButton type="button" variant="default" onClick={onClose}>
-                        Cancel
+                        {t('Cancel')}
                     </UiButton>
                     <UiButton
                         type="button"
@@ -143,7 +145,7 @@ export function MediaLibraryDialog({
                             onClose();
                         }}
                     >
-                        Use selected
+                        {t('Use selected')}
                     </UiButton>
                 </>
             }
@@ -162,7 +164,7 @@ export function MediaLibraryDialog({
                                     : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700',
                             )}
                         >
-                            {tab.label}
+                            {t(tab.label)}
                         </button>
                     ))}
                 </div>
@@ -170,11 +172,11 @@ export function MediaLibraryDialog({
                     type="search"
                     value={search}
                     onChange={(event) => setSearch(event.target.value)}
-                    placeholder="Search…"
+                    placeholder={t('Search…')}
                     className="ml-auto w-48 rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm dark:border-gray-700 dark:bg-gray-900"
                 />
                 <UiButton type="button" variant="default" onClick={() => fileInput.current?.click()}>
-                    Upload
+                    {t('Upload')}
                 </UiButton>
                 <input
                     ref={fileInput}
@@ -197,7 +199,7 @@ export function MediaLibraryDialog({
             {loading && items.length === 0 ? (
                 <MediaSkeleton />
             ) : items.length === 0 ? (
-                <p className="py-12 text-center text-sm text-gray-400">No media found.</p>
+                <p className="py-12 text-center text-sm text-gray-400">{t('No media found.')}</p>
             ) : (
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
                     {items.map((item) => (
@@ -226,6 +228,7 @@ function MediaCard({
     onToggle: () => void;
     onDelete: () => void;
 }) {
+    const t = useT();
     const mediaType = inferMediaType(item);
     const encoding = item.encoding_status;
 
@@ -258,7 +261,7 @@ function MediaCard({
 
             {encoding && encoding !== 'done' ? (
                 <span className="absolute left-1 top-1 rounded bg-black/60 px-1.5 py-0.5 text-[10px] font-medium text-white">
-                    {encoding === 'failed' ? 'encode failed' : `encoding…`}
+                    {encoding === 'failed' ? t('Encoding failed') : t('Encoding…')}
                 </span>
             ) : null}
 
@@ -270,14 +273,15 @@ function MediaCard({
                 }}
                 className="absolute right-1 top-1 hidden rounded bg-black/50 px-1.5 py-0.5 text-[10px] text-white group-hover:block hover:bg-red-600"
             >
-                Delete
+                {t('Delete')}
             </button>
         </div>
     );
 }
 
 function MediaTypeBadge({ type }: { type: MediaType }) {
-    const label = type === 'video' ? 'VIDEO' : type === 'audio' ? 'AUDIO' : 'FILE';
+    const t = useT();
+    const label = type === 'video' ? t('Video') : type === 'audio' ? t('Audio') : t('File');
 
     return (
         <span className="rounded bg-gray-200 px-2 py-1 text-xs font-semibold text-gray-500 dark:bg-gray-700 dark:text-gray-300">

@@ -8,6 +8,7 @@ use CmsOrbit\Core\Access\Impersonation;
 use Composer\InstalledVersions;
 use Composer\Semver\VersionParser;
 use Illuminate\Auth\EloquentUserProvider;
+use Illuminate\Auth\Events\Lockout;
 use Illuminate\Auth\Middleware\RedirectIfAuthenticated;
 use Illuminate\Auth\SessionGuard;
 use Illuminate\Contracts\Auth\Factory as Auth;
@@ -16,6 +17,9 @@ use Illuminate\Cookie\CookieJar;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
@@ -68,16 +72,19 @@ class LoginController extends Controller
      *
      *
      *
-     * @return JsonResponse|RedirectResponse
      *
      * @throws ValidationException
+     *
+     * @return JsonResponse|RedirectResponse
      */
     public function login(Request $request, CookieJar $cookieJar)
     {
         $request->validate([
-            'email' => 'required|string',
+            'email'    => 'required|string',
             'password' => 'required|string',
         ]);
+
+        $this->ensureIsNotRateLimited($request);
 
         $auth = $this->guard->attempt(
             $request->only(['email', 'password']),
@@ -85,10 +92,14 @@ class LoginController extends Controller
         );
 
         if (! $auth) {
+            RateLimiter::hit($this->throttleKey($request), $this->lockoutSeconds());
+
             throw ValidationException::withMessages([
                 'email' => __('The details you entered did not match our records. Please double-check and try again.'),
             ]);
         }
+
+        RateLimiter::clear($this->throttleKey($request));
 
         if ($request->boolean('remember')) {
             $user = $cookieJar->forever($this->nameForLock(), $this->guard->id());
@@ -123,12 +134,12 @@ class LoginController extends Controller
         $model = $provider->createModel()->find($user);
 
         return Inertia::render('orbit/auth/login', [
-            'action' => route('orbit.login.auth'),
-            'resetUrl' => route('orbit.login.lock'),
-            'appName' => config('app.name'),
+            'action'     => route('orbit.login.auth'),
+            'resetUrl'   => route('orbit.login.lock'),
+            'appName'    => config('app.name'),
             'isLockUser' => optional($model)->exists ?? false,
-            'lockUser' => $model ? [
-                'name' => (string) $model->getAttribute('name'),
+            'lockUser'   => $model ? [
+                'name'  => (string) $model->getAttribute('name'),
                 'email' => (string) $model->getAttribute('email'),
             ] : null,
         ]);
@@ -179,5 +190,53 @@ class LoginController extends Controller
     private function nameForLock(): string
     {
         return sprintf('%s_%s', $this->guard->getName(), '_orchid_lock');
+    }
+
+    /**
+     * @throws ValidationException
+     */
+    protected function ensureIsNotRateLimited(Request $request): void
+    {
+        if (! RateLimiter::tooManyAttempts($this->throttleKey($request), $this->maxAttempts())) {
+            return;
+        }
+
+        event(new Lockout($request));
+
+        $seconds = RateLimiter::availableIn($this->throttleKey($request));
+
+        throw ValidationException::withMessages([
+            'email' => __('Too many login attempts. Please try again in :seconds seconds.', [
+                'seconds' => $seconds,
+            ]),
+        ]);
+    }
+
+    protected function throttleKey(Request $request): string
+    {
+        return Str::transliterate(Str::lower((string) $request->input('email')).'|'.$request->ip());
+    }
+
+    protected function maxAttempts(): int
+    {
+        if (! $this->configTableExists()) {
+            return 3;
+        }
+
+        return max((int) orbit_config('auth_security.login_max_attempts', 3), 1);
+    }
+
+    protected function lockoutSeconds(): int
+    {
+        if (! $this->configTableExists()) {
+            return 600;
+        }
+
+        return max((int) orbit_config('auth_security.lockout_minutes', 10), 1) * 60;
+    }
+
+    protected function configTableExists(): bool
+    {
+        return once(fn () => Schema::hasTable('orbit_configs'));
     }
 }

@@ -3,26 +3,42 @@ import type { FieldNode, LayoutComponentProps } from '../contract';
 import { ColorField } from '../fields/color';
 import { useOptionalOrbitForm } from '../form-context';
 import { cn } from '../lib/cn';
+import { useT } from '../lib/i18n';
 import { readLayoutData } from '../lib/layout-data';
 import type { MediaItem } from '../media/types';
 import { FieldRenderer } from '../screen-renderer';
-import type { LayoutMode } from '../theme/branding';
+import {
+    CONTENT_WIDTH_LABELS,
+    normalizeContentWidth,
+    type ContentWidthOption,
+    type LayoutMode,
+} from '../theme/branding';
 import { LAYOUT_MODE_LABELS, LayoutPreview } from '../theme/layout-previews';
 import { toPreviewColors } from '../theme/layout-themes';
 import type { LayoutThemeDefinition, LayoutThemeToken, LayoutThemes } from '../theme/layout-themes';
 import { Card, CardBody, CardHeader } from '../ui/card';
 
-const IDENTITY_KEYS = [
+const GENERAL_KEYS = [
     'branding.name',
+    'branding.theme_toggle_enabled',
+    'branding.theme_mode',
+    'layout.content_width',
+] as const;
+
+const LOGO_KEYS = [
     'branding.logo',
+    'branding.logo_dark',
+] as const;
+
+const SYMBOL_KEYS = [
     'branding.symbol',
+    'branding.symbol_dark',
     'branding.favicon',
-    'branding.dark_mode',
 ] as const;
 
 const TOKEN_DEFAULTS: Record<string, string> = {
     color_primary: '#17ce91',
-    color_secondary: '#0f172a',
+    color_secondary: '#64748b',
     color_accent: '#fc8024',
     color_page_bg: '#f8fafc',
     color_panel_bg: '#ffffff',
@@ -31,14 +47,16 @@ const TOKEN_DEFAULTS: Record<string, string> = {
     color_header_border: '#e2e8f0',
     color_nav_bg: '#ffffff',
     color_nav_border: '#e2e8f0',
-    color_nav_muted: '#f1f5f9',
-    color_nav_active_bg: '#ecfdf5',
-    color_nav_active_fg: '#0f766e',
+    color_nav_muted: '#ecfdf5',
+    color_nav_section_fg: '#334155',
+    color_nav_group_fg: '#64748b',
+    color_nav_active_bg: '#d1fae5',
+    color_nav_active_fg: '#047857',
     color_rail_bg: '#ffffff',
     color_rail_border: '#e2e8f0',
     color_rail_icon: '#64748b',
-    color_rail_active_bg: '#17ce91',
-    color_rail_active_fg: '#ffffff',
+    color_rail_active_bg: '#d1fae5',
+    color_rail_active_fg: '#047857',
 };
 
 type Tone = 'light' | 'dark';
@@ -61,6 +79,10 @@ function findFieldByKey(fields: FieldNode[], dottedKey: string): FieldNode | und
     const encoded = configKey(dottedKey);
 
     return fields.find((field) => field.name?.includes(encoded));
+}
+
+function fieldsByKeys(fields: FieldNode[], keys: readonly string[]): FieldNode[] {
+    return keys.map((key) => findFieldByKey(fields, key)).filter((field): field is FieldNode => field !== undefined);
 }
 
 function readLayoutTokenColors(
@@ -88,13 +110,19 @@ function resolveMediaUrl(value: unknown): string | null {
         return value;
     }
 
+    if (value && typeof value === 'object' && !Array.isArray(value)) {
+        const item = value as MediaItem;
+
+        return item.url ?? item.thumbnail ?? item.relativeUrl ?? null;
+    }
+
     if (Array.isArray(value) && value.length > 0) {
         const first = value[0];
 
         if (typeof first === 'object' && first !== null) {
             const item = first as MediaItem;
 
-            return item.url ?? item.thumbnail ?? null;
+            return item.url ?? item.thumbnail ?? item.relativeUrl ?? null;
         }
     }
 
@@ -123,6 +151,8 @@ function ToneToggle({
     value: Tone;
     onChange: (tone: Tone) => void;
 }) {
+    const t = useT();
+
     return (
         <div className="inline-flex rounded-full border border-gray-200 bg-gray-50 p-1 dark:border-white/10 dark:bg-white/5">
             {([
@@ -143,7 +173,7 @@ function ToneToggle({
                                 : 'text-gray-500 dark:text-gray-400',
                         )}
                     >
-                        {label}
+                        {t(label)}
                     </button>
                 );
             })}
@@ -157,6 +187,7 @@ function tokenSwatches(colors: Record<string, string>, tokens: LayoutThemeToken[
 
 /** Unified admin design settings: identity, layout theme presets and live preview. */
 export function DesignSettingsLayout({ node }: LayoutComponentProps) {
+    const t = useT();
     const layoutData = readLayoutData(node);
     const fields = asFields(layoutData.fields);
     const form = useOptionalOrbitForm();
@@ -164,14 +195,21 @@ export function DesignSettingsLayout({ node }: LayoutComponentProps) {
     const layoutModes = (layoutData.layoutModes as Record<LayoutMode, string> | undefined) ?? LAYOUT_MODE_LABELS;
     const layoutThemes = (layoutData.layoutThemes as LayoutThemes | undefined) ?? {};
 
-    const identityFields = IDENTITY_KEYS.map((key) => findFieldByKey(fields, key)).filter(
-        (field): field is FieldNode => field !== undefined,
-    );
+    const generalFields = fieldsByKeys(fields, GENERAL_KEYS);
+    const logoFields = fieldsByKeys(fields, LOGO_KEYS);
+    const symbolFields = fieldsByKeys(fields, SYMBOL_KEYS);
 
     const selectedMode = (config[configKey('layout.mode')] as LayoutMode | undefined) ?? 'palette-split';
+    const contentWidth = normalizeContentWidth(
+        (config[configKey('layout.content_width')] as ContentWidthOption | undefined) ?? 'default',
+    );
     const activeTheme = layoutThemes[selectedMode];
     const layoutPalette = String(config[configKey(`theme.${selectedMode}.palette`)] ?? '');
-    const [previewTone, setPreviewTone] = useState<Tone>('light');
+    const selectedLayoutPalette =
+        activeTheme && (layoutPalette === 'custom' || layoutPalette in activeTheme.presets) ? layoutPalette : 'custom';
+    const defaultThemeMode = String(config[configKey('branding.theme_mode')] ?? 'light');
+    const initialPreviewTone: Tone = defaultThemeMode === 'dark' ? 'dark' : 'light';
+    const [previewTone, setPreviewTone] = useState<Tone>(initialPreviewTone);
     const layoutColors = activeTheme ? readLayoutTokenColors(config, selectedMode, activeTheme, 'light') : {};
     const layoutColorsDark =
         activeTheme?.dualTone ? readLayoutTokenColors(config, selectedMode, activeTheme, 'dark') : {};
@@ -182,12 +220,21 @@ export function DesignSettingsLayout({ node }: LayoutComponentProps) {
 
     const brandName = String(config[configKey('branding.name')] ?? 'Orbit');
     const logoUrl = resolveMediaUrl(config[configKey('branding.logo')] ?? findFieldByKey(fields, 'branding.logo')?.value);
+    const logoUrlDark = resolveMediaUrl(
+        config[configKey('branding.logo_dark')] ?? findFieldByKey(fields, 'branding.logo_dark')?.value,
+    );
     const symbolUrl = resolveMediaUrl(
         config[configKey('branding.symbol')] ?? findFieldByKey(fields, 'branding.symbol')?.value,
     );
+    const symbolUrlDark = resolveMediaUrl(
+        config[configKey('branding.symbol_dark')] ?? findFieldByKey(fields, 'branding.symbol_dark')?.value,
+    );
+    const activeLogoUrl = activePreviewTone === 'dark' ? logoUrlDark ?? logoUrl : logoUrl ?? logoUrlDark;
+    const activeSymbolUrl = activePreviewTone === 'dark' ? symbolUrlDark ?? symbolUrl : symbolUrl ?? symbolUrlDark;
+    const contentWidthLabel = CONTENT_WIDTH_LABELS[contentWidth];
 
     const selectMode = (mode: LayoutMode) => {
-        setPreviewTone('light');
+        setPreviewTone(initialPreviewTone);
         form?.setValue(`config[${configKey('layout.mode')}]`, mode);
     };
 
@@ -268,9 +315,9 @@ export function DesignSettingsLayout({ node }: LayoutComponentProps) {
                                 }}
                             >
                                 <div className="flex items-center gap-3">
-                                    {logoUrl || symbolUrl ? (
+                                    {activeLogoUrl || activeSymbolUrl ? (
                                         <img
-                                            src={logoUrl ?? symbolUrl ?? ''}
+                                            src={activeLogoUrl ?? activeSymbolUrl ?? ''}
                                             alt=""
                                             className="h-12 max-w-[120px] object-contain"
                                         />
@@ -287,8 +334,9 @@ export function DesignSettingsLayout({ node }: LayoutComponentProps) {
                                             {brandName}
                                         </p>
                                         <p className="truncate text-xs text-gray-500 dark:text-gray-400">
-                                            {layoutModes[selectedMode] ?? selectedMode}
-                                            {activeTheme?.dualTone ? ` · ${previewTone}` : ''}
+                                            {t(layoutModes[selectedMode] ?? selectedMode)}
+                                            {activeTheme?.dualTone ? ` · ${t(previewTone === 'dark' ? 'Dark' : 'Light')}` : ''}
+                                            {` · ${contentWidthLabel}`}
                                         </p>
                                     </div>
                                 </div>
@@ -311,7 +359,7 @@ export function DesignSettingsLayout({ node }: LayoutComponentProps) {
                                     <div className="space-y-2">
                                         <div
                                             className="h-3 rounded-full"
-                                            style={{ backgroundColor: activeToneColors.color_primary ?? '#17ce91', width: '44%' }}
+                                            style={{ backgroundColor: activeToneColors.color_primary ?? '#10b981', width: '44%' }}
                                         />
                                         <div
                                             className="h-2 rounded-full"
@@ -330,13 +378,51 @@ export function DesignSettingsLayout({ node }: LayoutComponentProps) {
                     <Card className="xl:col-span-2">
                         <CardHeader
                             title="아이덴티티"
-                            description="관리자 이름, 로고, 심볼, 파비콘과 기본 다크 모드 사용 여부를 설정합니다."
+                            description="관리자 이름, 컨텐츠 폭, 로고, 심볼, 파비콘과 테마 전환 동작을 더 컴팩트하게 설정합니다."
                         />
                         <CardBody className="space-y-4">
-                            {identityFields.length > 0 ? (
-                                identityFields.map((field, index) => (
-                                    <FieldRenderer key={field.name ?? index} node={field} data={{}} />
-                                ))
+                            {generalFields.length > 0 || logoFields.length > 0 || symbolFields.length > 0 ? (
+                                <div className="space-y-6">
+                                    {generalFields.length > 0 ? (
+                                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                            {generalFields.map((field, index) => (
+                                                <FieldRenderer key={field.name ?? `general-${index}`} node={field} data={{}} />
+                                            ))}
+                                        </div>
+                                    ) : null}
+
+                                    {logoFields.length > 0 ? (
+                                        <div className="space-y-3">
+                                            <div>
+                                                <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">로고</h3>
+                                                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                                    라이트/다크 로고를 한 줄에서 비교하며 배치합니다.
+                                                </p>
+                                            </div>
+                                            <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+                                                {logoFields.map((field, index) => (
+                                                    <FieldRenderer key={field.name ?? `logo-${index}`} node={field} data={{}} />
+                                                ))}
+                                            </div>
+                                        </div>
+                                    ) : null}
+
+                                    {symbolFields.length > 0 ? (
+                                        <div className="space-y-3">
+                                            <div>
+                                                <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">심볼 · 파비콘</h3>
+                                                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                                    심벌과 파비콘은 더 작은 미리보기로 한 줄에 정리합니다.
+                                                </p>
+                                            </div>
+                                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                                                {symbolFields.map((field, index) => (
+                                                    <FieldRenderer key={field.name ?? `symbol-${index}`} node={field} data={{}} />
+                                                ))}
+                                            </div>
+                                        </div>
+                                    ) : null}
+                                </div>
                             ) : (
                                 <p className="text-sm text-gray-500 dark:text-gray-400">
                                     아이덴티티 필드를 불러오지 못했습니다. 페이지를 새로고침해 주세요.
@@ -360,7 +446,14 @@ export function DesignSettingsLayout({ node }: LayoutComponentProps) {
                             const selected = selectedMode === mode;
                             const theme = layoutThemes[mode];
                             const snippetColors = theme
-                                ? toPreviewColors(readLayoutTokenColors(config, mode, theme, 'light'))
+                                ? toPreviewColors(
+                                      readLayoutTokenColors(
+                                          config,
+                                          mode,
+                                          theme,
+                                          theme.dualTone ? previewTone : 'light',
+                                      ),
+                                  )
                                 : previewColors;
 
                             return (
@@ -377,11 +470,11 @@ export function DesignSettingsLayout({ node }: LayoutComponentProps) {
                                 >
                                     <LayoutPreview mode={mode} colors={snippetColors} variant="snippet" />
                                     <span className="mt-2 block text-sm font-medium text-gray-800 dark:text-gray-100">
-                                        {layoutModes[mode] ?? LAYOUT_MODE_LABELS[mode]}
+                                        {t(layoutModes[mode] ?? LAYOUT_MODE_LABELS[mode])}
                                     </span>
                                     <span className="mt-1 block text-xs text-gray-500 dark:text-gray-400">
-                                        {theme?.tokens.length ?? 0} tokens
-                                        {theme?.dualTone ? ' · dual tone' : ''}
+                                        {theme?.tokens.length ?? 0} {t('tokens')}
+                                        {theme?.dualTone ? ` · ${t('Dual tone')}` : ''}
                                     </span>
                                 </button>
                             );
@@ -408,7 +501,7 @@ export function DesignSettingsLayout({ node }: LayoutComponentProps) {
                         <Card className="xl:col-span-1">
                             <CardHeader
                                 title="레이아웃 미리보기"
-                                description={`${layoutModes[selectedMode] ?? selectedMode}의 ${activeTheme.dualTone ? activePreviewTone : 'light'} 톤입니다.`}
+                                description={`${t(layoutModes[selectedMode] ?? selectedMode)}의 ${t(activeTheme.dualTone && activePreviewTone === 'dark' ? 'Dark' : 'Light')} 톤입니다.`}
                             />
                             <CardBody className="space-y-4">
                                 <LayoutPreview mode={selectedMode} colors={previewColors} variant="live" className="shadow-sm" />
@@ -428,7 +521,7 @@ export function DesignSettingsLayout({ node }: LayoutComponentProps) {
                                                 className="mb-2 h-8 rounded-lg"
                                                 style={{ backgroundColor: color ?? '#ffffff' }}
                                             />
-                                            <p className="text-xs font-medium text-gray-600 dark:text-gray-300">{label}</p>
+                                            <p className="text-xs font-medium text-gray-600 dark:text-gray-300">{t(label)}</p>
                                         </div>
                                     ))}
                                 </div>
@@ -444,12 +537,12 @@ export function DesignSettingsLayout({ node }: LayoutComponentProps) {
                                 <div className="space-y-3">
                                     <div>
                                         <p className="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                                            Presets
+                                            {t('Presets')}
                                         </p>
                                     </div>
                                     <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
                                         {Object.entries(activeTheme.presets).map(([key, preset]) => {
-                                            const selected = layoutPalette === key;
+                                            const selected = selectedLayoutPalette === key;
                                             const colors = previewTone === 'dark'
                                                 ? Object.values(preset.dark ?? preset.colors ?? {})
                                                 : Object.values(preset.light ?? preset.colors ?? {});
@@ -476,7 +569,7 @@ export function DesignSettingsLayout({ node }: LayoutComponentProps) {
                                                         ))}
                                                     </div>
                                                     <span className="block text-xs font-medium text-gray-700 dark:text-gray-200">
-                                                        {preset.label}
+                                                        {t(preset.label)}
                                                     </span>
                                                 </button>
                                             );
@@ -487,7 +580,7 @@ export function DesignSettingsLayout({ node }: LayoutComponentProps) {
                                             onClick={() => applyLayoutPreset(selectedMode, 'custom')}
                                             className={cn(
                                                 'rounded-xl border p-3 text-left transition',
-                                                layoutPalette === 'custom'
+                                                selectedLayoutPalette === 'custom'
                                                     ? 'border-orbit-primary bg-orbit-primary/5 ring-2 ring-orbit-primary/20'
                                                     : 'border-gray-200 hover:border-gray-300 dark:border-white/10 dark:hover:border-white/20',
                                             )}
@@ -502,7 +595,7 @@ export function DesignSettingsLayout({ node }: LayoutComponentProps) {
                                                 ))}
                                             </div>
                                             <span className="block text-xs font-medium text-gray-700 dark:text-gray-200">
-                                                Custom
+                                                {t('Custom')}
                                             </span>
                                         </button>
                                     </div>
@@ -516,9 +609,9 @@ export function DesignSettingsLayout({ node }: LayoutComponentProps) {
                                         >
                                             <div className="mb-4 flex items-center justify-between gap-3">
                                                 <div>
-                                                    <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">{group}</h3>
+                                                    <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">{t(group)}</h3>
                                                     <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                                                        {group} 영역의 배경, 보더, 활성 상태를 세밀하게 조정합니다.
+                                                        {t(group)} 영역의 배경, 보더, 활성 상태를 세밀하게 조정합니다.
                                                     </p>
                                                 </div>
                                                 <div className="flex gap-1">
@@ -545,13 +638,13 @@ export function DesignSettingsLayout({ node }: LayoutComponentProps) {
                                                                 component: 'color',
                                                                 name: fieldName,
                                                                 value,
-                                                                attributes: { title: token.label },
+                                                                attributes: { title: t(token.label) },
                                                                 errors: [],
                                                             }}
                                                             data={{}}
                                                             value={value}
                                                             name={fieldName}
-                                                            attributes={{ title: token.label }}
+                                                            attributes={{ title: t(token.label) }}
                                                             errors={[]}
                                                             onChange={(next) =>
                                                                 setLayoutColor(

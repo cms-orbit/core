@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { cn } from '../lib/cn';
+import { useT } from '../lib/i18n';
 
 export type OverlaySize = 'sm' | 'md' | 'lg' | 'xl';
 export type OverlayPlacement = 'center' | 'right';
@@ -36,6 +37,8 @@ export function Overlay({
     footer?: ReactNode;
     children: ReactNode;
 }) {
+    const t = useT();
+
     useEffect(() => {
         if (!open) {
             return;
@@ -74,22 +77,28 @@ export function Overlay({
         >
             <div
                 className={cn(
-                    'flex max-h-[calc(100vh-2rem)] w-full flex-col bg-white shadow-xl dark:bg-gray-800',
+                    'flex max-h-[calc(100vh-2rem)] w-full flex-col shadow-xl',
                     placement === 'center' && sizeClass[size],
                     placement === 'right' && 'w-full sm:max-w-md',
                     panelPosition,
                 )}
+                style={{
+                    backgroundColor: 'var(--color-orbit-panel-bg, #ffffff)',
+                    color: 'var(--color-orbit-secondary, #0f172a)',
+                    border: '1px solid var(--color-orbit-panel-border, #e2e8f0)',
+                }}
             >
                 {title ? (
-                    <div className="flex items-center justify-between border-b border-gray-100 px-5 py-3 dark:border-gray-700">
-                        <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                    <div className="flex items-center justify-between border-b px-5 py-3" style={{ borderColor: 'var(--color-orbit-panel-border, #e2e8f0)' }}>
+                        <h3 className="text-sm font-semibold" style={{ color: 'var(--color-orbit-secondary, #0f172a)' }}>
                             {title}
                         </h3>
                         <button
                             type="button"
                             onClick={onClose}
-                            className="rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-700"
-                            aria-label="Close"
+                            className="rounded p-1"
+                            style={{ color: 'var(--color-orbit-nav-group-fg, #64748b)' }}
+                            aria-label={t('Close')}
                         >
                             <CloseIcon />
                         </button>
@@ -99,7 +108,7 @@ export function Overlay({
                 <div className="flex-1 overflow-y-auto p-5">{children}</div>
 
                 {footer ? (
-                    <div className="flex items-center justify-end gap-2 border-t border-gray-100 px-5 py-3 dark:border-gray-700">
+                    <div className="flex items-center justify-end gap-2 border-t px-5 py-3" style={{ borderColor: 'var(--color-orbit-panel-border, #e2e8f0)' }}>
                         {footer}
                     </div>
                 ) : null}

@@ -19,6 +19,7 @@ export function SingleLayoutView({ orbit, brand, currentPath, breadcrumbs, ...co
         orbit.sections ?? {},
     );
     const homeUrl = orbit.home ?? '/main';
+    const contentWidth = content.contentWidth ?? brand?.contentWidth;
 
     return (
         <div
@@ -51,10 +52,15 @@ export function SingleLayoutView({ orbit, brand, currentPath, breadcrumbs, ...co
                         <MobileMenuButton onClick={() => setMobileOpen((open) => !open)} />
                         <Breadcrumbs items={breadcrumbs} />
                     </div>
-                    <HeaderActions user={orbit.user ?? null} darkMode={brand?.darkMode} />
+                    <HeaderActions
+                        user={orbit.user ?? null}
+                        themeMode={brand?.themeMode ?? brand?.darkMode}
+                        themeToggleEnabled={brand?.themeToggleEnabled}
+                        showUserMenu={false}
+                    />
                 </header>
 
-                <PageBody {...content} />
+                <PageBody {...content} contentWidth={contentWidth} />
             </div>
 
             {mobileOpen ? (

@@ -23,7 +23,11 @@ class DemoServiceProvider extends ServiceProvider
 
         $section = (string) config('orbit.demo.section', __('Demo'));
 
-        Orbit::registerSection('demo', 'bs.book', $section, 100);
+        Orbit::registerSection('demo', 'bs.book', $section, 100, [
+            'rail'    => 'bottom',
+            'sidebar' => 'bottom',
+            'topbar'  => 'right',
+        ]);
 
         Orbit::registerPermission(
             ItemPermission::group($section)

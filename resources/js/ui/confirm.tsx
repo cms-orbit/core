@@ -73,7 +73,7 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
                     </>
                 }
             >
-                <p className="text-sm text-gray-600 dark:text-gray-300">
+                <p className="text-sm" style={{ color: 'var(--color-orbit-secondary, #475569)' }}>
                     {pending?.message ?? 'Are you sure you want to continue?'}
                 </p>
             </Overlay>

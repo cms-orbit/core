@@ -1,3 +1,4 @@
+import { Head } from '@inertiajs/react';
 import {
     ActionBar,
     DashboardLayout,
@@ -17,6 +18,7 @@ export default function Screen(props: ScreenProps) {
     const {
         name,
         description,
+        shell,
         breadcrumbs,
         commandBar,
         layout,
@@ -41,9 +43,12 @@ export default function Screen(props: ScreenProps) {
 
     return (
         <FormProvider initialData={data} state={state}>
+            <Head title={name ?? 'Orbit'} />
             <DashboardLayout
                 title={name}
                 description={description}
+                chrome={shell?.chrome}
+                contentWidth={shell?.contentWidth}
                 breadcrumbs={breadcrumbs}
                 actions={<ActionBar actions={commandBar} data={data} screen={screen} />}
             >

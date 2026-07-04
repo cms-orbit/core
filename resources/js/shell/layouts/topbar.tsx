@@ -1,16 +1,21 @@
 import { Link } from '@inertiajs/react';
 import { cn } from '../../lib/cn';
 import { useT } from '../../lib/i18n';
+import { resolveBrandAsset } from '../../theme/branding';
 import { Icon } from '../../ui/icon';
 import type { LayoutViewProps, MenuSection, OrbitMenuItem } from '../parts';
 import {
     Breadcrumbs,
+    ContentContainer,
     HeaderActions,
     MobileMenuButton,
     PageBody,
     SidebarPanel,
+    getSectionDirectUrl,
+    getSectionNavItems,
     itemTreeActive,
     pathMatches,
+    splitSectionsByPlacement,
     toPath,
     useMenuState,
 } from '../parts';
@@ -21,7 +26,7 @@ function flattenItems(section: MenuSection | null): OrbitMenuItem[] {
         return [];
     }
 
-    return section.items.flatMap((item) =>
+    return getSectionNavItems(section).flatMap((item) =>
         (item.children?.length ?? 0) > 0 ? item.children! : [item],
     );
 }
@@ -32,9 +37,12 @@ function flattenItems(section: MenuSection | null): OrbitMenuItem[] {
  */
 export function TopbarLayoutView({ orbit, brand, currentPath, breadcrumbs, ...content }: LayoutViewProps) {
     const t = useT();
+    const logoUrl = resolveBrandAsset(brand, 'logo');
     const { sections, activeKey, selectedKey, setSelectedKey, mobileOpen, setMobileOpen, selectedSection } =
         useMenuState(orbit.menu ?? [], currentPath, orbit.sections ?? {});
     const homeUrl = orbit.home ?? '/main';
+    const { primary: primarySections, secondary: secondarySections } = splitSectionsByPlacement(sections, 'topbar');
+    const contentWidth = content.contentWidth ?? brand?.contentWidth;
 
     const items = flattenItems(selectedSection);
 
@@ -56,45 +64,116 @@ export function TopbarLayoutView({ orbit, brand, currentPath, breadcrumbs, ...co
                 <div className="flex min-w-0 items-center gap-4">
                     <MobileMenuButton onClick={() => setMobileOpen((open) => !open)} />
                     <Link href={homeUrl} className="flex items-center gap-2" title={brand?.name ?? 'Orbit'}>
-                        {brand?.logo ? (
-                            <img src={brand.logo} alt={brand?.name ?? 'Orbit'} className="h-5 w-auto" />
+                        {logoUrl ? (
+                            <img src={logoUrl} alt={brand?.name ?? 'Orbit'} className="h-5 w-auto object-contain" />
                         ) : (
                             <span className="text-lg font-semibold">{brand?.name ?? 'Orbit'}</span>
                         )}
                     </Link>
                     <nav className="hidden items-center gap-1 md:flex">
-                        {sections.map((section) => {
+                        {primarySections.map((section) => {
+                            const url = getSectionDirectUrl(section);
                             const isSelected = section.key === selectedKey;
                             const isActive = section.key === activeKey;
+                            const className = cn(
+                                'flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm',
+                                isSelected || isActive ? 'font-medium' : '',
+                            );
+                            const style = {
+                                backgroundColor:
+                                    isSelected || isActive
+                                        ? 'var(--color-orbit-nav-active-bg, #d1fae5)'
+                                        : 'transparent',
+                                color:
+                                    isSelected || isActive
+                                        ? 'var(--color-orbit-nav-active-fg, #047857)'
+                                        : 'var(--color-orbit-secondary, #475569)',
+                            };
+                            const content = (
+                                <>
+                                    <Icon name={section.icon} className="text-base" />
+                                    {t(section.label)}
+                                </>
+                            );
+
+                            if (url) {
+                                return (
+                                    <Link key={section.key} href={url} className={className} style={style}>
+                                        {content}
+                                    </Link>
+                                );
+                            }
 
                             return (
                                 <button
                                     key={section.key}
                                     type="button"
                                     onClick={() => setSelectedKey(section.key)}
-                                    className={cn(
-                                        'flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm',
-                                        isSelected || isActive ? 'font-medium' : '',
-                                    )}
-                                    style={{
-                                        backgroundColor:
-                                            isSelected || isActive
-                                                ? 'var(--color-orbit-nav-active-bg, rgba(23, 206, 145, 0.12))'
-                                                : 'transparent',
-                                        color:
-                                            isSelected || isActive
-                                                ? 'var(--color-orbit-nav-active-fg, #0f766e)'
-                                                : 'var(--color-orbit-secondary, #475569)',
-                                    }}
+                                    className={className}
+                                    style={style}
                                 >
-                                    <Icon name={section.icon} className="text-base" />
-                                    {t(section.label)}
+                                    {content}
                                 </button>
                             );
                         })}
                     </nav>
                 </div>
-                <HeaderActions user={orbit.user ?? null} darkMode={brand?.darkMode} />
+                <div className="flex items-center gap-3">
+                    {secondarySections.length > 0 ? (
+                        <nav className="hidden items-center gap-1 md:flex">
+                            {secondarySections.map((section) => {
+                                const url = getSectionDirectUrl(section);
+                                const isSelected = section.key === selectedKey;
+                                const isActive = section.key === activeKey;
+                                const className = cn(
+                                    'flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm',
+                                    isSelected || isActive ? 'font-medium' : '',
+                                );
+                                const style = {
+                                    backgroundColor:
+                                        isSelected || isActive
+                                            ? 'var(--color-orbit-nav-active-bg, #d1fae5)'
+                                            : 'transparent',
+                                    color:
+                                        isSelected || isActive
+                                            ? 'var(--color-orbit-nav-active-fg, #047857)'
+                                            : 'var(--color-orbit-secondary, #475569)',
+                                };
+                                const content = (
+                                    <>
+                                        <Icon name={section.icon} className="text-base" />
+                                        {t(section.label)}
+                                    </>
+                                );
+
+                                if (url) {
+                                    return (
+                                        <Link key={section.key} href={url} className={className} style={style}>
+                                            {content}
+                                        </Link>
+                                    );
+                                }
+
+                                return (
+                                    <button
+                                        key={section.key}
+                                        type="button"
+                                        onClick={() => setSelectedKey(section.key)}
+                                        className={className}
+                                        style={style}
+                                    >
+                                        {content}
+                                    </button>
+                                );
+                            })}
+                        </nav>
+                    ) : null}
+                    <HeaderActions
+                        user={orbit.user ?? null}
+                        themeMode={brand?.themeMode ?? brand?.darkMode}
+                        themeToggleEnabled={brand?.themeToggleEnabled}
+                    />
+                </div>
             </header>
 
             {items.length > 0 ? (
@@ -118,10 +197,10 @@ export function TopbarLayoutView({ orbit, brand, currentPath, breadcrumbs, ...co
                                 )}
                                 style={{
                                     borderColor: active
-                                        ? 'var(--color-orbit-primary, #17ce91)'
+                                        ? 'var(--color-orbit-primary, #10b981)'
                                         : 'transparent',
                                     color: active
-                                        ? 'var(--color-orbit-nav-active-fg, #0f766e)'
+                                        ? 'var(--color-orbit-nav-active-fg, #047857)'
                                         : 'var(--color-orbit-secondary, #64748b)',
                                 }}
                             >
@@ -135,11 +214,11 @@ export function TopbarLayoutView({ orbit, brand, currentPath, breadcrumbs, ...co
 
             <div className="flex-1">
                 {breadcrumbs && breadcrumbs.length > 0 ? (
-                    <div className="mx-auto max-w-6xl px-4 pt-4 md:px-6">
+                    <ContentContainer contentWidth={contentWidth} className="px-4 pt-4 md:px-6">
                         <Breadcrumbs items={breadcrumbs} />
-                    </div>
+                    </ContentContainer>
                 ) : null}
-                <PageBody {...content} />
+                <PageBody {...content} contentWidth={contentWidth} />
             </div>
 
             {mobileOpen ? (

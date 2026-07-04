@@ -40,22 +40,30 @@ class ViewScreen extends CrudScreen
     public function commandBar(): array
     {
         $entity = $this->entity();
-
-        return [
+        $actions = [
             $this->actionsButtons(),
+        ];
 
-            Link::make(__('Edit'))
+        if ($entity->hasCrud('edit')) {
+            $actions[] = Link::make(__('Edit'))
                 ->icon('bs.pencil')
                 ->canSee($this->can('update'))
-                ->route('orbit.entities.'.$entity::uriKey().'.edit', ['id' => $this->model?->getKey()]),
+                ->route('orbit.entities.'.$entity::uriKey().'.edit', ['id' => $this->model?->getKey()]);
+        }
 
-            Button::make(__('Delete'))
-                ->novalidate()
-                ->confirm(__('Are you sure you want to delete this resource?'))
-                ->canSee(! $this->isSoftDeleted($this->model) && $this->can('delete'))
-                ->method('delete')
-                ->icon('bs.trash'),
-        ];
+        $actions[] = Button::make(__('Delete'))
+            ->novalidate()
+            ->confirm(__('Are you sure you want to delete this resource?'))
+            ->canSee(
+                ! $this->isSoftDeleted($this->model)
+                && $this->can('delete')
+                && $this->model !== null
+                && $this->entity()->canDelete($this->model)
+            )
+            ->method('delete')
+            ->icon('bs.trash');
+
+        return $actions;
     }
 
     /**

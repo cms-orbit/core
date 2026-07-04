@@ -7,13 +7,13 @@ type Size = 'sm' | 'md' | 'lg';
 
 const variants: Record<Variant, string> = {
     primary:
-        'bg-orbit-primary-600 text-white hover:bg-orbit-primary-500 focus-visible:ring-orbit-primary-500/50',
+        'bg-orbit-primary-600 text-white shadow-sm hover:bg-orbit-primary-500 focus-visible:ring-orbit-primary-500/50',
     default:
-        'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 focus-visible:ring-gray-400/40 dark:bg-white/5 dark:text-gray-100 dark:border-white/10 dark:hover:bg-white/10',
+        'border hover:opacity-100 focus-visible:ring-orbit-primary-500/20',
     danger: 'bg-red-600 text-white hover:bg-red-500 focus-visible:ring-red-500/50',
     success: 'bg-green-600 text-white hover:bg-green-500 focus-visible:ring-green-500/50',
     warning: 'bg-amber-500 text-white hover:bg-amber-400 focus-visible:ring-amber-500/50',
-    ghost: 'text-gray-600 hover:bg-gray-100 focus-visible:ring-gray-400/40 dark:text-gray-300 dark:hover:bg-white/10',
+    ghost: 'focus-visible:ring-orbit-primary-500/20',
     link: 'text-orbit-primary-600 hover:text-orbit-primary-500 hover:underline dark:text-orbit-primary-400',
 };
 
@@ -62,6 +62,17 @@ export function UiButton({
                 'inline-flex items-center justify-center font-medium transition focus:outline-none focus-visible:ring-2 disabled:pointer-events-none disabled:opacity-50',
                 iconOnly ? iconSizes[size] : sizes[size],
                 variants[variant],
+                variant === 'default' && [
+                    'shadow-sm',
+                    'text-[var(--color-orbit-secondary,#334155)]',
+                    'bg-[var(--color-orbit-panel-bg,#ffffff)]',
+                    'border-[var(--color-orbit-panel-border,#e2e8f0)]',
+                    'hover:bg-[var(--color-orbit-nav-section-bg,#f8fafc)]',
+                ],
+                variant === 'ghost' && [
+                    'text-[var(--color-orbit-secondary,#475569)]',
+                    'hover:bg-[var(--color-orbit-nav-section-bg,#f1f5f9)]',
+                ],
                 className,
             )}
             {...props}

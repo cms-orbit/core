@@ -37,13 +37,19 @@ class ListScreen extends CrudScreen
     public function commandBar(): array
     {
         $entity = $this->entity();
+        $create = Link::make(__('Create :resource', ['resource' => $entity->singularLabel()]))
+            ->canSee($entity->hasCrud('create') && $this->can('create'))
+            ->icon('bs.plus-circle');
+
+        if ($entity->hasCrud('create')) {
+            $create->route('orbit.entities.'.$entity::uriKey().'.create');
+        } else {
+            $create->url('#');
+        }
 
         return [
             $this->actionsButtons(),
-            Link::make(__('Create :resource', ['resource' => $entity->singularLabel()]))
-                ->route('orbit.entities.'.$entity::uriKey().'.create')
-                ->canSee($this->can('create'))
-                ->icon('bs.plus-circle'),
+            $create,
         ];
     }
 
@@ -70,8 +76,7 @@ class ListScreen extends CrudScreen
                 ->alignRight()
                 ->cantHide()
                 ->render(fn (Model $model) => $this->tableActions($model)
-                    ->autoWidth()
-                    ->render())
+                    ->autoWidth())
         );
 
         return [
@@ -84,17 +89,22 @@ class ListScreen extends CrudScreen
     {
         $entity = $this->entity();
         $key = $entity::uriKey();
+        $actions = [];
 
-        return Group::make([
-            Link::make(__('View'))
+        if ($entity->hasCrud('view')) {
+            $actions[] = Link::make(__('View'))
                 ->icon('bs.eye')
                 ->canSee($this->can('view'))
-                ->route('orbit.entities.'.$key.'.view', ['id' => $model->getKey()]),
+                ->route('orbit.entities.'.$key.'.view', ['id' => $model->getKey()]);
+        }
 
-            Link::make(__('Edit'))
+        if ($entity->hasCrud('edit')) {
+            $actions[] = Link::make(__('Edit'))
                 ->icon('bs.pencil')
                 ->canSee($this->can('update'))
-                ->route('orbit.entities.'.$key.'.edit', ['id' => $model->getKey()]),
-        ]);
+                ->route('orbit.entities.'.$key.'.edit', ['id' => $model->getKey()]);
+        }
+
+        return Group::make($actions);
     }
 }

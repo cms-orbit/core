@@ -1,5 +1,6 @@
 import type { FieldNode, LayoutComponentProps } from '../contract';
 import { useOptionalOrbitForm } from '../form-context';
+import { useT } from '../lib/i18n';
 import { ActionRenderer, LayoutChildren, LayoutNodeRenderer } from '../screen-renderer';
 import { UiButton } from '../ui/button';
 import { useAsyncLayout, useModal } from '../ui/modal';
@@ -32,6 +33,7 @@ function asActions(value: unknown): FieldNode[] {
  * endpoint; static modals render their serialized children.
  */
 export function ModalLayout({ node, data, screen }: LayoutComponentProps) {
+    const t = useT();
     const slug = (node.data.key as string) ?? node.key;
     const { getModalState, closeModal } = useModal();
     const form = useOptionalOrbitForm();
@@ -72,12 +74,12 @@ export function ModalLayout({ node, data, screen }: LayoutComponentProps) {
             ))}
             {!node.data.withoutCloseButton ? (
                 <UiButton type="button" variant="default" onClick={() => closeModal(slug)}>
-                    {(node.data.close as string) ?? 'Close'}
+                    {(node.data.close as string) ?? t('Close')}
                 </UiButton>
             ) : null}
             {!node.data.withoutApplyButton ? (
                 <UiButton type="button" variant="primary" onClick={handleApply}>
-                    {(node.data.apply as string) ?? 'Apply'}
+                    {(node.data.apply as string) ?? t('Apply')}
                 </UiButton>
             ) : null}
         </>
@@ -90,7 +92,7 @@ export function ModalLayout({ node, data, screen }: LayoutComponentProps) {
             size={mapSize(node.data.size)}
             placement={node.data.type === 'slide-right' ? 'right' : 'center'}
             staticBackdrop={Boolean(node.data.staticBackdrop)}
-            title={(node.data.title as string) ?? 'Modal'}
+            title={(node.data.title as string) ?? t('Modal')}
             footer={footer}
         >
             {isAsync ? (

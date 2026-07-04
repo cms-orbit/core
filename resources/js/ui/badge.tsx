@@ -14,7 +14,7 @@ type Size = 'sm' | 'md';
 
 const colors: Record<BadgeColor, string> = {
     primary: 'bg-orbit-primary-50 text-orbit-primary-700 ring-orbit-primary-600/20 dark:bg-orbit-primary-500/10 dark:text-orbit-primary-400 dark:ring-orbit-primary-400/30',
-    gray: 'bg-gray-100 text-gray-700 ring-gray-500/20 dark:bg-white/10 dark:text-gray-300 dark:ring-white/20',
+    gray: 'ring-[var(--color-orbit-nav-section-border,#cbd5e1)] bg-[var(--color-orbit-nav-section-bg,#f8fafc)] text-[var(--color-orbit-nav-section-fg,#475569)]',
     success: 'bg-green-50 text-green-700 ring-green-600/20 dark:bg-green-500/10 dark:text-green-400 dark:ring-green-400/30',
     warning: 'bg-amber-50 text-amber-700 ring-amber-600/20 dark:bg-amber-500/10 dark:text-amber-400 dark:ring-amber-400/30',
     danger: 'bg-red-50 text-red-700 ring-red-600/20 dark:bg-red-500/10 dark:text-red-400 dark:ring-red-400/30',

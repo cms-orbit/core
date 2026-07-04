@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\RequirePasswordChange;
 use CmsOrbit\Core\Attachment\Engines\Generator;
 
 return [
@@ -49,7 +50,7 @@ return [
 
     'middleware' => [
         'public'  => ['web'],
-        'private' => ['web', 'orbit'],
+        'private' => ['web', RequirePasswordChange::class, 'orbit'],
     ],
 
     /*

@@ -64,23 +64,23 @@ class Attachment extends Model
      * @var array
      */
     protected $casts = [
-        'sort' => 'integer',
-        'width' => 'integer',
-        'height' => 'integer',
+        'sort'     => 'integer',
+        'width'    => 'integer',
+        'height'   => 'integer',
         'duration' => 'integer',
-        'meta' => 'array',
+        'meta'     => 'array',
     ];
 
     /**
      * @var array
      */
     protected $allowedFilters = [
-        'name' => Like::class,
+        'name'          => Like::class,
         'original_name' => Like::class,
-        'mime' => Like::class,
-        'extension' => Like::class,
-        'disk' => Like::class,
-        'group' => Like::class,
+        'mime'          => Like::class,
+        'extension'     => Like::class,
+        'disk'          => Like::class,
+        'group'         => Like::class,
     ];
 
     /**
@@ -157,9 +157,9 @@ class Attachment extends Model
     }
 
     /**
-     * @return bool|null
-     *
      * @throws Exception
+     *
+     * @return bool|null
      */
     public function delete()
     {
@@ -167,6 +167,11 @@ class Attachment extends Model
             if (static::where('hash', $this->hash)->where('disk', $this->disk)->limit(2)->count() <= 1) {
                 // Physical removal a file.
                 Storage::disk($this->disk)->delete($this->physicalPath());
+                $generated = is_array($this->meta) ? ($this->meta['generated_files'] ?? []) : [];
+
+                if (is_array($generated) && $generated !== []) {
+                    Storage::disk($this->disk)->delete($generated);
+                }
             }
             $this->relationships()->delete();
         }

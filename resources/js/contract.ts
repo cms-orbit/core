@@ -4,6 +4,7 @@
  */
 
 import type { MediaItem } from './media/types';
+import type { ContentWidthOption } from './theme/branding';
 
 export interface Breadcrumb {
     label: string;
@@ -52,6 +53,10 @@ export interface LayoutNode {
 export interface ScreenProps {
     name: string | null;
     description: string | null;
+    shell: {
+        chrome?: 'default' | 'none' | null;
+        contentWidth?: ContentWidthOption | null;
+    };
     permission: string[] | null;
     breadcrumbs: Breadcrumb[];
     commandBar: FieldNode[];

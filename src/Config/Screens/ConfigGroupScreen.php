@@ -6,6 +6,7 @@ namespace CmsOrbit\Core\Config\Screens;
 
 use CmsOrbit\Core\Config\ConfigFieldFactory;
 use CmsOrbit\Core\Config\ConfigGroup;
+use CmsOrbit\Core\Config\ConfigItem;
 use CmsOrbit\Core\Config\ConfigRegistry;
 use CmsOrbit\Core\Config\ConfigSection;
 use CmsOrbit\Core\Config\Layouts\ConfigFields;
@@ -62,7 +63,15 @@ class ConfigGroupScreen extends Screen
 
         $values = [];
         foreach ($this->group()->getItems() as $item) {
-            $values[ConfigFieldFactory::encodeKey($item->getKey())] = $registry->get($item->getKey());
+            $resolvedValue = $this->normalizeConfigValue(
+                $item->getKey(),
+                $registry->get($item->getKey())
+            );
+
+            $values[ConfigFieldFactory::encodeKey($item->getKey())] = $this->normalizeConfigValue(
+                $item->getKey(),
+                $this->resolveDisplayValue($item, $resolvedValue)
+            );
         }
 
         return [
@@ -139,7 +148,18 @@ class ConfigGroupScreen extends Screen
         $data = (array) $request->input(ConfigFieldFactory::PREFIX, []);
 
         foreach ($data as $encoded => $value) {
-            $registry->set(ConfigFieldFactory::decodeKey($encoded), $value);
+            $key = ConfigFieldFactory::decodeKey($encoded);
+            $item = $this->group()->getItem($key);
+
+            if ($item instanceof ConfigItem && ! $this->shouldPersist($item)) {
+                continue;
+            }
+
+            if ($item instanceof ConfigItem) {
+                $value = $this->transformSubmittedValue($item, $value);
+            }
+
+            $registry->set($key, $this->normalizeConfigValue($key, $value));
         }
 
         Toast::info(__('Settings saved.'));
@@ -169,5 +189,47 @@ class ConfigGroupScreen extends Screen
         return (new Builder($fields, $repository))
             ->setPrefix(ConfigFieldFactory::PREFIX)
             ->generateArray();
+    }
+
+    protected function normalizeConfigValue(string $key, mixed $value): mixed
+    {
+        if ($key === 'layout.content_width') {
+            return ConfigServiceProvider::normalizeContentWidth($value);
+        }
+
+        return $value;
+    }
+
+    protected function resolveDisplayValue(ConfigItem $item, mixed $resolvedValue): mixed
+    {
+        $callback = $item->getAttribute('display');
+
+        if (! $callback instanceof \Closure) {
+            return $resolvedValue;
+        }
+
+        return $callback($resolvedValue, $item);
+    }
+
+    protected function shouldPersist(ConfigItem $item): bool
+    {
+        $persist = $item->getAttribute('persist', true);
+
+        if ($persist instanceof \Closure) {
+            return (bool) $persist($item);
+        }
+
+        return (bool) $persist;
+    }
+
+    protected function transformSubmittedValue(ConfigItem $item, mixed $value): mixed
+    {
+        $callback = $item->getAttribute('transform');
+
+        if (! $callback instanceof \Closure) {
+            return $value;
+        }
+
+        return $callback($value, $item);
     }
 }

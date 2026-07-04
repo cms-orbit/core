@@ -35,7 +35,8 @@ export function LanguageSwitcher() {
             <button
                 type="button"
                 onClick={() => setOpen((value) => !value)}
-                className="flex items-center gap-1.5 rounded-md px-2 py-1.5 text-sm text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
+                className="flex items-center gap-1.5 rounded-md px-2 py-1.5 text-sm"
+                style={{ color: 'var(--color-orbit-nav-group-fg, #64748b)' }}
                 aria-label={t('Language')}
             >
                 <Icon name="bs.translate" className="text-base" />
@@ -52,18 +53,25 @@ export function LanguageSwitcher() {
                         className="fixed inset-0 z-30 cursor-default"
                         onClick={() => setOpen(false)}
                     />
-                    <div className="absolute right-0 z-40 mt-2 w-44 overflow-hidden rounded-lg border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-gray-800">
+                    <div
+                        className="absolute right-0 z-40 mt-2 w-44 overflow-hidden rounded-lg border py-1 shadow-lg"
+                        style={{
+                            backgroundColor: 'var(--color-orbit-panel-bg, #ffffff)',
+                            borderColor: 'var(--color-orbit-panel-border, #e2e8f0)',
+                        }}
+                    >
                         {available.map((option) => (
                             <button
                                 key={option.code}
                                 type="button"
                                 onClick={() => choose(option.code)}
                                 className={cn(
-                                    'flex w-full items-center justify-between px-3 py-2 text-left text-sm hover:bg-gray-50 dark:hover:bg-gray-700/50',
+                                    'flex w-full items-center justify-between px-3 py-2 text-left text-sm',
                                     option.code === locale
                                         ? 'font-medium text-orbit-primary'
-                                        : 'text-gray-700 dark:text-gray-200',
+                                        : '',
                                 )}
+                                style={option.code === locale ? undefined : { color: 'var(--color-orbit-secondary, #334155)' }}
                             >
                                 <span>{option.label}</span>
                                 {option.code === locale ? (

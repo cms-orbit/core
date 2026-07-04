@@ -1,9 +1,12 @@
-import { useEffect, useState, type ComponentType } from 'react';
+import { useEffect, useState } from 'react';
+import type { ComponentType } from 'react';
 import type { FieldComponentProps } from '../contract';
+import { useT } from '../lib/i18n';
 import { FieldShell } from '../ui/field-shell';
 import { attr, str } from './shared';
 
 function CropperPlaceholder(props: FieldComponentProps) {
+    const t = useT();
     const { value, errors } = props;
     const target = attr<string>(props, 'target') ?? 'url';
     const preview = attr<string>(props, 'url') ?? (target === 'url' ? str(value) : '');
@@ -19,7 +22,7 @@ function CropperPlaceholder(props: FieldComponentProps) {
                 {preview ? (
                     <img src={preview} alt="" className="h-full w-full object-cover" />
                 ) : (
-                    <span className="text-xs text-gray-400">Image cropper loads in the browser.</span>
+                    <span className="text-xs text-gray-400">{t('Image cropper loads in the browser.')}</span>
                 )}
             </div>
         </FieldShell>

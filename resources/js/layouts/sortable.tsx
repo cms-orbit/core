@@ -22,6 +22,20 @@ function asRows(value: unknown): Row[] {
     return [];
 }
 
+function getByPath(data: Record<string, unknown>, path: string | undefined): unknown {
+    if (!path) {
+        return undefined;
+    }
+
+    return path.split('.').reduce<unknown>((current, segment) => {
+        if (!current || typeof current !== 'object') {
+            return undefined;
+        }
+
+        return (current as Record<string, unknown>)[segment];
+    }, data);
+}
+
 /**
  * Drag-to-reorder list. Persists the new order via an Inertia POST to
  * `node.data.sortUrl` (defaults to the current path), sending ordered ids.
@@ -30,7 +44,7 @@ function asRows(value: unknown): Row[] {
 export function SortableLayout({ node, data }: LayoutComponentProps) {
     const columns = asColumns(node.data.columns);
     const target = node.data.target as string | undefined;
-    const initialRows = asRows(node.data.rows ?? (target ? data[target] : undefined));
+    const initialRows = asRows(node.data.rows ?? getByPath(data, target));
 
     const [rows, setRows] = useState<Row[]>(initialRows);
     const [dragIndex, setDragIndex] = useState<number | null>(null);

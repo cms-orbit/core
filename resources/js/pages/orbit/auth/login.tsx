@@ -2,8 +2,7 @@ import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import type { FormEvent } from 'react';
 import { cn } from '../../../lib/cn';
 import { useT } from '../../../lib/i18n';
-import type { OrbitBrand } from '../../../theme/branding';
-import { useBrandTheme } from '../../../theme/branding';
+import { resolveBrandAsset, type OrbitBrand, useBrandTheme } from '../../../theme/branding';
 import { UiButton } from '../../../ui/button';
 import { inputClass } from '../../../ui/field-shell';
 
@@ -34,6 +33,7 @@ export default function Login({
     const brand = page.props.orbit?.brand;
     const brandStyle = useBrandTheme(brand);
     const brandName = brand?.name ?? appName;
+    const logoUrl = resolveBrandAsset(brand, 'logo');
 
     const form = useForm({
         email: lockUser?.email ?? '',
@@ -56,8 +56,8 @@ export default function Login({
 
             <div className="w-full max-w-sm">
                 <div className="mb-6 flex flex-col items-center gap-3 text-center">
-                    {brand?.logo ? (
-                        <img src={brand.logo} alt={brandName} className="h-10 w-auto" />
+                    {logoUrl ? (
+                        <img src={logoUrl} alt={brandName} className="h-10 w-auto object-contain" />
                     ) : (
                         <span className="text-xl font-semibold">{brandName}</span>
                     )}

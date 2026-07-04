@@ -14,6 +14,7 @@ import {
     YAxis,
 } from 'recharts';
 import type { LayoutComponentProps } from '../contract';
+import { useT } from '../lib/i18n';
 import { Card, CardBody, CardHeader } from '../ui/card';
 import { EmptyState } from '../ui/empty-state';
 
@@ -46,6 +47,7 @@ function parseJson<T>(value: unknown, fallback: T): T {
  * `data`/`labels`/`colors` keys (JSON strings are also accepted).
  */
 export function ChartLayout({ node }: LayoutComponentProps) {
+    const t = useT();
     const type = (node.data.type as string) ?? 'line';
     const title = node.data.title as string | null;
     const description = node.data.description as string | null;
@@ -81,7 +83,7 @@ export function ChartLayout({ node }: LayoutComponentProps) {
                     <p className="mb-3 text-sm text-gray-500 dark:text-gray-400">{description}</p>
                 ) : null}
                 {rows.length === 0 ? (
-                    <EmptyState icon="bs.bar-chart" heading="No chart data." />
+                    <EmptyState icon="bs.bar-chart" heading={t('No chart data.')} />
                 ) : (
                     <ResponsiveContainer width="100%" height={height}>
                         {type === 'pie' || type === 'percentage' ? (

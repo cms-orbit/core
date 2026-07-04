@@ -48,19 +48,19 @@ class Menu extends Link
      * @var array
      */
     protected $attributes = [
-        'class' => 'nav-link d-flex align-items-center collapsed icon-link gap-3',
-        'title' => null,
-        'icon' => null,
-        'href' => null,
-        'turbo' => true,
-        'list' => [],
-        'source' => null,
-        'divider' => false,
-        'active' => null,
+        'class'          => 'nav-link d-flex align-items-center collapsed icon-link gap-3',
+        'title'          => null,
+        'icon'           => null,
+        'href'           => null,
+        'turbo'          => true,
+        'list'           => [],
+        'source'         => null,
+        'divider'        => false,
+        'active'         => null,
         'data-bs-toggle' => null,
-        'parent' => null,
-        'sort' => 0,
-        'slug' => null,
+        'parent'         => null,
+        'sort'           => 0,
+        'slug'           => null,
     ];
 
     /**
@@ -134,7 +134,8 @@ class Menu extends Link
     /**
      * Sets a list of sub-menu items for this menu item.
      *
-     * @param  Actionable[]  $list  The array of sub-menu items.
+     * @param Actionable[] $list The array of sub-menu items.
+     *
      * @return $this The current Menu instance for method chaining.
      */
     public function list(array $list): self
@@ -144,7 +145,7 @@ class Menu extends Link
         $subMenu = collect()
             ->merge($default)
             ->merge($list)
-            ->sort(fn (Menu $menu) => $menu->get('sort', 0));
+            ->sort(fn (Menu $current, Menu $next) => $current->get('sort', 0) <=> $next->get('sort', 0));
 
         return $this->set('list', $subMenu);
     }
@@ -152,10 +153,11 @@ class Menu extends Link
     /**
      * Builds and renders the menu view.
      *
-     * @param  Repository|null  $repository  The data repository to use for rendering.
-     * @return Factory|View|mixed The rendered view.
+     * @param Repository|null $repository The data repository to use for rendering.
      *
      * @throws \Throwable If rendering fails.
+     *
+     * @return Factory|View|mixed The rendered view.
      */
     public function build(?Repository $repository = null)
     {
@@ -165,15 +167,16 @@ class Menu extends Link
     /**
      * Adds a badge to the menu item with a specific color.
      *
-     * @param  \Closure  $badge  The closure to generate the badge content.
-     * @param  Color  $color  The color of the badge.
+     * @param \Closure $badge The closure to generate the badge content.
+     * @param Color    $color The color of the badge.
+     *
      * @return $this The current Menu instance for method chaining.
      */
     public function badge(\Closure $badge, Color $color = Color::PRIMARY): self
     {
         $this->set('badge', [
             'class' => $color->name(),
-            'data' => $badge,
+            'data'  => $badge,
         ]);
 
         return $this;
@@ -182,7 +185,8 @@ class Menu extends Link
     /**
      * Sets the URL (href attribute) for the menu item.
      *
-     * @param  string  $url  The URL to set.
+     * @param string $url The URL to set.
+     *
      * @return $this The current Menu instance for method chaining.
      */
     public function url(string $url): self
@@ -193,7 +197,8 @@ class Menu extends Link
     /**
      * Sets the permission(s) required to see the menu item.
      *
-     * @param  string|string[]|null  $permission  The required permission(s).
+     * @param string|string[]|null $permission The required permission(s).
+     *
      * @return $this The current Menu instance for method chaining.
      */
     public function permission(string|iterable|null $permission = null): self
@@ -226,7 +231,8 @@ class Menu extends Link
     /**
      * Sets the title for the menu item.
      *
-     * @param  string|null  $title  The title to set.
+     * @param string|null $title The title to set.
+     *
      * @return $this The current Menu instance for method chaining.
      */
     public function title(?string $title = null): self
@@ -237,7 +243,8 @@ class Menu extends Link
     /**
      * Sets the slug for the menu item.
      *
-     * @param  string  $slug  The slug to set.
+     * @param string $slug The slug to set.
+     *
      * @return $this The current Menu instance for method chaining.
      */
     public function slug(string $slug): self
@@ -248,7 +255,8 @@ class Menu extends Link
     /**
      * Sets the parent menu item for this menu item.
      *
-     * @param  string  $parent  The parent menu item slug or identifier.
+     * @param string $parent The parent menu item slug or identifier.
+     *
      * @return $this The current Menu instance for method chaining.
      */
     public function parent(string $parent): self

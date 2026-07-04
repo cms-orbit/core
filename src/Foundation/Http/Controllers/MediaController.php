@@ -38,12 +38,15 @@ class MediaController extends Controller
     public function upload(Request $request, MediaLibrary $library): JsonResponse
     {
         $request->validate([
-            'files' => ['required'],
+            'files'   => ['required'],
             'files.*' => ['file'],
         ]);
 
+        $options = $request->only(['group', 'path', 'storage', 'purpose']);
         $items = collect($request->file('files'))
-            ->map(fn ($file) => $this->transform($library->upload($file, $request->input('group', 'media'))))
+            ->map(fn ($file) => $this->transform(
+                $library->upload($file, $request->input('group', 'media'), $options)
+            ))
             ->values();
 
         return response()->json(['data' => $items], 201);
@@ -68,10 +71,10 @@ class MediaController extends Controller
         $attachment = Orbit::model(Attachment::class)::findOrFail($id);
 
         return response()->json([
-            'id' => $attachment->getKey(),
-            'kind' => $attachment->kind,
+            'id'              => $attachment->getKey(),
+            'kind'            => $attachment->kind,
             'encoding_status' => $attachment->encoding_status,
-            'meta' => $attachment->meta,
+            'meta'            => $attachment->meta,
         ]);
     }
 
@@ -101,9 +104,9 @@ class MediaController extends Controller
             'data' => collect($paginator->items())->map(fn (Attachment $a) => $this->transform($a))->all(),
             'meta' => [
                 'current_page' => $paginator->currentPage(),
-                'last_page' => $paginator->lastPage(),
-                'total' => $paginator->total(),
-                'per_page' => $paginator->perPage(),
+                'last_page'    => $paginator->lastPage(),
+                'total'        => $paginator->total(),
+                'per_page'     => $paginator->perPage(),
             ],
         ];
     }
@@ -116,19 +119,24 @@ class MediaController extends Controller
     protected function transform(Attachment $attachment): array
     {
         return [
-            'id' => $attachment->getKey(),
-            'url' => $attachment->url(),
-            'name' => $attachment->getAttribute('original_name'),
-            'kind' => $attachment->kind,
-            'mime' => $attachment->mime,
-            'extension' => $attachment->extension,
-            'size' => $attachment->size,
-            'width' => $attachment->width,
-            'height' => $attachment->height,
-            'duration' => $attachment->duration,
-            'alt' => $attachment->alt,
+            'id'              => $attachment->getKey(),
+            'url'             => $attachment->url(),
+            'relativeUrl'     => $attachment->getRelativeUrlAttribute(),
+            'thumbnail'       => $attachment->url(),
+            'name'            => $attachment->getAttribute('original_name'),
+            'original_name'   => $attachment->getAttribute('original_name'),
+            'group'           => $attachment->group,
+            'kind'            => $attachment->kind,
+            'mime'            => $attachment->mime,
+            'extension'       => $attachment->extension,
+            'size'            => $attachment->size,
+            'width'           => $attachment->width,
+            'height'          => $attachment->height,
+            'duration'        => $attachment->duration,
+            'alt'             => $attachment->alt,
+            'meta'            => $attachment->meta,
             'encoding_status' => $attachment->encoding_status,
-            'created_at' => optional($attachment->created_at)->toIso8601String(),
+            'created_at'      => optional($attachment->created_at)->toIso8601String(),
         ];
     }
 }

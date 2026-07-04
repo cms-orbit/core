@@ -16,13 +16,15 @@ import { GroupField, UtmField, ViewFieldField } from './fields/misc';
 import { PermissionMatrixField } from './fields/permission-matrix';
 import { QuillField } from './fields/quill';
 import { NumberRangeField, RangeField } from './fields/range';
-import { attr, str } from './fields/shared';
+import { attr, bool, str } from './fields/shared';
 import { AttachField, PictureField } from './fields/upload';
 import type { FieldComponent } from './registry';
 import { FieldShell, fieldInputClass } from './ui/field-shell';
 
 export function InputField(props: FieldComponentProps) {
     const { name, value, errors, onChange } = props;
+    const disabled = bool(attr(props, 'disabled'));
+    const readOnly = bool(attr(props, 'readonly'));
 
     return (
         <FieldShell
@@ -39,6 +41,8 @@ export function InputField(props: FieldComponentProps) {
                 placeholder={attr<string>(props, 'placeholder')}
                 className={fieldInputClass(Boolean(errors[0]))}
                 value={str(value)}
+                disabled={disabled}
+                readOnly={readOnly}
                 onChange={(event) => onChange?.(event.target.value)}
             />
         </FieldShell>

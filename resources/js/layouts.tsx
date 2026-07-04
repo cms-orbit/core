@@ -13,6 +13,7 @@ import { cn } from './lib/cn';
 import { useT } from './lib/i18n';
 import type { LayoutComponent } from './registry';
 import {
+    ActionBar,
     FieldRenderer,
     LayoutChildren,
     LayoutNodeRenderer,
@@ -29,6 +30,20 @@ function asColumns(value: unknown): ColumnNode[] {
     return Array.isArray(value) ? (value as ColumnNode[]) : [];
 }
 
+function getByPath(data: Record<string, unknown>, path: string | undefined): unknown {
+    if (!path) {
+        return undefined;
+    }
+
+    return path.split('.').reduce<unknown>((current, segment) => {
+        if (!current || typeof current !== 'object') {
+            return undefined;
+        }
+
+        return (current as Record<string, unknown>)[segment];
+    }, data);
+}
+
 /** Resolve a row collection from a repository target (array or paginator). */
 function asRows(content: unknown): Record<string, unknown>[] {
     if (Array.isArray(content)) {
@@ -40,6 +55,54 @@ function asRows(content: unknown): Record<string, unknown>[] {
     }
 
     return [];
+}
+
+function columnAlign(align?: ColumnNode['align']): 'left' | 'center' | 'right' {
+    if (align === 'center') {
+        return 'center';
+    }
+
+    if (align === 'end') {
+        return 'right';
+    }
+
+    return 'left';
+}
+
+function renderedCell(row: Record<string, unknown>, column: ColumnNode): string | null {
+    const cell = cellPayload(row, column);
+
+    return typeof cell?.rendered === 'string' ? cell.rendered : null;
+}
+
+function fieldCell(row: Record<string, unknown>, column: ColumnNode): FieldNode | null {
+    const cell = cellPayload(row, column);
+
+    return cell?.field && typeof cell.field === 'object' ? (cell.field as FieldNode) : null;
+}
+
+function actionCell(row: Record<string, unknown>, column: ColumnNode): FieldNode[] {
+    const cell = cellPayload(row, column);
+
+    return Array.isArray(cell?.actions) ? (cell.actions as FieldNode[]) : [];
+}
+
+function cellPayload(row: Record<string, unknown>, column: ColumnNode): {
+    rendered?: unknown;
+    field?: unknown;
+    actions?: unknown;
+} | null {
+    const cells = row._cells;
+
+    if (!cells || typeof cells !== 'object') {
+        return null;
+    }
+
+    const cell = (cells as Record<string, unknown>)[column.slug];
+
+    return cell && typeof cell === 'object'
+        ? (cell as { rendered?: unknown; field?: unknown; actions?: unknown })
+        : null;
 }
 
 export function RowsLayout({ node, data, screen }: LayoutComponentProps) {
@@ -130,15 +193,16 @@ function cellValue(row: Record<string, unknown>, column: ColumnNode): unknown {
     return row[column.name];
 }
 
-export function TableLayout({ node, data }: LayoutComponentProps) {
+export function TableLayout({ node, data, screen }: LayoutComponentProps) {
     const t = useT();
     const columns = asColumns(node.data.columns);
     const target = node.data.target as string | undefined;
     const hasTarget = target != null;
-    const raw = hasTarget ? data[target] : undefined;
+    const raw = hasTarget ? getByPath(data, target) : undefined;
     /** A missing target key means the prop is still deferred (Inertia v3). */
-    const isDeferred = hasTarget && raw === undefined;
-    const rows = asRows(raw);
+    const hasSerializedRows = Array.isArray(node.data.rows);
+    const isDeferred = hasTarget && raw === undefined && !hasSerializedRows;
+    const rows = asRows(node.data.rows ?? raw);
 
     return (
         <Card>
@@ -157,17 +221,23 @@ export function TableLayout({ node, data }: LayoutComponentProps) {
                     <TableHead>
                         <TableRow>
                             {columns.map((column) => (
-                                <TableHeaderCell key={column.slug}>{column.title}</TableHeaderCell>
+                                <TableHeaderCell key={column.slug} align={columnAlign(column.align)}>
+                                    {column.title}
+                                </TableHeaderCell>
                             ))}
                         </TableRow>
                     </TableHead>
                     <TableBody>
                         {rows.map((row, rowIndex) => (
-                            <TableRow key={rowIndex}>
+                            <TableRow key={String(row.id ?? row.key ?? rowIndex)}>
                                 {columns.map((column) => (
-                                    <TableCell key={column.slug}>
-                                        {column.rendered != null ? (
-                                            <span dangerouslySetInnerHTML={{ __html: column.rendered }} />
+                                    <TableCell key={column.slug} align={columnAlign(column.align)}>
+                                        {actionCell(row, column).length > 0 ? (
+                                            <ActionBar actions={actionCell(row, column)} data={row} screen={screen} />
+                                        ) : fieldCell(row, column) != null ? (
+                                            <FieldRenderer node={fieldCell(row, column)!} data={row} screen={screen} />
+                                        ) : renderedCell(row, column) != null ? (
+                                            <span dangerouslySetInnerHTML={{ __html: renderedCell(row, column) ?? '' }} />
                                         ) : (
                                             String(cellValue(row, column) ?? '')
                                         )}
@@ -185,7 +255,7 @@ export function TableLayout({ node, data }: LayoutComponentProps) {
 export function LegendLayout({ node, data }: LayoutComponentProps) {
     const columns = asColumns(node.data.columns);
     const target = node.data.target as string | undefined;
-    const source = (target ? data[target] : data) as Record<string, unknown>;
+    const source = (target ? getByPath(data, target) : data) as Record<string, unknown>;
 
     return (
         <Card>

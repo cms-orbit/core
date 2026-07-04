@@ -2,8 +2,10 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\Orbit\ForcePasswordController;
 use CmsOrbit\Core\Foundation\Http\Controllers\LocaleController;
 use CmsOrbit\Core\Foundation\Http\Controllers\LoginController;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 // Admin interface locale switcher (works for guests on the login screen too).
@@ -13,9 +15,7 @@ Route::post('locale', [LocaleController::class, 'switch'])->name('locale.switch'
 if (config('orbit.auth', true)) {
     // Authentication Routes...
     Route::get('login', [LoginController::class, 'showLoginForm'])->name('login');
-    Route::middleware('throttle:60,1')
-        ->post('login', [LoginController::class, 'login'])
-        ->name('login.auth');
+    Route::post('login', [LoginController::class, 'login'])->name('login.auth');
 
     Route::get('lock', [LoginController::class, 'resetCookieLockMe'])->name('login.lock');
 }
@@ -26,3 +26,19 @@ if (config('orbit.auth', true)) {
 // React impersonation UI submits via the named POST route below.
 Route::post('switch-logout', [LoginController::class, 'switchLogout'])->name('switch.logout');
 Route::post('logout', [LoginController::class, 'logout'])->name('logout');
+
+Route::middleware('auth:'.config('orbit.guard'))->group(function (): void {
+    Route::get('profile', function (Request $request) {
+        abort_unless(Route::has('orbit.entities.users.edit'), 404);
+
+        return redirect()->route('orbit.entities.users.edit', [
+            'id' => $request->user()?->getAuthIdentifier(),
+        ]);
+    })->name('profile');
+
+    Route::get('password/change-required', [ForcePasswordController::class, 'edit'])
+        ->name('password.force.edit');
+
+    Route::put('password/change-required', [ForcePasswordController::class, 'update'])
+        ->name('password.force.update');
+});

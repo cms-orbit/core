@@ -1,9 +1,11 @@
 import 'leaflet/dist/leaflet.css';
 import { CircleMarker, MapContainer, TileLayer, useMapEvents } from 'react-leaflet';
 import type { FieldComponentProps } from '../contract';
+import { useT } from '../lib/i18n';
 import { FieldShell, inputClass } from '../ui/field-shell';
+import { readLatLng } from './map-utils';
+import type { LatLng } from './map-utils';
 import { attr } from './shared';
-import { type LatLng, readLatLng } from './map-utils';
 
 function ClickCapture({ onPick }: { onPick: (latLng: LatLng) => void }) {
     useMapEvents({
@@ -17,6 +19,7 @@ function ClickCapture({ onPick }: { onPick: (latLng: LatLng) => void }) {
 
 /** Browser-only map picker (react-leaflet). */
 export function MapFieldClient(props: FieldComponentProps) {
+    const t = useT();
     const { value, errors, onChange } = props;
     const zoom = Number(attr(props, 'zoom') ?? 14);
     const height = attr<string>(props, 'height') ?? '300px';
@@ -49,7 +52,7 @@ export function MapFieldClient(props: FieldComponentProps) {
                 <input
                     type="number"
                     step="any"
-                    placeholder="Latitude"
+                    placeholder={t('Latitude')}
                     className={inputClass}
                     value={position?.lat ?? ''}
                     onChange={(event) => update({ lat: Number(event.target.value) })}
@@ -57,7 +60,7 @@ export function MapFieldClient(props: FieldComponentProps) {
                 <input
                     type="number"
                     step="any"
-                    placeholder="Longitude"
+                    placeholder={t('Longitude')}
                     className={inputClass}
                     value={position?.lng ?? ''}
                     onChange={(event) => update({ lng: Number(event.target.value) })}

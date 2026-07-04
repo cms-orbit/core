@@ -16,22 +16,29 @@ use Symfony\Component\Console\Attribute\AsCommand;
 #[AsCommand(name: 'orbit:fresh-super-admin-role')]
 class FreshSuperAdminRoleCommand extends Command
 {
-    protected $signature = 'orbit:fresh-super-admin-role {name=super-admin}';
+    protected $signature = 'orbit:fresh-super-admin-role {name=최고 관리자}';
 
     protected $description = 'Create or refresh a role granting every registered permission';
 
     public function handle(): int
     {
         $name = (string) $this->argument('name');
+        $roleModelClass = Orbit::modelClass(Role::class);
 
-        $permissions = Orbit::getAllowAllPermission()->toArray();
+        $role = $roleModelClass::query()
+            ->firstOrNew([
+                'system_key' => Role::SystemKeySuperAdmin,
+            ]);
 
-        $role = Orbit::modelClass(Role::class)::updateOrCreate(
-            ['name' => $name],
-            ['permissions' => $permissions]
-        );
+        $role->forceFill([
+            'name'         => $name,
+            'slug'         => Role::SystemKeySuperAdmin,
+            'system_key'   => Role::SystemKeySuperAdmin,
+            'is_deletable' => false,
+            'permissions'  => Orbit::getAllowAllPermission()->toArray(),
+        ])->save();
 
-        $this->info(sprintf('Role "%s" now grants %d permission(s).', $role->name, count($permissions)));
+        $this->info(sprintf('Role "%s" now grants %d permission(s).', $role->name, count($role->permissions ?? [])));
 
         return self::SUCCESS;
     }

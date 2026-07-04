@@ -21,6 +21,10 @@ export function bool(value: unknown): boolean {
     return Boolean(value);
 }
 
+export function objectValue(value: unknown): Record<string, unknown> | null {
+    return value && typeof value === 'object' && !Array.isArray(value) ? (value as Record<string, unknown>) : null;
+}
+
 /** Normalize Orchid option attributes (list array or {value: label} map). */
 export function normalizeOptions(raw: unknown): OptionEntry[] {
     if (Array.isArray(raw)) {

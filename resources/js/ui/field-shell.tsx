@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { useEffect, useState } from 'react';
 import { cn } from '../lib/cn';
 import { Icon } from './icon';
 
@@ -11,6 +12,8 @@ export function FieldShell({
     htmlFor,
     hint,
     className,
+    collapsible = false,
+    defaultCollapsed = false,
     children,
 }: {
     title?: string | null;
@@ -21,20 +24,51 @@ export function FieldShell({
     /** Small end-aligned text/action rendered beside the label. */
     hint?: ReactNode;
     className?: string;
+    collapsible?: boolean;
+    defaultCollapsed?: boolean;
     children: ReactNode;
 }) {
     const hasError = Boolean(error);
+    const [collapsed, setCollapsed] = useState(defaultCollapsed && !hasError);
+
+    useEffect(() => {
+        if (hasError) {
+            setCollapsed(false);
+        }
+    }, [hasError]);
 
     return (
         <div className={cn('mb-4', className)}>
             {title || hint ? (
                 <div className="mb-1.5 flex items-center justify-between gap-2">
-                    {title ? (
+                    {collapsible ? (
+                        <button
+                            type="button"
+                            onClick={() => setCollapsed((value) => !value)}
+                            className="flex min-w-0 flex-1 items-center gap-2 text-left"
+                        >
+                            <Icon
+                                name="bs.chevron-down"
+                                className={cn('shrink-0 text-xs text-gray-400 transition-transform', collapsed && '-rotate-90')}
+                            />
+                            {title ? (
+                                <span
+                                    className={cn(
+                                        'block text-sm font-medium',
+                                        hasError ? 'text-red-600 dark:text-red-400' : 'text-[var(--color-orbit-secondary,#334155)]',
+                                    )}
+                                >
+                                    {title}
+                                    {required ? <span className="ml-0.5 text-red-500">*</span> : null}
+                                </span>
+                            ) : null}
+                        </button>
+                    ) : title ? (
                         <label
                             htmlFor={htmlFor}
                             className={cn(
                                 'block text-sm font-medium',
-                                hasError ? 'text-red-600 dark:text-red-400' : 'text-gray-700 dark:text-gray-200',
+                                hasError ? 'text-red-600 dark:text-red-400' : 'text-[var(--color-orbit-secondary,#334155)]',
                             )}
                         >
                             {title}
@@ -43,12 +77,12 @@ export function FieldShell({
                     ) : (
                         <span />
                     )}
-                    {hint ? <span className="text-xs text-gray-400">{hint}</span> : null}
+                    {hint ? <span className="text-xs text-[var(--color-orbit-nav-group-fg,#64748b)]">{hint}</span> : null}
                 </div>
             ) : null}
-            {children}
-            {help && !hasError ? (
-                <p className="mt-1.5 text-xs text-gray-500 dark:text-gray-400">{help}</p>
+            {!collapsed ? children : null}
+            {help && !hasError && !collapsed ? (
+                <p className="mt-1.5 text-xs text-[var(--color-orbit-nav-group-fg,#64748b)]">{help}</p>
             ) : null}
             {hasError ? (
                 <p className="mt-1.5 flex items-center gap-1 text-xs text-red-600 dark:text-red-400">
@@ -61,10 +95,10 @@ export function FieldShell({
 }
 
 const inputBase =
-    'block w-full rounded-md border bg-white px-3 py-2 text-sm text-gray-900 transition placeholder:text-gray-400 focus:outline-none focus:ring-1 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:opacity-70 dark:bg-gray-900 dark:text-gray-100 dark:disabled:bg-white/5';
+    'block w-full rounded-md border px-3 py-2 text-sm transition placeholder:text-[var(--color-orbit-nav-group-fg,#94a3b8)] focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:opacity-70';
 
 const inputNeutral =
-    'border-gray-200 focus:border-orbit-primary-500 focus:ring-orbit-primary-500/20 dark:border-white/10';
+    'text-[var(--color-orbit-secondary,#0f172a)] bg-[var(--color-orbit-panel-bg,#ffffff)] border-[var(--color-orbit-panel-border,#e2e8f0)] focus:border-orbit-primary-500 focus:ring-orbit-primary-500/20';
 
 const inputInvalid =
     'border-red-400 focus:border-red-500 focus:ring-red-500/20 dark:border-red-500/50';

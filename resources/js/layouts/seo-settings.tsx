@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { FieldNode, LayoutComponentProps } from '../contract';
 import { AttachField } from '../fields/upload';
 import { useOptionalOrbitForm } from '../form-context';
@@ -56,15 +56,14 @@ function mediaItemsToUrl(items: MediaItem[]): string | null {
 }
 
 function usePreviewOrigin(): { previewUrl: string; previewHostname: string } {
-    return useMemo(() => {
-        if (typeof window === 'undefined') {
-            return { previewUrl: 'https://example.com', previewHostname: 'example.com' };
-        }
+    const [origin, setOrigin] = useState({ previewUrl: '', previewHostname: '' });
 
-        const { origin, hostname } = window.location;
-
-        return { previewUrl: origin, previewHostname: hostname };
+    useEffect(() => {
+        const { origin: previewUrl, hostname: previewHostname } = window.location;
+        setOrigin({ previewUrl, previewHostname });
     }, []);
+
+    return origin;
 }
 
 /** SEO settings with live search and social share previews. */

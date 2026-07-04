@@ -20,7 +20,17 @@ trait ManagesMenu
      * Menu sections submitted by Core and satellite packages, keyed by a stable
      * section identifier (see {@see Entity::sectionKey()}).
      *
-     * @var array<string, array{icon: string, label: ?string, sort: int}>
+     * @var array<string, array{
+     *     icon: string,
+     *     label: ?string,
+     *     sort: int,
+     *     url: ?string,
+     *     placement: array{
+     *         rail?: 'top'|'bottom',
+     *         sidebar?: 'top'|'bottom',
+     *         topbar?: 'left'|'right'
+     *     }
+     * }>
      */
     #[FlushOctaneState]
     protected array $menuSections = [];
@@ -28,11 +38,34 @@ trait ManagesMenu
     /**
      * Register a menu element with the Dashboard.
      *
-     * @param  Menu  $menu  The menu element to add.
+     * @param Menu $menu The menu element to add.
+     *
      * @return $this
      */
     public function registerMenuElement(Menu $menu): static
     {
+        $parent = $menu->get('parent');
+
+        if (is_string($parent) && $parent !== '') {
+            $attached = false;
+
+            $this->menuItems = collect($this->menuItems)
+                ->map(function (Menu $registeredMenu) use ($menu, $parent, &$attached): Menu {
+                    if ($registeredMenu->get('slug') !== $parent) {
+                        return $registeredMenu;
+                    }
+
+                    $attached = true;
+
+                    return $registeredMenu->list([$menu]);
+                })
+                ->all();
+
+            if ($attached) {
+                return $this;
+            }
+        }
+
         if ($menu->get('sort', 0) === 0) {
             $menu->sort(count($this->menuItems) + 1);
         }
@@ -47,12 +80,19 @@ trait ManagesMenu
      * call this from their service provider; entities link items via
      * {@see Entity::sectionKey()}.
      */
-    public function registerSection(string $key, string $icon, ?string $label = null, int $sort = 5000): static
-    {
+    public function registerSection(
+        string $key,
+        string $icon,
+        ?string $label = null,
+        int $sort = 5000,
+        array $placement = [],
+    ): static {
         $this->menuSections[$key] = [
-            'icon' => $icon,
-            'label' => $label,
-            'sort' => $sort,
+            'icon'      => $icon,
+            'label'     => $label,
+            'sort'      => $sort,
+            'url'       => is_string($placement['url'] ?? null) ? $placement['url'] : null,
+            'placement' => $this->normalizeSectionPlacement($placement),
         ];
 
         return $this;
@@ -61,7 +101,17 @@ trait ManagesMenu
     /**
      * All registered menu sections keyed by section identifier.
      *
-     * @return array<string, array{icon: string, label: ?string, sort: int}>
+     * @return array<string, array{
+     *     icon: string,
+     *     label: ?string,
+     *     sort: int,
+     *     url: ?string,
+     *     placement: array{
+     *         rail?: 'top'|'bottom',
+     *         sidebar?: 'top'|'bottom',
+     *         topbar?: 'left'|'right'
+     *     }
+     * }>
      */
     public function getSections(): array
     {
@@ -69,12 +119,37 @@ trait ManagesMenu
     }
 
     /**
+     * @param array<string, mixed> $placement
+     *
+     * @return array{rail?: 'top'|'bottom', sidebar?: 'top'|'bottom', topbar?: 'left'|'right'}
+     */
+    protected function normalizeSectionPlacement(array $placement): array
+    {
+        $normalized = [];
+
+        if (in_array($placement['rail'] ?? null, ['top', 'bottom'], true)) {
+            $normalized['rail'] = $placement['rail'];
+        }
+
+        if (in_array($placement['sidebar'] ?? null, ['top', 'bottom'], true)) {
+            $normalized['sidebar'] = $placement['sidebar'];
+        }
+
+        if (in_array($placement['topbar'] ?? null, ['left', 'right'], true)) {
+            $normalized['topbar'] = $placement['topbar'];
+        }
+
+        return $normalized;
+    }
+
+    /**
      * Render the menu as a string for display.
      *
      *
-     * @return string The rendered menu HTML.
      *
      * @throws \Throwable If rendering fails.
+     *
+     * @return string The rendered menu HTML.
      */
     public function renderMenu(): string
     {
@@ -146,16 +221,16 @@ trait ManagesMenu
             ->all();
 
         return [
-            'label' => $menu->get('title') ?? $menu->get('name'),
-            'icon' => $menu->get('icon'),
-            'url' => $menu->get('href'),
-            'badge' => $this->serializeMenuBadge($menu),
-            'section' => $menu->get('section'),
+            'label'      => $menu->get('title') ?? $menu->get('name'),
+            'icon'       => $menu->get('icon'),
+            'url'        => $menu->get('href'),
+            'badge'      => $this->serializeMenuBadge($menu),
+            'section'    => $menu->get('section'),
             'sectionKey' => $menu->get('sectionKey'),
-            'sort' => $menu->get('sort', 0),
-            'divider' => (bool) $menu->get('divider', false),
-            'active' => $menu->get('active'),
-            'children' => $children,
+            'sort'       => $menu->get('sort', 0),
+            'divider'    => (bool) $menu->get('divider', false),
+            'active'     => $menu->get('active'),
+            'children'   => $children,
         ];
     }
 
@@ -183,8 +258,9 @@ trait ManagesMenu
     /**
      * Add submenu items to a menu element identified by its slug.
      *
-     * @param  string  $slug  The slug of the menu element to update.
-     * @param  Menu[]  $list  Array of submenu items to add.
+     * @param string $slug The slug of the menu element to update.
+     * @param Menu[] $list Array of submenu items to add.
+     *
      * @return $this
      */
     public function addMenuSubElements(string $slug, array $list): static

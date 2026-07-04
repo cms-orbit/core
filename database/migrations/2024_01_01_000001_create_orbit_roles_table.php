@@ -22,7 +22,7 @@ return new class extends Migration
         if (! Schema::hasTable('role_users')) {
             Schema::create('role_users', function (Blueprint $table): void {
                 $table->unsignedBigInteger('user_id');
-                $table->string('role_id');
+                $table->uuid('role_id');
                 $table->primary(['user_id', 'role_id']);
                 $table->foreign('user_id')
                     ->references('id')->on('users')

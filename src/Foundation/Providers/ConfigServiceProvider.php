@@ -34,6 +34,18 @@ class ConfigServiceProvider extends ServiceProvider
     ];
 
     /**
+     * Available content-width levels for the Orbit admin shell.
+     *
+     * @var array<string, string>
+     */
+    public const CONTENT_WIDTH_OPTIONS = [
+        'full'    => '전체 폭',
+        'default' => '기본',
+        'wide'    => '크게',
+        'xwide'   => '매우 크게',
+    ];
+
+    /**
      * Built-in layout theme metadata. Host apps may extend this via
      * LayoutThemeRegistry without modifying core.
      *
@@ -85,12 +97,25 @@ class ConfigServiceProvider extends ServiceProvider
         return [
             'branding.name',
             'branding.logo',
+            'branding.logo_dark',
             'branding.symbol',
+            'branding.symbol_dark',
             'branding.favicon',
-            'branding.dark_mode',
+            'branding.theme_toggle_enabled',
+            'branding.theme_mode',
             'layout.mode',
+            'layout.content_width',
             ...self::designSettingThemeFieldKeys(),
         ];
+    }
+
+    public static function normalizeContentWidth(mixed $value): string
+    {
+        return match ((string) $value) {
+            'full', 'wide', 'xwide' => (string) $value,
+            'contained'             => 'default',
+            default                 => 'default',
+        };
     }
 
     /**
@@ -118,6 +143,8 @@ class ConfigServiceProvider extends ServiceProvider
             self::token('color_nav_bg', 'Navigation background', 'Navigation'),
             self::token('color_nav_border', 'Navigation border', 'Navigation'),
             self::token('color_nav_muted', 'Navigation hover / muted', 'Navigation'),
+            self::token('color_nav_section_fg', 'Navigation section text', 'Navigation'),
+            self::token('color_nav_group_fg', 'Navigation group text', 'Navigation'),
             self::token('color_nav_active_bg', 'Navigation active background', 'Navigation'),
             self::token('color_nav_active_fg', 'Navigation active text', 'Navigation'),
         ];
@@ -163,227 +190,319 @@ class ConfigServiceProvider extends ServiceProvider
     }
 
     /**
+     * @return array{primary: string, secondary: string, accent: string, page: string, panel: string, line: string, nav: string, muted: string, active: string, activeFg: string, section: string, group: string}
+     */
+    protected static function toneFamily(
+        string $primary,
+        string $secondary,
+        string $accent,
+        string $page,
+        string $panel,
+        string $line,
+        string $nav,
+        string $muted,
+        string $active,
+        string $activeFg,
+        string $section,
+        string $group,
+    ): array {
+        return [
+            'primary'   => $primary,
+            'secondary' => $secondary,
+            'accent'    => $accent,
+            'page'      => $page,
+            'panel'     => $panel,
+            'line'      => $line,
+            'nav'       => $nav,
+            'muted'     => $muted,
+            'active'    => $active,
+            'activeFg'  => $activeFg,
+            'section'   => $section,
+            'group'     => $group,
+        ];
+    }
+
+    /**
+     * @return array{primary: string, secondary: string, accent: string, page: string, panel: string, line: string, nav: string, muted: string, active: string, activeFg: string, section: string, group: string}
+     */
+    protected static function lightPointFamily(
+        string $primary,
+        string $accent,
+        string $muted,
+        string $active,
+        string $activeFg,
+    ): array {
+        return self::toneFamily(
+            $primary,
+            '#0f172a',
+            $accent,
+            '#f8fafc',
+            '#ffffff',
+            '#e2e8f0',
+            '#ffffff',
+            $muted,
+            $active,
+            $activeFg,
+            '#334155',
+            '#64748b',
+        );
+    }
+
+    /**
+     * @return array{primary: string, secondary: string, accent: string, page: string, panel: string, line: string, nav: string, muted: string, active: string, activeFg: string, section: string, group: string}
+     */
+    protected static function darkPointFamily(
+        string $primary,
+        string $accent,
+        string $muted,
+        string $active,
+        string $activeFg,
+    ): array {
+        return self::toneFamily(
+            $primary,
+            '#f8fafc',
+            $accent,
+            '#020617',
+            '#0f172a',
+            '#1e293b',
+            '#0b1120',
+            $muted,
+            $active,
+            $activeFg,
+            '#e2e8f0',
+            '#94a3b8',
+        );
+    }
+
+    /**
+     * Shared baseline colour families used across every shell layout.
+     *
      * @return array<string, array<string, mixed>>
      */
-    protected static function paletteSplitPresets(): array
+    protected static function layoutThemeFamilies(): array
     {
         return [
             'orbit' => [
                 'label' => 'Orbit',
-                'light' => [
-                    'color_primary'        => '#17ce91',
-                    'color_secondary'      => '#0f172a',
-                    'color_accent'         => '#fc8024',
-                    'color_page_bg'        => '#f8fafc',
-                    'color_panel_bg'       => '#ffffff',
-                    'color_panel_border'   => '#e2e8f0',
-                    'color_header_bg'      => '#ffffff',
-                    'color_header_border'  => '#e2e8f0',
-                    'color_nav_bg'         => '#ffffff',
-                    'color_nav_border'     => '#e2e8f0',
-                    'color_nav_muted'      => '#f1f5f9',
-                    'color_nav_active_bg'  => '#ecfdf5',
-                    'color_nav_active_fg'  => '#0f766e',
-                    'color_rail_bg'        => '#ffffff',
-                    'color_rail_border'    => '#e2e8f0',
-                    'color_rail_icon'      => '#64748b',
-                    'color_rail_active_bg' => '#17ce91',
-                    'color_rail_active_fg' => '#ffffff',
-                ],
-                'dark' => [
-                    'color_primary'        => '#2dd4a8',
-                    'color_secondary'      => '#e2e8f0',
-                    'color_accent'         => '#fb923c',
-                    'color_page_bg'        => '#020617',
-                    'color_panel_bg'       => '#0f172a',
-                    'color_panel_border'   => '#1e293b',
-                    'color_header_bg'      => '#0f172a',
-                    'color_header_border'  => '#1e293b',
-                    'color_nav_bg'         => '#0f172a',
-                    'color_nav_border'     => '#1e293b',
-                    'color_nav_muted'      => '#111827',
-                    'color_nav_active_bg'  => '#083344',
-                    'color_nav_active_fg'  => '#99f6e4',
-                    'color_rail_bg'        => '#020617',
-                    'color_rail_border'    => '#1e293b',
-                    'color_rail_icon'      => '#94a3b8',
-                    'color_rail_active_bg' => '#0f766e',
-                    'color_rail_active_fg' => '#ffffff',
-                ],
+                'light' => self::lightPointFamily(
+                    '#17ce91',
+                    '#fc8024',
+                    '#ecfdf5',
+                    '#d1fae5',
+                    '#047857',
+                ),
+                'dark' => self::darkPointFamily(
+                    '#34d399',
+                    '#fb923c',
+                    '#1f2937',
+                    '#065f46',
+                    '#ecfdf5',
+                ),
             ],
-            'ocean' => [
-                'label' => 'Ocean',
-                'light' => [
-                    'color_primary'        => '#0284c7',
-                    'color_secondary'      => '#0f172a',
-                    'color_accent'         => '#06b6d4',
-                    'color_page_bg'        => '#f0f9ff',
-                    'color_panel_bg'       => '#ffffff',
-                    'color_panel_border'   => '#dbeafe',
-                    'color_header_bg'      => '#ffffff',
-                    'color_header_border'  => '#dbeafe',
-                    'color_nav_bg'         => '#ffffff',
-                    'color_nav_border'     => '#dbeafe',
-                    'color_nav_muted'      => '#e0f2fe',
-                    'color_nav_active_bg'  => '#e0f2fe',
-                    'color_nav_active_fg'  => '#075985',
-                    'color_rail_bg'        => '#ecfeff',
-                    'color_rail_border'    => '#bae6fd',
-                    'color_rail_icon'      => '#475569',
-                    'color_rail_active_bg' => '#0284c7',
-                    'color_rail_active_fg' => '#ffffff',
-                ],
-                'dark' => [
-                    'color_primary'        => '#38bdf8',
-                    'color_secondary'      => '#e0f2fe',
-                    'color_accent'         => '#22d3ee',
-                    'color_page_bg'        => '#082f49',
-                    'color_panel_bg'       => '#0c4a6e',
-                    'color_panel_border'   => '#155e75',
-                    'color_header_bg'      => '#0c4a6e',
-                    'color_header_border'  => '#155e75',
-                    'color_nav_bg'         => '#0c4a6e',
-                    'color_nav_border'     => '#155e75',
-                    'color_nav_muted'      => '#164e63',
-                    'color_nav_active_bg'  => '#0369a1',
-                    'color_nav_active_fg'  => '#ffffff',
-                    'color_rail_bg'        => '#082f49',
-                    'color_rail_border'    => '#155e75',
-                    'color_rail_icon'      => '#bae6fd',
-                    'color_rail_active_bg' => '#0284c7',
-                    'color_rail_active_fg' => '#ffffff',
-                ],
+            'apple-light' => [
+                'label' => 'Apple light',
+                'light' => self::lightPointFamily(
+                    '#2563eb',
+                    '#06b6d4',
+                    '#e8eef8',
+                    '#dbeafe',
+                    '#1d4ed8',
+                ),
+                'dark' => self::darkPointFamily(
+                    '#60a5fa',
+                    '#67e8f9',
+                    '#172033',
+                    '#1d4ed8',
+                    '#eff6ff',
+                ),
             ],
-            'forest' => [
-                'label' => 'Forest',
-                'light' => [
-                    'color_primary'        => '#059669',
-                    'color_secondary'      => '#1f2937',
-                    'color_accent'         => '#f59e0b',
-                    'color_page_bg'        => '#f0fdf4',
-                    'color_panel_bg'       => '#ffffff',
-                    'color_panel_border'   => '#dcfce7',
-                    'color_header_bg'      => '#ffffff',
-                    'color_header_border'  => '#dcfce7',
-                    'color_nav_bg'         => '#ffffff',
-                    'color_nav_border'     => '#dcfce7',
-                    'color_nav_muted'      => '#ecfdf5',
-                    'color_nav_active_bg'  => '#d1fae5',
-                    'color_nav_active_fg'  => '#065f46',
-                    'color_rail_bg'        => '#ecfdf5',
-                    'color_rail_border'    => '#bbf7d0',
-                    'color_rail_icon'      => '#4b5563',
-                    'color_rail_active_bg' => '#059669',
-                    'color_rail_active_fg' => '#ffffff',
-                ],
-                'dark' => [
-                    'color_primary'        => '#34d399',
-                    'color_secondary'      => '#ecfdf5',
-                    'color_accent'         => '#fbbf24',
-                    'color_page_bg'        => '#052e16',
-                    'color_panel_bg'       => '#14532d',
-                    'color_panel_border'   => '#166534',
-                    'color_header_bg'      => '#14532d',
-                    'color_header_border'  => '#166534',
-                    'color_nav_bg'         => '#14532d',
-                    'color_nav_border'     => '#166534',
-                    'color_nav_muted'      => '#166534',
-                    'color_nav_active_bg'  => '#047857',
-                    'color_nav_active_fg'  => '#ecfdf5',
-                    'color_rail_bg'        => '#052e16',
-                    'color_rail_border'    => '#166534',
-                    'color_rail_icon'      => '#86efac',
-                    'color_rail_active_bg' => '#059669',
-                    'color_rail_active_fg' => '#ffffff',
-                ],
+            'simple' => [
+                'label' => 'Simple',
+                'light' => self::lightPointFamily(
+                    '#4f46e5',
+                    '#8b5cf6',
+                    '#eef2ff',
+                    '#e0e7ff',
+                    '#3730a3',
+                ),
+                'dark' => self::darkPointFamily(
+                    '#818cf8',
+                    '#c084fc',
+                    '#1e1b4b',
+                    '#3730a3',
+                    '#eef2ff',
+                ),
             ],
-            'ember' => [
-                'label' => 'Ember',
-                'light' => [
-                    'color_primary'        => '#dc2626',
-                    'color_secondary'      => '#292524',
-                    'color_accent'         => '#fb923c',
-                    'color_page_bg'        => '#fff7ed',
-                    'color_panel_bg'       => '#ffffff',
-                    'color_panel_border'   => '#ffedd5',
-                    'color_header_bg'      => '#ffffff',
-                    'color_header_border'  => '#ffedd5',
-                    'color_nav_bg'         => '#ffffff',
-                    'color_nav_border'     => '#ffedd5',
-                    'color_nav_muted'      => '#fff1f2',
-                    'color_nav_active_bg'  => '#fee2e2',
-                    'color_nav_active_fg'  => '#991b1b',
-                    'color_rail_bg'        => '#fff7ed',
-                    'color_rail_border'    => '#fed7aa',
-                    'color_rail_icon'      => '#57534e',
-                    'color_rail_active_bg' => '#dc2626',
-                    'color_rail_active_fg' => '#ffffff',
-                ],
-                'dark' => [
-                    'color_primary'        => '#f87171',
-                    'color_secondary'      => '#fff7ed',
-                    'color_accent'         => '#fdba74',
-                    'color_page_bg'        => '#431407',
-                    'color_panel_bg'       => '#7f1d1d',
-                    'color_panel_border'   => '#991b1b',
-                    'color_header_bg'      => '#7f1d1d',
-                    'color_header_border'  => '#991b1b',
-                    'color_nav_bg'         => '#7f1d1d',
-                    'color_nav_border'     => '#991b1b',
-                    'color_nav_muted'      => '#7c2d12',
-                    'color_nav_active_bg'  => '#b91c1c',
-                    'color_nav_active_fg'  => '#ffffff',
-                    'color_rail_bg'        => '#431407',
-                    'color_rail_border'    => '#7c2d12',
-                    'color_rail_icon'      => '#fdba74',
-                    'color_rail_active_bg' => '#ef4444',
-                    'color_rail_active_fg' => '#ffffff',
-                ],
+            'amuz' => [
+                'label' => 'Amuz',
+                'light' => self::lightPointFamily(
+                    '#6366f1',
+                    '#06b6d4',
+                    '#e0e7ff',
+                    '#c7d2fe',
+                    '#3730a3',
+                ),
+                'dark' => self::darkPointFamily(
+                    '#818cf8',
+                    '#22d3ee',
+                    '#1e293b',
+                    '#312e81',
+                    '#e0e7ff',
+                ),
             ],
             'slate' => [
                 'label' => 'Slate',
-                'light' => [
-                    'color_primary'        => '#334155',
-                    'color_secondary'      => '#111827',
-                    'color_accent'         => '#0ea5e9',
-                    'color_page_bg'        => '#f8fafc',
-                    'color_panel_bg'       => '#ffffff',
-                    'color_panel_border'   => '#e2e8f0',
-                    'color_header_bg'      => '#ffffff',
-                    'color_header_border'  => '#e2e8f0',
-                    'color_nav_bg'         => '#ffffff',
-                    'color_nav_border'     => '#e2e8f0',
-                    'color_nav_muted'      => '#f1f5f9',
-                    'color_nav_active_bg'  => '#e2e8f0',
-                    'color_nav_active_fg'  => '#0f172a',
-                    'color_rail_bg'        => '#f8fafc',
-                    'color_rail_border'    => '#e2e8f0',
-                    'color_rail_icon'      => '#64748b',
-                    'color_rail_active_bg' => '#334155',
-                    'color_rail_active_fg' => '#ffffff',
-                ],
-                'dark' => [
-                    'color_primary'        => '#cbd5e1',
-                    'color_secondary'      => '#f8fafc',
-                    'color_accent'         => '#38bdf8',
-                    'color_page_bg'        => '#020617',
-                    'color_panel_bg'       => '#0f172a',
-                    'color_panel_border'   => '#1e293b',
-                    'color_header_bg'      => '#0f172a',
-                    'color_header_border'  => '#1e293b',
-                    'color_nav_bg'         => '#0f172a',
-                    'color_nav_border'     => '#1e293b',
-                    'color_nav_muted'      => '#111827',
-                    'color_nav_active_bg'  => '#334155',
-                    'color_nav_active_fg'  => '#f8fafc',
-                    'color_rail_bg'        => '#020617',
-                    'color_rail_border'    => '#1e293b',
-                    'color_rail_icon'      => '#94a3b8',
-                    'color_rail_active_bg' => '#334155',
-                    'color_rail_active_fg' => '#ffffff',
-                ],
+                'light' => self::lightPointFamily(
+                    '#475569',
+                    '#0ea5e9',
+                    '#f1f5f9',
+                    '#e2e8f0',
+                    '#0f172a',
+                ),
+                'dark' => self::darkPointFamily(
+                    '#cbd5e1',
+                    '#38bdf8',
+                    '#1f2937',
+                    '#334155',
+                    '#f8fafc',
+                ),
+            ],
+            'studio-rose' => [
+                'label' => 'Studio rose',
+                'light' => self::lightPointFamily(
+                    '#ff385c',
+                    '#fb7185',
+                    '#fff1f2',
+                    '#ffe4e6',
+                    '#be123c',
+                ),
+                'dark' => self::darkPointFamily(
+                    '#fb7185',
+                    '#fda4af',
+                    '#2b1320',
+                    '#be123c',
+                    '#fff1f2',
+                ),
+            ],
+            'clover-mint' => [
+                'label' => 'Clover mint',
+                'light' => self::lightPointFamily(
+                    '#03c75a',
+                    '#14b8a6',
+                    '#ecfdf5',
+                    '#dcfce7',
+                    '#15803d',
+                ),
+                'dark' => self::darkPointFamily(
+                    '#22c55e',
+                    '#2dd4bf',
+                    '#0f2f24',
+                    '#166534',
+                    '#ecfdf5',
+                ),
+            ],
+            'violet-pop' => [
+                'label' => 'Violet pop',
+                'light' => self::lightPointFamily(
+                    '#8b5cf6',
+                    '#ec4899',
+                    '#f5f3ff',
+                    '#ede9fe',
+                    '#6d28d9',
+                ),
+                'dark' => self::darkPointFamily(
+                    '#a78bfa',
+                    '#f472b6',
+                    '#2e1065',
+                    '#6d28d9',
+                    '#faf5ff',
+                ),
             ],
         ];
+    }
+
+    /**
+     * @param array{primary: string, secondary: string, accent: string, page: string, panel: string, line: string, nav: string, muted: string, active: string, activeFg: string, section: string, group: string} $tone
+     *
+     * @return array<string, string>
+     */
+    protected static function layoutTone(string $layout, array $tone): array
+    {
+        $colors = [
+            'color_primary'        => $tone['primary'],
+            'color_secondary'      => $tone['secondary'],
+            'color_accent'         => $tone['accent'],
+            'color_page_bg'        => $tone['page'],
+            'color_panel_bg'       => $tone['panel'],
+            'color_panel_border'   => $tone['line'],
+            'color_header_bg'      => $tone['panel'],
+            'color_header_border'  => $tone['line'],
+            'color_nav_bg'         => $layout === 'palette-split' ? $tone['panel'] : $tone['nav'],
+            'color_nav_border'     => $tone['line'],
+            'color_nav_muted'      => $tone['muted'],
+            'color_nav_section_fg' => $tone['section'],
+            'color_nav_group_fg'   => $tone['group'],
+            'color_nav_active_bg'  => $tone['active'],
+            'color_nav_active_fg'  => $tone['activeFg'],
+        ];
+
+        if ($layout === 'palette-split') {
+            $colors['color_rail_bg'] = $tone['nav'];
+            $colors['color_rail_border'] = $tone['line'];
+            $colors['color_rail_icon'] = $tone['group'];
+            $colors['color_rail_active_bg'] = $tone['active'];
+            $colors['color_rail_active_fg'] = $tone['activeFg'];
+        }
+
+        return $colors;
+    }
+
+    /**
+     * @param array{label: string, light: array<string, string>, dark: array<string, string>} $family
+     *
+     * @return array{label: string, light: array<string, string>, dark: array<string, string>}
+     */
+    protected static function layoutPreset(string $layout, array $family): array
+    {
+        return [
+            'label' => $family['label'],
+            'light' => self::layoutTone($layout, $family['light']),
+            'dark'  => self::layoutTone($layout, $family['dark']),
+        ];
+    }
+
+    /**
+     * @param list<string> $order
+     *
+     * @return array<string, array<string, mixed>>
+     */
+    protected static function layoutPresetCollection(string $layout, array $order): array
+    {
+        $families = self::layoutThemeFamilies();
+        $presets = [];
+
+        foreach ($order as $family) {
+            $presets[$family] = self::layoutPreset($layout, $families[$family]);
+        }
+
+        return $presets;
+    }
+
+    /**
+     * @return array<string, array<string, mixed>>
+     */
+    protected static function paletteSplitPresets(): array
+    {
+        return self::layoutPresetCollection('palette-split', [
+            'orbit',
+            'apple-light',
+            'simple',
+            'studio-rose',
+            'clover-mint',
+            'amuz',
+            'slate',
+            'violet-pop',
+        ]);
     }
 
     /**
@@ -391,173 +510,16 @@ class ConfigServiceProvider extends ServiceProvider
      */
     protected static function singleSidebarPresets(): array
     {
-        return [
-            'linen' => [
-                'label' => 'Linen',
-                'light' => [
-                    'color_primary'       => '#0f766e',
-                    'color_secondary'     => '#1f2937',
-                    'color_accent'        => '#f97316',
-                    'color_page_bg'       => '#f8fafc',
-                    'color_panel_bg'      => '#ffffff',
-                    'color_panel_border'  => '#e5e7eb',
-                    'color_header_bg'     => '#ffffff',
-                    'color_header_border' => '#e5e7eb',
-                    'color_nav_bg'        => '#fafaf9',
-                    'color_nav_border'    => '#e7e5e4',
-                    'color_nav_muted'     => '#f5f5f4',
-                    'color_nav_active_bg' => '#ccfbf1',
-                    'color_nav_active_fg' => '#115e59',
-                ],
-                'dark' => [
-                    'color_primary'       => '#5eead4',
-                    'color_secondary'     => '#f5f5f4',
-                    'color_accent'        => '#fb923c',
-                    'color_page_bg'       => '#111827',
-                    'color_panel_bg'      => '#1f2937',
-                    'color_panel_border'  => '#374151',
-                    'color_header_bg'     => '#1f2937',
-                    'color_header_border' => '#374151',
-                    'color_nav_bg'        => '#111827',
-                    'color_nav_border'    => '#374151',
-                    'color_nav_muted'     => '#1f2937',
-                    'color_nav_active_bg' => '#134e4a',
-                    'color_nav_active_fg' => '#ccfbf1',
-                ],
-            ],
-            'indigo' => [
-                'label' => 'Indigo',
-                'light' => [
-                    'color_primary'       => '#4f46e5',
-                    'color_secondary'     => '#111827',
-                    'color_accent'        => '#ec4899',
-                    'color_page_bg'       => '#eef2ff',
-                    'color_panel_bg'      => '#ffffff',
-                    'color_panel_border'  => '#dbeafe',
-                    'color_header_bg'     => '#ffffff',
-                    'color_header_border' => '#dbeafe',
-                    'color_nav_bg'        => '#ffffff',
-                    'color_nav_border'    => '#dbeafe',
-                    'color_nav_muted'     => '#eef2ff',
-                    'color_nav_active_bg' => '#e0e7ff',
-                    'color_nav_active_fg' => '#312e81',
-                ],
-                'dark' => [
-                    'color_primary'       => '#818cf8',
-                    'color_secondary'     => '#eef2ff',
-                    'color_accent'        => '#f472b6',
-                    'color_page_bg'       => '#1e1b4b',
-                    'color_panel_bg'      => '#312e81',
-                    'color_panel_border'  => '#4338ca',
-                    'color_header_bg'     => '#312e81',
-                    'color_header_border' => '#4338ca',
-                    'color_nav_bg'        => '#1e1b4b',
-                    'color_nav_border'    => '#4338ca',
-                    'color_nav_muted'     => '#312e81',
-                    'color_nav_active_bg' => '#4338ca',
-                    'color_nav_active_fg' => '#ffffff',
-                ],
-            ],
-            'graphite' => [
-                'label' => 'Graphite',
-                'light' => [
-                    'color_primary'       => '#18181b',
-                    'color_secondary'     => '#111827',
-                    'color_accent'        => '#0ea5e9',
-                    'color_page_bg'       => '#fafafa',
-                    'color_panel_bg'      => '#ffffff',
-                    'color_panel_border'  => '#e4e4e7',
-                    'color_header_bg'     => '#ffffff',
-                    'color_header_border' => '#e4e4e7',
-                    'color_nav_bg'        => '#fafafa',
-                    'color_nav_border'    => '#e4e4e7',
-                    'color_nav_muted'     => '#f4f4f5',
-                    'color_nav_active_bg' => '#e4e4e7',
-                    'color_nav_active_fg' => '#18181b',
-                ],
-                'dark' => [
-                    'color_primary'       => '#e4e4e7',
-                    'color_secondary'     => '#fafafa',
-                    'color_accent'        => '#38bdf8',
-                    'color_page_bg'       => '#09090b',
-                    'color_panel_bg'      => '#18181b',
-                    'color_panel_border'  => '#27272a',
-                    'color_header_bg'     => '#18181b',
-                    'color_header_border' => '#27272a',
-                    'color_nav_bg'        => '#09090b',
-                    'color_nav_border'    => '#27272a',
-                    'color_nav_muted'     => '#18181b',
-                    'color_nav_active_bg' => '#27272a',
-                    'color_nav_active_fg' => '#fafafa',
-                ],
-            ],
-            'forest' => [
-                'label' => 'Forest',
-                'light' => [
-                    'color_primary'       => '#166534',
-                    'color_secondary'     => '#1f2937',
-                    'color_accent'        => '#f59e0b',
-                    'color_page_bg'       => '#f0fdf4',
-                    'color_panel_bg'      => '#ffffff',
-                    'color_panel_border'  => '#dcfce7',
-                    'color_header_bg'     => '#ffffff',
-                    'color_header_border' => '#dcfce7',
-                    'color_nav_bg'        => '#f7fee7',
-                    'color_nav_border'    => '#d9f99d',
-                    'color_nav_muted'     => '#ecfccb',
-                    'color_nav_active_bg' => '#d9f99d',
-                    'color_nav_active_fg' => '#365314',
-                ],
-                'dark' => [
-                    'color_primary'       => '#86efac',
-                    'color_secondary'     => '#f0fdf4',
-                    'color_accent'        => '#fbbf24',
-                    'color_page_bg'       => '#052e16',
-                    'color_panel_bg'      => '#14532d',
-                    'color_panel_border'  => '#166534',
-                    'color_header_bg'     => '#14532d',
-                    'color_header_border' => '#166534',
-                    'color_nav_bg'        => '#14532d',
-                    'color_nav_border'    => '#166534',
-                    'color_nav_muted'     => '#166534',
-                    'color_nav_active_bg' => '#365314',
-                    'color_nav_active_fg' => '#f0fdf4',
-                ],
-            ],
-            'rose' => [
-                'label' => 'Rose',
-                'light' => [
-                    'color_primary'       => '#be123c',
-                    'color_secondary'     => '#1f2937',
-                    'color_accent'        => '#fb7185',
-                    'color_page_bg'       => '#fff1f2',
-                    'color_panel_bg'      => '#ffffff',
-                    'color_panel_border'  => '#ffe4e6',
-                    'color_header_bg'     => '#ffffff',
-                    'color_header_border' => '#ffe4e6',
-                    'color_nav_bg'        => '#fff1f2',
-                    'color_nav_border'    => '#ffe4e6',
-                    'color_nav_muted'     => '#ffe4e6',
-                    'color_nav_active_bg' => '#fecdd3',
-                    'color_nav_active_fg' => '#881337',
-                ],
-                'dark' => [
-                    'color_primary'       => '#fb7185',
-                    'color_secondary'     => '#fff1f2',
-                    'color_accent'        => '#fda4af',
-                    'color_page_bg'       => '#4c0519',
-                    'color_panel_bg'      => '#881337',
-                    'color_panel_border'  => '#9f1239',
-                    'color_header_bg'     => '#881337',
-                    'color_header_border' => '#9f1239',
-                    'color_nav_bg'        => '#4c0519',
-                    'color_nav_border'    => '#9f1239',
-                    'color_nav_muted'     => '#881337',
-                    'color_nav_active_bg' => '#9f1239',
-                    'color_nav_active_fg' => '#fff1f2',
-                ],
-            ],
-        ];
+        return self::layoutPresetCollection('sidebar-single', [
+            'simple',
+            'apple-light',
+            'orbit',
+            'clover-mint',
+            'studio-rose',
+            'amuz',
+            'slate',
+            'violet-pop',
+        ]);
     }
 
     /**
@@ -565,173 +527,16 @@ class ConfigServiceProvider extends ServiceProvider
      */
     protected static function topbarPresets(): array
     {
-        return [
-            'orbit' => [
-                'label' => 'Orbit',
-                'light' => [
-                    'color_primary'       => '#17ce91',
-                    'color_secondary'     => '#0f172a',
-                    'color_accent'        => '#fc8024',
-                    'color_page_bg'       => '#f8fafc',
-                    'color_panel_bg'      => '#ffffff',
-                    'color_panel_border'  => '#e2e8f0',
-                    'color_header_bg'     => '#ffffff',
-                    'color_header_border' => '#e2e8f0',
-                    'color_nav_bg'        => '#f8fafc',
-                    'color_nav_border'    => '#e2e8f0',
-                    'color_nav_muted'     => '#e2e8f0',
-                    'color_nav_active_bg' => '#ecfdf5',
-                    'color_nav_active_fg' => '#0f766e',
-                ],
-                'dark' => [
-                    'color_primary'       => '#2dd4a8',
-                    'color_secondary'     => '#f8fafc',
-                    'color_accent'        => '#fb923c',
-                    'color_page_bg'       => '#020617',
-                    'color_panel_bg'      => '#0f172a',
-                    'color_panel_border'  => '#1e293b',
-                    'color_header_bg'     => '#0f172a',
-                    'color_header_border' => '#1e293b',
-                    'color_nav_bg'        => '#111827',
-                    'color_nav_border'    => '#1f2937',
-                    'color_nav_muted'     => '#1e293b',
-                    'color_nav_active_bg' => '#064e3b',
-                    'color_nav_active_fg' => '#ecfdf5',
-                ],
-            ],
-            'cobalt' => [
-                'label' => 'Cobalt',
-                'light' => [
-                    'color_primary'       => '#2563eb',
-                    'color_secondary'     => '#0f172a',
-                    'color_accent'        => '#8b5cf6',
-                    'color_page_bg'       => '#eff6ff',
-                    'color_panel_bg'      => '#ffffff',
-                    'color_panel_border'  => '#dbeafe',
-                    'color_header_bg'     => '#ffffff',
-                    'color_header_border' => '#dbeafe',
-                    'color_nav_bg'        => '#eff6ff',
-                    'color_nav_border'    => '#bfdbfe',
-                    'color_nav_muted'     => '#dbeafe',
-                    'color_nav_active_bg' => '#dbeafe',
-                    'color_nav_active_fg' => '#1d4ed8',
-                ],
-                'dark' => [
-                    'color_primary'       => '#60a5fa',
-                    'color_secondary'     => '#eff6ff',
-                    'color_accent'        => '#c4b5fd',
-                    'color_page_bg'       => '#172554',
-                    'color_panel_bg'      => '#1d4ed8',
-                    'color_panel_border'  => '#1e40af',
-                    'color_header_bg'     => '#1e3a8a',
-                    'color_header_border' => '#1e40af',
-                    'color_nav_bg'        => '#172554',
-                    'color_nav_border'    => '#1e40af',
-                    'color_nav_muted'     => '#1e3a8a',
-                    'color_nav_active_bg' => '#1d4ed8',
-                    'color_nav_active_fg' => '#ffffff',
-                ],
-            ],
-            'sand' => [
-                'label' => 'Sand',
-                'light' => [
-                    'color_primary'       => '#a16207',
-                    'color_secondary'     => '#292524',
-                    'color_accent'        => '#ea580c',
-                    'color_page_bg'       => '#fffbeb',
-                    'color_panel_bg'      => '#ffffff',
-                    'color_panel_border'  => '#fde68a',
-                    'color_header_bg'     => '#ffffff',
-                    'color_header_border' => '#fde68a',
-                    'color_nav_bg'        => '#fef3c7',
-                    'color_nav_border'    => '#fcd34d',
-                    'color_nav_muted'     => '#fde68a',
-                    'color_nav_active_bg' => '#fbbf24',
-                    'color_nav_active_fg' => '#78350f',
-                ],
-                'dark' => [
-                    'color_primary'       => '#fcd34d',
-                    'color_secondary'     => '#fffbeb',
-                    'color_accent'        => '#fb923c',
-                    'color_page_bg'       => '#451a03',
-                    'color_panel_bg'      => '#78350f',
-                    'color_panel_border'  => '#92400e',
-                    'color_header_bg'     => '#78350f',
-                    'color_header_border' => '#92400e',
-                    'color_nav_bg'        => '#451a03',
-                    'color_nav_border'    => '#92400e',
-                    'color_nav_muted'     => '#78350f',
-                    'color_nav_active_bg' => '#b45309',
-                    'color_nav_active_fg' => '#fffbeb',
-                ],
-            ],
-            'sage' => [
-                'label' => 'Sage',
-                'light' => [
-                    'color_primary'       => '#15803d',
-                    'color_secondary'     => '#1f2937',
-                    'color_accent'        => '#0ea5e9',
-                    'color_page_bg'       => '#f7fee7',
-                    'color_panel_bg'      => '#ffffff',
-                    'color_panel_border'  => '#d9f99d',
-                    'color_header_bg'     => '#ffffff',
-                    'color_header_border' => '#d9f99d',
-                    'color_nav_bg'        => '#f7fee7',
-                    'color_nav_border'    => '#bef264',
-                    'color_nav_muted'     => '#ecfccb',
-                    'color_nav_active_bg' => '#dcfce7',
-                    'color_nav_active_fg' => '#166534',
-                ],
-                'dark' => [
-                    'color_primary'       => '#86efac',
-                    'color_secondary'     => '#f7fee7',
-                    'color_accent'        => '#38bdf8',
-                    'color_page_bg'       => '#14532d',
-                    'color_panel_bg'      => '#166534',
-                    'color_panel_border'  => '#15803d',
-                    'color_header_bg'     => '#166534',
-                    'color_header_border' => '#15803d',
-                    'color_nav_bg'        => '#14532d',
-                    'color_nav_border'    => '#15803d',
-                    'color_nav_muted'     => '#166534',
-                    'color_nav_active_bg' => '#15803d',
-                    'color_nav_active_fg' => '#f7fee7',
-                ],
-            ],
-            'violet' => [
-                'label' => 'Violet',
-                'light' => [
-                    'color_primary'       => '#7c3aed',
-                    'color_secondary'     => '#1f2937',
-                    'color_accent'        => '#ec4899',
-                    'color_page_bg'       => '#f5f3ff',
-                    'color_panel_bg'      => '#ffffff',
-                    'color_panel_border'  => '#ddd6fe',
-                    'color_header_bg'     => '#ffffff',
-                    'color_header_border' => '#ddd6fe',
-                    'color_nav_bg'        => '#f5f3ff',
-                    'color_nav_border'    => '#c4b5fd',
-                    'color_nav_muted'     => '#ede9fe',
-                    'color_nav_active_bg' => '#ddd6fe',
-                    'color_nav_active_fg' => '#5b21b6',
-                ],
-                'dark' => [
-                    'color_primary'       => '#c4b5fd',
-                    'color_secondary'     => '#f5f3ff',
-                    'color_accent'        => '#f472b6',
-                    'color_page_bg'       => '#2e1065',
-                    'color_panel_bg'      => '#4c1d95',
-                    'color_panel_border'  => '#5b21b6',
-                    'color_header_bg'     => '#4c1d95',
-                    'color_header_border' => '#5b21b6',
-                    'color_nav_bg'        => '#2e1065',
-                    'color_nav_border'    => '#5b21b6',
-                    'color_nav_muted'     => '#4c1d95',
-                    'color_nav_active_bg' => '#6d28d9',
-                    'color_nav_active_fg' => '#ffffff',
-                ],
-            ],
-        ];
+        return self::layoutPresetCollection('topbar', [
+            'apple-light',
+            'simple',
+            'studio-rose',
+            'clover-mint',
+            'orbit',
+            'amuz',
+            'slate',
+            'violet-pop',
+        ]);
     }
 
     /**
@@ -739,173 +544,16 @@ class ConfigServiceProvider extends ServiceProvider
      */
     protected static function hybridPresets(): array
     {
-        return [
-            'slate' => [
-                'label' => 'Slate',
-                'light' => [
-                    'color_primary'       => '#334155',
-                    'color_secondary'     => '#111827',
-                    'color_accent'        => '#0ea5e9',
-                    'color_page_bg'       => '#f8fafc',
-                    'color_panel_bg'      => '#ffffff',
-                    'color_panel_border'  => '#e2e8f0',
-                    'color_header_bg'     => '#ffffff',
-                    'color_header_border' => '#e2e8f0',
-                    'color_nav_bg'        => '#f8fafc',
-                    'color_nav_border'    => '#e2e8f0',
-                    'color_nav_muted'     => '#f1f5f9',
-                    'color_nav_active_bg' => '#e2e8f0',
-                    'color_nav_active_fg' => '#0f172a',
-                ],
-                'dark' => [
-                    'color_primary'       => '#cbd5e1',
-                    'color_secondary'     => '#f8fafc',
-                    'color_accent'        => '#38bdf8',
-                    'color_page_bg'       => '#020617',
-                    'color_panel_bg'      => '#0f172a',
-                    'color_panel_border'  => '#1e293b',
-                    'color_header_bg'     => '#0f172a',
-                    'color_header_border' => '#1e293b',
-                    'color_nav_bg'        => '#111827',
-                    'color_nav_border'    => '#1e293b',
-                    'color_nav_muted'     => '#1f2937',
-                    'color_nav_active_bg' => '#334155',
-                    'color_nav_active_fg' => '#ffffff',
-                ],
-            ],
-            'sunrise' => [
-                'label' => 'Sunrise',
-                'light' => [
-                    'color_primary'       => '#ea580c',
-                    'color_secondary'     => '#292524',
-                    'color_accent'        => '#e11d48',
-                    'color_page_bg'       => '#fff7ed',
-                    'color_panel_bg'      => '#ffffff',
-                    'color_panel_border'  => '#fed7aa',
-                    'color_header_bg'     => '#ffffff',
-                    'color_header_border' => '#fed7aa',
-                    'color_nav_bg'        => '#fff7ed',
-                    'color_nav_border'    => '#fdba74',
-                    'color_nav_muted'     => '#ffedd5',
-                    'color_nav_active_bg' => '#fdba74',
-                    'color_nav_active_fg' => '#9a3412',
-                ],
-                'dark' => [
-                    'color_primary'       => '#fdba74',
-                    'color_secondary'     => '#fff7ed',
-                    'color_accent'        => '#fb7185',
-                    'color_page_bg'       => '#431407',
-                    'color_panel_bg'      => '#7c2d12',
-                    'color_panel_border'  => '#9a3412',
-                    'color_header_bg'     => '#7c2d12',
-                    'color_header_border' => '#9a3412',
-                    'color_nav_bg'        => '#431407',
-                    'color_nav_border'    => '#9a3412',
-                    'color_nav_muted'     => '#7c2d12',
-                    'color_nav_active_bg' => '#c2410c',
-                    'color_nav_active_fg' => '#ffffff',
-                ],
-            ],
-            'teal' => [
-                'label' => 'Teal',
-                'light' => [
-                    'color_primary'       => '#0f766e',
-                    'color_secondary'     => '#1f2937',
-                    'color_accent'        => '#14b8a6',
-                    'color_page_bg'       => '#f0fdfa',
-                    'color_panel_bg'      => '#ffffff',
-                    'color_panel_border'  => '#ccfbf1',
-                    'color_header_bg'     => '#ffffff',
-                    'color_header_border' => '#ccfbf1',
-                    'color_nav_bg'        => '#f0fdfa',
-                    'color_nav_border'    => '#99f6e4',
-                    'color_nav_muted'     => '#ccfbf1',
-                    'color_nav_active_bg' => '#99f6e4',
-                    'color_nav_active_fg' => '#115e59',
-                ],
-                'dark' => [
-                    'color_primary'       => '#5eead4',
-                    'color_secondary'     => '#f0fdfa',
-                    'color_accent'        => '#2dd4bf',
-                    'color_page_bg'       => '#042f2e',
-                    'color_panel_bg'      => '#134e4a',
-                    'color_panel_border'  => '#115e59',
-                    'color_header_bg'     => '#134e4a',
-                    'color_header_border' => '#115e59',
-                    'color_nav_bg'        => '#042f2e',
-                    'color_nav_border'    => '#115e59',
-                    'color_nav_muted'     => '#134e4a',
-                    'color_nav_active_bg' => '#0f766e',
-                    'color_nav_active_fg' => '#ffffff',
-                ],
-            ],
-            'violet' => [
-                'label' => 'Violet',
-                'light' => [
-                    'color_primary'       => '#7c3aed',
-                    'color_secondary'     => '#1f2937',
-                    'color_accent'        => '#ec4899',
-                    'color_page_bg'       => '#f5f3ff',
-                    'color_panel_bg'      => '#ffffff',
-                    'color_panel_border'  => '#ddd6fe',
-                    'color_header_bg'     => '#ffffff',
-                    'color_header_border' => '#ddd6fe',
-                    'color_nav_bg'        => '#f5f3ff',
-                    'color_nav_border'    => '#c4b5fd',
-                    'color_nav_muted'     => '#ede9fe',
-                    'color_nav_active_bg' => '#ddd6fe',
-                    'color_nav_active_fg' => '#5b21b6',
-                ],
-                'dark' => [
-                    'color_primary'       => '#c4b5fd',
-                    'color_secondary'     => '#f5f3ff',
-                    'color_accent'        => '#f472b6',
-                    'color_page_bg'       => '#2e1065',
-                    'color_panel_bg'      => '#4c1d95',
-                    'color_panel_border'  => '#5b21b6',
-                    'color_header_bg'     => '#4c1d95',
-                    'color_header_border' => '#5b21b6',
-                    'color_nav_bg'        => '#2e1065',
-                    'color_nav_border'    => '#5b21b6',
-                    'color_nav_muted'     => '#4c1d95',
-                    'color_nav_active_bg' => '#6d28d9',
-                    'color_nav_active_fg' => '#ffffff',
-                ],
-            ],
-            'moss' => [
-                'label' => 'Moss',
-                'light' => [
-                    'color_primary'       => '#4d7c0f',
-                    'color_secondary'     => '#1f2937',
-                    'color_accent'        => '#84cc16',
-                    'color_page_bg'       => '#f7fee7',
-                    'color_panel_bg'      => '#ffffff',
-                    'color_panel_border'  => '#d9f99d',
-                    'color_header_bg'     => '#ffffff',
-                    'color_header_border' => '#d9f99d',
-                    'color_nav_bg'        => '#f7fee7',
-                    'color_nav_border'    => '#bef264',
-                    'color_nav_muted'     => '#ecfccb',
-                    'color_nav_active_bg' => '#d9f99d',
-                    'color_nav_active_fg' => '#3f6212',
-                ],
-                'dark' => [
-                    'color_primary'       => '#bef264',
-                    'color_secondary'     => '#f7fee7',
-                    'color_accent'        => '#a3e635',
-                    'color_page_bg'       => '#1a2e05',
-                    'color_panel_bg'      => '#365314',
-                    'color_panel_border'  => '#4d7c0f',
-                    'color_header_bg'     => '#365314',
-                    'color_header_border' => '#4d7c0f',
-                    'color_nav_bg'        => '#1a2e05',
-                    'color_nav_border'    => '#4d7c0f',
-                    'color_nav_muted'     => '#365314',
-                    'color_nav_active_bg' => '#65a30d',
-                    'color_nav_active_fg' => '#ffffff',
-                ],
-            ],
-        ];
+        return self::layoutPresetCollection('hybrid', [
+            'amuz',
+            'orbit',
+            'simple',
+            'studio-rose',
+            'clover-mint',
+            'apple-light',
+            'slate',
+            'violet-pop',
+        ]);
     }
 
     public function register(): void
@@ -973,13 +621,33 @@ class ConfigServiceProvider extends ServiceProvider
         Config::registerSection('Admin Design', 'identity', ['title' => 'Identity', 'priority' => 40]);
         Config::registerItem('Admin Design', 'branding.name', 'input', config('app.name'), 'identity', ['title' => '관리자 페이지 이름']);
         Config::registerItem('Admin Design', 'branding.logo', 'attach', '/vendor/orbit/SVG/logo.svg', 'identity', ['title' => '로고']);
+        Config::registerItem('Admin Design', 'branding.logo_dark', 'attach', '/vendor/orbit/SVG/logo.svg', 'identity', ['title' => '다크 모드 로고']);
         Config::registerItem('Admin Design', 'branding.symbol', 'attach', '/vendor/orbit/SVG/symbol.svg', 'identity', ['title' => '아이콘 마크']);
+        Config::registerItem('Admin Design', 'branding.symbol_dark', 'attach', '/vendor/orbit/SVG/symbol.svg', 'identity', ['title' => '다크 모드 아이콘 마크']);
         Config::registerItem('Admin Design', 'branding.favicon', 'attach', '/vendor/orbit/favicon/favicon.ico', 'identity', ['title' => '파비콘']);
-        Config::registerItem('Admin Design', 'branding.dark_mode', 'switcher', false, 'identity', ['title' => '다크 모드 사용']);
+        Config::registerItem('Admin Design', 'branding.theme_toggle_enabled', 'switcher', true, 'identity', ['title' => '라이트/다크 전환 허용']);
+        Config::registerItem('Admin Design', 'branding.theme_mode', 'select', 'light', 'identity', [
+            'title'   => '기본 테마 모드',
+            'options' => [
+                'light'  => '라이트',
+                'dark'   => '다크',
+                'system' => '시스템',
+            ],
+        ]);
         Config::registerSection('Admin Design', 'colors', ['title' => 'Default colours', 'priority' => 35]);
         Config::registerItem('Admin Design', 'branding.palette', 'select', 'orbit', 'colors', [
             'title'   => 'Palette preset',
-            'options' => ['orbit', 'midnight', 'forest', 'sunset', 'custom'],
+            'options' => [
+                'orbit'       => 'Orbit',
+                'apple-light' => 'Apple light',
+                'simple'      => 'Simple',
+                'amuz'        => 'Amuz',
+                'slate'       => 'Slate',
+                'studio-rose' => 'Studio rose',
+                'clover-mint' => 'Clover mint',
+                'violet-pop'  => 'Violet pop',
+                'custom'      => 'Custom',
+            ],
         ]);
         Config::registerItem('Admin Design', 'branding.color_primary', 'color', '#17ce91', 'colors', ['title' => 'Primary']);
         Config::registerItem('Admin Design', 'branding.color_secondary', 'color', '#64748b', 'colors', ['title' => 'Secondary']);
@@ -988,6 +656,10 @@ class ConfigServiceProvider extends ServiceProvider
         Config::registerItem('Admin Design', 'layout.mode', 'select', 'palette-split', 'layout', [
             'title'   => 'Active layout',
             'options' => self::LAYOUT_MODES,
+        ]);
+        Config::registerItem('Admin Design', 'layout.content_width', 'select', 'default', 'layout', [
+            'title'   => '컨텐츠 폭',
+            'options' => self::CONTENT_WIDTH_OPTIONS,
         ]);
 
         $themeRegistry = app(LayoutThemeRegistry::class);
@@ -1046,12 +718,20 @@ class ConfigServiceProvider extends ServiceProvider
 
         $url = Route::has('orbit.configs') ? route('orbit.configs') : '#';
 
+        Orbit::registerSection('system', 'bs.gear', __('Settings'), 9000, [
+            'rail'    => 'bottom',
+            'sidebar' => 'bottom',
+            'topbar'  => 'right',
+            'url'     => $url,
+        ]);
+
         Orbit::registerMenuElement(
             Menu::make(__('Settings'))
                 ->icon('bs.gear')
                 ->url($url)
                 ->sort(9000)
-                ->set('section', __('System'))
+                ->set('section', __('Settings'))
+                ->set('sectionKey', 'system')
                 ->set('permission', 'orbit.configs')
         );
     }

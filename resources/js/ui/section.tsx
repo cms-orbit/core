@@ -48,16 +48,22 @@ export function Section({
             onClick={collapsible && !aside ? () => setCollapsed((value) => !value) : undefined}
         >
             {icon ? (
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-orbit-primary-50 text-orbit-primary-600 dark:bg-orbit-primary-500/10 dark:text-orbit-primary-400">
+                <span
+                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg"
+                    style={{
+                        backgroundColor: 'var(--color-orbit-nav-section-bg, #f1f5f9)',
+                        color: 'var(--color-orbit-primary, #10b981)',
+                    }}
+                >
                     <Icon name={icon} className="text-lg" />
                 </span>
             ) : null}
             <div className="min-w-0 flex-1">
                 {heading ? (
-                    <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">{heading}</h3>
+                    <h3 className="text-sm font-semibold" style={{ color: 'var(--color-orbit-secondary, #0f172a)' }}>{heading}</h3>
                 ) : null}
                 {description ? (
-                    <p className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">{description}</p>
+                    <p className="mt-0.5 text-sm" style={{ color: 'var(--color-orbit-nav-group-fg, #64748b)' }}>{description}</p>
                 ) : null}
             </div>
             {headerEnd ? <div className="shrink-0" onClick={(e) => e.stopPropagation()}>{headerEnd}</div> : null}
@@ -80,9 +86,13 @@ export function Section({
     return (
         <section
             className={cn(
-                'rounded-xl border border-gray-200 bg-white shadow-sm dark:border-white/10 dark:bg-gray-900',
+                'rounded-xl border shadow-sm',
                 className,
             )}
+            style={{
+                backgroundColor: 'var(--color-orbit-panel-bg, #ffffff)',
+                borderColor: 'var(--color-orbit-panel-border, #e2e8f0)',
+            }}
         >
             {aside ? (
                 <div className="flex flex-col gap-4 p-5 md:flex-row md:gap-8">
@@ -93,13 +103,13 @@ export function Section({
                 <>
                     {header}
                     {hasHeader && body ? (
-                        <div className="border-t border-gray-100 dark:border-white/10" />
+                        <div className="border-t" style={{ borderColor: 'var(--color-orbit-panel-border, #e2e8f0)' }} />
                     ) : null}
                     {body}
                 </>
             )}
             {footer ? (
-                <div className="border-t border-gray-100 px-5 py-3 dark:border-white/10">{footer}</div>
+                <div className="border-t px-5 py-3" style={{ borderColor: 'var(--color-orbit-panel-border, #e2e8f0)' }}>{footer}</div>
             ) : null}
         </section>
     );

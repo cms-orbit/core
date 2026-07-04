@@ -31,7 +31,7 @@ trait UserAccess
     }
 
     /**
-     * @param  Role|int|string  $role
+     * @param Role|int|string $role
      */
     public function inRole($role): bool
     {
@@ -56,14 +56,7 @@ trait UserAccess
 
     public function hasAccess(string $permit, bool $cache = true): bool
     {
-        if (! $cache || $this->cachePermissions === null) {
-            $this->cachePermissions = $this->roles()
-                ->pluck('permissions')
-                ->prepend($this->permissions)
-                ->filter(fn ($permission) => is_array($permission));
-        }
-
-        return $this->cachePermissions
+        return $this->effectivePermissions($cache)
             ->filter(fn (array $permissions) => $this->filterWildcardAccess($permissions, $permit))
             ->isNotEmpty();
     }
@@ -82,7 +75,7 @@ trait UserAccess
     /**
      * This method will grant access if any permission passes the check.
      *
-     * @param  string|iterable  $permissions
+     * @param string|iterable $permissions
      */
     public function hasAnyAccess($permissions, bool $cache = true): bool
     {
@@ -113,7 +106,7 @@ trait UserAccess
      * Query Scope for retrieving users by any permissions
      * The * character usage is not implemented.
      *
-     * @param  string|iterable  $permitsWithoutWildcard
+     * @param string|iterable $permitsWithoutWildcard
      */
     public function scopeByAnyAccess(Builder $builder, $permitsWithoutWildcard): Builder
     {
@@ -123,21 +116,67 @@ trait UserAccess
             return $builder->whereRaw('1=0');
         }
 
-        $rule = function (Builder $builder, Collection $permits) {
-            $permits->each(function ($permit) use ($builder) {
-                $builder->orWhere('permissions->'.$permit, true);
-            });
-        };
-
         return $builder
-            ->where(function (Builder $builder) use ($permits, $rule) {
-                $rule($builder, $permits);
-            })
-            ->orWhereHas('roles', function (Builder $builder) use ($permits, $rule) {
-                $builder->where(function (Builder $builder) use ($permits, $rule) {
-                    $rule($builder, $permits);
+            ->where(function (Builder $builder) use ($permits) {
+                $permits->each(function ($permit) use ($builder) {
+                    $builder
+                        ->orWhere('permissions->'.$permit, true)
+                        ->orWhere(function (Builder $builder) use ($permit) {
+                            $builder
+                                ->where(function (Builder $builder) use ($permit) {
+                                    $builder
+                                        ->whereNull('permissions->'.$permit)
+                                        ->orWhere('permissions->'.$permit, true);
+                                })
+                                ->whereHas('roles', function (Builder $builder) use ($permit) {
+                                    $builder->where('permissions->'.$permit, true);
+                                });
+                        });
                 });
             });
+    }
+
+    /**
+     * Direct permissions override inherited role permissions by slug, allowing a
+     * user-specific deny (`false`) to cancel a role grant.
+     *
+     * @return Collection<int, array<string, bool>>
+     */
+    protected function effectivePermissions(bool $cache = true): Collection
+    {
+        if (! $cache || $this->cachePermissions === null) {
+            $rolePermissions = $this->roles()
+                ->pluck('permissions')
+                ->filter(fn ($permission) => is_array($permission))
+                ->reduce(
+                    fn (Collection $permissions, array $items) => $permissions->merge($this->normalizePermissionMap($items)),
+                    collect()
+                );
+
+            $directPermissions = $this->normalizePermissionMap($this->permissions);
+
+            $this->cachePermissions = $rolePermissions
+                ->merge($directPermissions)
+                ->map(fn (bool $enabled, string $slug) => [$slug => $enabled])
+                ->values();
+        }
+
+        return $this->cachePermissions;
+    }
+
+    /**
+     * @param mixed $permissions
+     *
+     * @return Collection<string, bool>
+     */
+    protected function normalizePermissionMap($permissions): Collection
+    {
+        if (! is_array($permissions)) {
+            return collect();
+        }
+
+        return collect($permissions)
+            ->mapWithKeys(fn ($enabled, $slug) => [(string) $slug => (bool) $enabled]);
     }
 
     public function addRole(Model $role): Model
@@ -197,7 +236,7 @@ trait UserAccess
     }
 
     /**
-     * @param  Model|RoleInterface|RoleInterface[]  $roles
+     * @param Model|RoleInterface|RoleInterface[] $roles
      */
     public function eventAddRole($roles)
     {
@@ -205,7 +244,7 @@ trait UserAccess
     }
 
     /**
-     * @param  Model|RoleInterface|RoleInterface[]  $roles
+     * @param Model|RoleInterface|RoleInterface[] $roles
      */
     public function eventRemoveRole($roles)
     {

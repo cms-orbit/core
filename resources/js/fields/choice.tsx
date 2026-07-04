@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { FieldComponentProps } from '../contract';
 import { cn } from '../lib/cn';
+import { useT } from '../lib/i18n';
 import { FieldShell, inputClass } from '../ui/field-shell';
 import { attr, bool, normalizeOptions, str } from './shared';
 import type { OptionEntry } from './shared';
@@ -76,7 +77,18 @@ export function RadioButtonsField(props: FieldComponentProps) {
 
 function toArrayValue(value: unknown): string[] {
     if (Array.isArray(value)) {
-        return value.map(str);
+        return value
+            .map((item) => {
+                if (item && typeof item === 'object') {
+                    const record = item as Record<string, unknown>;
+                    const scalar = record.id ?? record.value ?? null;
+
+                    return scalar === null || scalar === undefined ? '' : str(scalar);
+                }
+
+                return str(item);
+            })
+            .filter(Boolean);
     }
 
     if (value === null || value === undefined || value === '') {
@@ -95,6 +107,7 @@ function toArrayValue(value: unknown): string[] {
  * selection, search, empty option and tag creation without external deps.
  */
 export function SelectField(props: FieldComponentProps) {
+    const t = useT();
     const { name, value, errors, onChange } = props;
     const baseOptions = useMemo(() => normalizeOptions(attr(props, 'options')), [props]);
 
@@ -207,7 +220,7 @@ export function SelectField(props: FieldComponentProps) {
                     ) : !isMultiple && selectedValues[0] ? (
                         <span className="text-sm text-gray-900 dark:text-gray-100">{labelFor(selectedValues[0])}</span>
                     ) : (
-                        <span className="text-sm text-gray-400">{placeholder ?? 'Select…'}</span>
+                        <span className="text-sm text-gray-400">{placeholder ?? t('Select…')}</span>
                     )}
                 </div>
 
@@ -223,7 +236,7 @@ export function SelectField(props: FieldComponentProps) {
                                     createTag();
                                 }
                             }}
-                            placeholder="Search…"
+                            placeholder={t('Search…')}
                             className="mb-1 w-full border-b border-gray-100 px-3 py-1.5 text-sm outline-none dark:border-gray-700 dark:bg-gray-800"
                         />
                         {allowEmpty && !isMultiple ? (
@@ -254,11 +267,11 @@ export function SelectField(props: FieldComponentProps) {
                                 onClick={createTag}
                                 className="block w-full px-3 py-1.5 text-left text-sm text-orbit-primary hover:bg-gray-50 dark:hover:bg-gray-700"
                             >
-                                Create &ldquo;{search.trim()}&rdquo;
+                                {t('Create “:value”', { value: search.trim() })}
                             </button>
                         ) : null}
                         {filtered.length === 0 && !allowCreate ? (
-                            <p className="px-3 py-2 text-sm text-gray-400">No options</p>
+                            <p className="px-3 py-2 text-sm text-gray-400">{t('No options')}</p>
                         ) : null}
                     </div>
                 ) : null}

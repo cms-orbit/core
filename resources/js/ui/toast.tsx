@@ -10,6 +10,7 @@ import {
 } from 'react';
 import type { ReactNode } from 'react';
 import { cn } from '../lib/cn';
+import { useT } from '../lib/i18n';
 
 export type ToastType = 'success' | 'error' | 'warning' | 'info';
 
@@ -50,7 +51,7 @@ const typeStyle: Record<ToastType, string> = {
     success: 'border-green-200 bg-green-50 text-green-800 dark:border-green-500/40 dark:bg-green-500/10 dark:text-green-300',
     error: 'border-red-200 bg-red-50 text-red-800 dark:border-red-500/40 dark:bg-red-500/10 dark:text-red-300',
     warning: 'border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-300',
-    info: 'border-gray-200 bg-white text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100',
+    info: 'border-[var(--color-orbit-panel-border,#e2e8f0)] bg-[var(--color-orbit-panel-bg,#ffffff)] text-[var(--color-orbit-secondary,#0f172a)]',
 };
 
 function normalizeType(type?: string | null): ToastType {
@@ -147,6 +148,8 @@ function ToastViewport({
     toasts: ToastEntry[];
     onDismiss: (id: number) => void;
 }) {
+    const t = useT();
+
     if (toasts.length === 0) {
         return null;
     }
@@ -173,7 +176,7 @@ function ToastViewport({
                             type="button"
                             onClick={() => onDismiss(entry.id)}
                             className="text-current/60 hover:text-current"
-                            aria-label="Dismiss"
+                            aria-label={t('Dismiss')}
                         >
                             &times;
                         </button>

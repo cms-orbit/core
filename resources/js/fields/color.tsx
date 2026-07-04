@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useId, useRef, useState } from 'react';
+import { useCallback, useId, useRef, useState } from 'react';
 import type { FieldComponentProps } from '../contract';
 import { cn } from '../lib/cn';
+import { useT } from '../lib/i18n';
 import { FieldShell } from '../ui/field-shell';
 import { str } from './shared';
 
@@ -24,18 +25,13 @@ function normalizeHex(value: string): string {
 
 /** Polished colour picker with swatch, hex input and native picker fallback. */
 export function ColorField(props: FieldComponentProps) {
+    const t = useT();
     const { name, value, errors, onChange } = props;
     const inputId = useId();
     const pickerRef = useRef<HTMLInputElement>(null);
     const color = normalizeHex(str(value) || '#000000');
     const [draft, setDraft] = useState(color);
     const [focused, setFocused] = useState(false);
-
-    useEffect(() => {
-        if (!focused) {
-            setDraft(color);
-        }
-    }, [color, focused]);
 
     const commit = useCallback(
         (next: string) => {
@@ -70,7 +66,7 @@ export function ColorField(props: FieldComponentProps) {
             >
                 <button
                     type="button"
-                    aria-label="Open colour picker"
+                    aria-label={t('Open colour picker')}
                     className="group relative h-10 w-10 shrink-0 overflow-hidden rounded-lg shadow-inner ring-1 ring-black/10 transition hover:scale-105 dark:ring-white/10"
                     style={{ backgroundColor: color }}
                     onClick={() => pickerRef.current?.click()}
@@ -118,7 +114,7 @@ export function ColorField(props: FieldComponentProps) {
                     className="shrink-0 rounded-md px-2 py-1 text-xs font-medium text-gray-500 transition hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/10 dark:hover:text-gray-200"
                     onClick={() => pickerRef.current?.click()}
                 >
-                    Pick
+                    {t('Pick')}
                 </button>
             </div>
         </FieldShell>

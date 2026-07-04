@@ -9,6 +9,7 @@ use CmsOrbit\Core\Screen\Repository;
 use CmsOrbit\Core\Screen\TD;
 use Illuminate\Contracts\Pagination\CursorPaginator;
 use Illuminate\Contracts\Pagination\Paginator;
+use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Support\Collection;
 use Illuminate\View\View;
@@ -69,21 +70,21 @@ abstract class Table extends Layout
         $rows = is_a($content, Paginator::class) || is_a($content, CursorPaginator::class) ? $content : collect()->merge($content);
 
         return view($this->template, [
-            'repository' => $repository,
-            'rows' => $rows,
-            'columns' => $columns,
-            'total' => $total,
+            'repository'   => $repository,
+            'rows'         => $rows,
+            'columns'      => $columns,
+            'total'        => $total,
             'iconNotFound' => $this->iconNotFound(),
             'textNotFound' => $this->textNotFound(),
-            'subNotFound' => $this->subNotFound(),
-            'striped' => $this->striped(),
-            'compact' => $this->compact(),
-            'bordered' => $this->bordered(),
-            'hoverable' => $this->hoverable(),
-            'slug' => $this->getSlug(),
-            'onEachSide' => $this->onEachSide(),
-            'showHeader' => $this->hasHeader($columns, $rows),
-            'title' => $this->title,
+            'subNotFound'  => $this->subNotFound(),
+            'striped'      => $this->striped(),
+            'compact'      => $this->compact(),
+            'bordered'     => $this->bordered(),
+            'hoverable'    => $this->hoverable(),
+            'slug'         => $this->getSlug(),
+            'onEachSide'   => $this->onEachSide(),
+            'showHeader'   => $this->hasHeader($columns, $rows),
+            'title'        => $this->title,
         ]);
     }
 
@@ -188,23 +189,58 @@ abstract class Table extends Layout
     {
         $columns = collect($this->columns())
             ->filter(static fn (TD $column) => $column->isSee())
-            ->map(static fn (TD $column) => $column->toArray($repository))
-            ->values()
-            ->all();
+            ->values();
 
         return [
-            'title' => $this->title,
-            'target' => $this->target,
-            'columns' => $columns,
-            'striped' => $this->striped(),
-            'compact' => $this->compact(),
-            'bordered' => $this->bordered(),
-            'hoverable' => $this->hoverable(),
-            'onEachSide' => $this->onEachSide(),
+            'title'   => $this->title,
+            'target'  => $this->target,
+            'columns' => $columns
+                ->map(static fn (TD $column) => $column->toArray())
+                ->all(),
+            'rows'         => $this->serializeRows($repository, $columns),
+            'striped'      => $this->striped(),
+            'compact'      => $this->compact(),
+            'bordered'     => $this->bordered(),
+            'hoverable'    => $this->hoverable(),
+            'onEachSide'   => $this->onEachSide(),
             'iconNotFound' => $this->iconNotFound(),
             'textNotFound' => $this->textNotFound(),
-            'subNotFound' => $this->subNotFound(),
+            'subNotFound'  => $this->subNotFound(),
         ];
+    }
+
+    /**
+     * @param Collection<int, TD> $columns
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    protected function serializeRows(Repository $repository, Collection $columns): array
+    {
+        $content = $repository->getContent($this->target);
+        $rows = $content instanceof Paginator || $content instanceof CursorPaginator
+            ? collect($content->items())
+            : collect()->merge($content);
+
+        return $rows
+            ->map(function ($row) use ($columns) {
+                $data = $row instanceof Arrayable ? $row->toArray() : (array) $row;
+                $cells = $columns
+                    ->mapWithKeys(function (TD $column) use ($row) {
+                        $cell = $column->toArray($row);
+
+                        return [$cell['slug'] => [
+                            'rendered' => $cell['rendered'] ?? null,
+                            'field'    => $cell['field'] ?? null,
+                            'actions'  => $cell['actions'] ?? null,
+                        ]];
+                    })
+                    ->filter(fn (array $cell) => collect($cell)->contains(fn ($value) => $value !== null && $value !== []))
+                    ->all();
+
+                return array_merge($data, ['_cells' => $cells]);
+            })
+            ->values()
+            ->all();
     }
 
     /**

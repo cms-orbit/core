@@ -2,14 +2,14 @@ import { usePage } from '@inertiajs/react';
 import type { ReactNode } from 'react';
 import type { Breadcrumb } from '../contract';
 import { resolveShellLayout } from '../registry';
-import type { LayoutMode } from '../theme/branding';
+import type { ContentWidthOption, LayoutMode } from '../theme/branding';
 import { useBrandTheme } from '../theme/branding';
 import { OrbitProviders } from '../ui/providers';
 import { HybridLayoutView } from './layouts/hybrid';
 import { PaletteSplitLayoutView } from './layouts/palette-split';
 import { SingleLayoutView } from './layouts/single';
 import { TopbarLayoutView } from './layouts/topbar';
-import type { LayoutViewProps, SharedOrbit } from './parts';
+import { PageBody, type LayoutViewProps, type SharedOrbit } from './parts';
 
 export type { OrbitMenuItem, SharedOrbit } from './parts';
 
@@ -34,12 +34,16 @@ const LAYOUT_VIEWS: Record<LayoutMode, (props: LayoutViewProps) => ReactNode> = 
 export function DashboardLayout({
     title,
     description,
+    chrome = 'default',
+    contentWidth,
     breadcrumbs = [],
     actions,
     children,
 }: {
     title?: string | null;
     description?: string | null;
+    chrome?: 'default' | 'none' | null;
+    contentWidth?: ContentWidthOption | null;
     breadcrumbs?: Breadcrumb[];
     actions?: ReactNode;
     children: ReactNode;
@@ -54,6 +58,23 @@ export function DashboardLayout({
     const LayoutView =
         resolveShellLayout(mode) ?? LAYOUT_VIEWS[mode as keyof typeof LAYOUT_VIEWS] ?? PaletteSplitLayoutView;
 
+    if (chrome === 'none') {
+        return (
+            <OrbitProviders>
+                <div style={brandStyle} className="min-h-screen">
+                    <PageBody
+                        title={title}
+                        description={description}
+                        actions={actions}
+                        contentWidth={contentWidth ?? brand?.contentWidth}
+                    >
+                        {children}
+                    </PageBody>
+                </div>
+            </OrbitProviders>
+        );
+    }
+
     return (
         <OrbitProviders>
             <div style={brandStyle}>
@@ -65,6 +86,7 @@ export function DashboardLayout({
                     description={description}
                     breadcrumbs={breadcrumbs}
                     actions={actions}
+                    contentWidth={contentWidth}
                 >
                     {children}
                 </LayoutView>

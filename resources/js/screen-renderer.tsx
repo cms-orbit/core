@@ -211,5 +211,5 @@ export function ScreenRenderer({
 }
 
 function fieldKey(node: FieldNode, index: number): string {
-    return node.name ?? `${node.component}-${index}`;
+    return `${node.name ?? node.component}-${index}`;
 }

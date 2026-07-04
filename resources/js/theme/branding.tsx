@@ -10,23 +10,51 @@ export interface BrandColors {
 
 export type DarkModeSetting = boolean | 'system' | 'light' | 'dark';
 export type ThemeModeOption = 'system' | 'light' | 'dark';
+export type ContentWidthOption = 'full' | 'default' | 'wide' | 'xwide' | 'contained';
+export type ResolvedContentWidthOption = 'full' | 'default' | 'wide' | 'xwide';
 export const ORBIT_THEME_MODE_EVENT = 'orbit:theme-mode-changed';
 export const ORBIT_THEME_MODE_STORAGE_KEY = 'orbit.theme-mode';
 
 export type LayoutMode = 'palette-split' | 'sidebar-single' | 'topbar' | 'hybrid';
 
+export const CONTENT_WIDTH_LABELS: Record<ResolvedContentWidthOption, string> = {
+    full: '전체 폭',
+    default: '기본',
+    wide: '크게',
+    xwide: '매우 크게',
+};
+
+export function normalizeContentWidth(
+    contentWidth: ContentWidthOption | null | undefined,
+): ResolvedContentWidthOption {
+    if (contentWidth === 'full' || contentWidth === 'wide' || contentWidth === 'xwide') {
+        return contentWidth;
+    }
+
+    return 'default';
+}
+
 export interface OrbitBrand {
     name?: string;
     logo?: string | null;
+    logoDark?: string | null;
     /** Square mark used in the compact icon rail. */
     symbol?: string | null;
+    symbolDark?: string | null;
     favicon?: string | null;
+    faviconVariants?: Record<string, string | null> | null;
     /** Named preset palette; explicit `colors` override individual tokens. */
     palette?: string | null;
     colors?: BrandColors | null;
+    /** Default theme mode shared from the backend config. */
+    themeMode?: DarkModeSetting | null;
+    /** Whether the user-facing light/dark/system switcher is enabled. */
+    themeToggleEnabled?: boolean | null;
     darkMode?: DarkModeSetting | null;
     /** Active admin layout mode; colours are resolved per mode server-side. */
     layout?: LayoutMode | null;
+    /** Shared content width policy for the admin shell. */
+    contentWidth?: ContentWidthOption | null;
     /** Current active theme token set (`color_*` keys from the backend registry). */
     tokens?: Record<string, string> | null;
     /** Optional light/dark token sets for dual-tone layouts. */
@@ -43,35 +71,63 @@ export const PALETTE_PRESETS: Record<string, Required<BrandColors>> = {
         secondary: '#64748b',
         accent: '#fc8024',
         surface: '#ffffff',
-        muted: '#f1f5f9',
+        muted: '#ecfdf5',
     },
-    midnight: {
+    'apple-light': {
+        primary: '#2563eb',
+        secondary: '#111827',
+        accent: '#06b6d4',
+        surface: '#ffffff',
+        muted: '#e8eef8',
+    },
+    simple: {
         primary: '#4f46e5',
-        secondary: '#64748b',
-        accent: '#ec4899',
+        secondary: '#0f172a',
+        accent: '#8b5cf6',
         surface: '#ffffff',
         muted: '#eef2ff',
     },
-    forest: {
-        primary: '#059669',
-        secondary: '#475569',
-        accent: '#f59e0b',
+    amuz: {
+        primary: '#6366f1',
+        secondary: '#1e293b',
+        accent: '#06b6d4',
         surface: '#ffffff',
-        muted: '#ecfdf5',
+        muted: '#e0e7ff',
     },
-    sunset: {
-        primary: '#e11d48',
-        secondary: '#475569',
-        accent: '#f97316',
+    slate: {
+        primary: '#475569',
+        secondary: '#0f172a',
+        accent: '#0ea5e9',
+        surface: '#ffffff',
+        muted: '#f1f5f9',
+    },
+    'studio-rose': {
+        primary: '#ff385c',
+        secondary: '#111827',
+        accent: '#fb7185',
         surface: '#ffffff',
         muted: '#fff1f2',
     },
+    'clover-mint': {
+        primary: '#03c75a',
+        secondary: '#0f172a',
+        accent: '#14b8a6',
+        surface: '#ffffff',
+        muted: '#ecfdf5',
+    },
+    'violet-pop': {
+        primary: '#8b5cf6',
+        secondary: '#111827',
+        accent: '#ec4899',
+        surface: '#ffffff',
+        muted: '#f5f3ff',
+    },
     custom: {
         primary: '#17ce91',
-        secondary: '#64748b',
+        secondary: '#0f172a',
         accent: '#fc8024',
         surface: '#ffffff',
-        muted: '#f1f5f9',
+        muted: '#ecfdf5',
     },
 };
 
@@ -216,6 +272,23 @@ function resolveActiveThemeTokens(brand: OrbitBrand | undefined): Record<string,
     return brand?.tokens ?? {};
 }
 
+function isDarkDocument(): boolean {
+    return typeof document !== 'undefined' && document.documentElement.classList.contains('dark');
+}
+
+export function resolveBrandAsset(
+    brand: OrbitBrand | undefined,
+    kind: 'logo' | 'symbol',
+): string | null | undefined {
+    const useDarkAsset = isDarkDocument();
+
+    if (kind === 'logo') {
+        return useDarkAsset ? brand?.logoDark ?? brand?.logo : brand?.logo ?? brand?.logoDark;
+    }
+
+    return useDarkAsset ? brand?.symbolDark ?? brand?.symbol : brand?.symbol ?? brand?.symbolDark;
+}
+
 export function normalizeThemeMode(setting: DarkModeSetting | null | undefined): ThemeModeOption {
     if (setting === 'dark' || setting === true) {
         return 'dark';
@@ -238,7 +311,14 @@ export function readStoredThemeMode(): ThemeModeOption | null {
     return stored === 'system' || stored === 'light' || stored === 'dark' ? stored : null;
 }
 
-export function resolveThemeMode(setting: DarkModeSetting | null | undefined): ThemeModeOption {
+export function resolveThemeMode(
+    setting: DarkModeSetting | null | undefined,
+    allowUserToggle = true,
+): ThemeModeOption {
+    if (!allowUserToggle) {
+        return normalizeThemeMode(setting);
+    }
+
     return readStoredThemeMode() ?? normalizeThemeMode(setting);
 }
 
@@ -248,16 +328,20 @@ export function storeThemeMode(mode: ThemeModeOption): void {
     }
 
     window.localStorage.setItem(ORBIT_THEME_MODE_STORAGE_KEY, mode);
+    applyDarkMode(mode, true);
     window.dispatchEvent(new CustomEvent(ORBIT_THEME_MODE_EVENT, { detail: mode }));
 }
 
-export function applyDarkMode(setting: DarkModeSetting | null | undefined) {
+export function applyDarkMode(
+    setting: DarkModeSetting | null | undefined,
+    allowUserToggle = true,
+) {
     if (typeof document === 'undefined') {
         return;
     }
 
     const root = document.documentElement;
-    const mode = normalizeThemeMode(setting);
+    const mode = resolveThemeMode(setting, allowUserToggle);
 
     if (mode === 'system') {
         const prefersDark = window.matchMedia?.('(prefers-color-scheme: dark)').matches;
@@ -269,20 +353,57 @@ export function applyDarkMode(setting: DarkModeSetting | null | undefined) {
     root.classList.toggle('dark', mode === 'dark');
 }
 
-function applyFavicon(favicon: string | null | undefined) {
-    if (typeof document === 'undefined' || !favicon) {
-        return;
-    }
-
-    let link = document.querySelector<HTMLLinkElement>('link[rel="icon"]');
+function upsertHeadLink(selector: string, attrs: Record<string, string>) {
+    let link = document.head.querySelector<HTMLLinkElement>(selector);
 
     if (!link) {
         link = document.createElement('link');
-        link.rel = 'icon';
         document.head.appendChild(link);
     }
 
-    link.href = favicon;
+    Object.entries(attrs).forEach(([key, value]) => {
+        link?.setAttribute(key, value);
+    });
+}
+
+function applyFavicon(
+    favicon: string | null | undefined,
+    faviconVariants: Record<string, string | null> | null | undefined,
+) {
+    if (typeof document === 'undefined' || (!favicon && !faviconVariants)) {
+        return;
+    }
+
+    const fallbackIcon = faviconVariants?.ico ?? faviconVariants?.icon32 ?? favicon;
+
+    if (fallbackIcon) {
+        upsertHeadLink('link[rel="icon"]', { rel: 'icon', href: fallbackIcon });
+    }
+
+    if (faviconVariants?.appleTouch) {
+        upsertHeadLink('link[rel="apple-touch-icon"]', {
+            rel: 'apple-touch-icon',
+            href: faviconVariants.appleTouch,
+        });
+    }
+
+    if (faviconVariants?.icon192) {
+        upsertHeadLink('link[sizes="192x192"]', {
+            rel: 'icon',
+            type: 'image/png',
+            sizes: '192x192',
+            href: faviconVariants.icon192,
+        });
+    }
+
+    if (faviconVariants?.icon512) {
+        upsertHeadLink('link[sizes="512x512"]', {
+            rel: 'icon',
+            type: 'image/png',
+            sizes: '512x512',
+            href: faviconVariants.icon512,
+        });
+    }
 }
 
 /**
@@ -295,11 +416,13 @@ export function useBrandTheme(brand: OrbitBrand | undefined): React.CSSPropertie
     const [, setToneRevision] = useState(0);
     const colors = useMemo(() => resolveBrandColors(brand), [brand]);
     const tokens = resolveActiveThemeTokens(brand);
-    const themeMode = resolveThemeMode(brand?.darkMode);
+    const themeToggleEnabled = brand?.themeToggleEnabled ?? true;
+    const themeModeSetting = brand?.themeMode ?? brand?.darkMode;
+    const themeMode = resolveThemeMode(themeModeSetting, themeToggleEnabled);
 
     useEffect(() => {
-        applyDarkMode(themeMode);
-    }, [themeMode]);
+        applyDarkMode(themeModeSetting, themeToggleEnabled);
+    }, [themeModeSetting, themeToggleEnabled, themeMode]);
 
     useEffect(() => {
         if (!brand?.tokenSchemes || typeof document === 'undefined') {
@@ -326,7 +449,7 @@ export function useBrandTheme(brand: OrbitBrand | undefined): React.CSSPropertie
         };
         const media = window.matchMedia?.('(prefers-color-scheme: dark)');
         const handleMediaChange = () => {
-            if (resolveThemeMode(brand?.darkMode) === 'system') {
+            if (resolveThemeMode(themeModeSetting, themeToggleEnabled) === 'system') {
                 setThemeModeRevision((value) => value + 1);
             }
         };
@@ -338,17 +461,22 @@ export function useBrandTheme(brand: OrbitBrand | undefined): React.CSSPropertie
             window.removeEventListener(ORBIT_THEME_MODE_EVENT, handleThemeModeChange);
             media?.removeEventListener?.('change', handleMediaChange);
         };
-    }, [brand?.darkMode]);
+    }, [themeModeSetting, themeToggleEnabled]);
 
     useEffect(() => {
-        applyFavicon(brand?.favicon);
-    }, [brand?.favicon]);
+        applyFavicon(brand?.favicon, brand?.faviconVariants);
+    }, [brand?.favicon, brand?.faviconVariants]);
 
     return useMemo(() => {
+        const shadeColors = {
+            primary: tokens.color_primary ?? colors.primary,
+            secondary: tokens.color_secondary ?? colors.secondary,
+            accent: tokens.color_accent ?? colors.accent,
+        };
         const style: Record<string, string> = {
-            '--color-orbit-primary': colors.primary,
-            '--color-orbit-secondary': colors.secondary,
-            '--color-orbit-accent': colors.accent,
+            '--color-orbit-primary': shadeColors.primary,
+            '--color-orbit-secondary': shadeColors.secondary,
+            '--color-orbit-accent': shadeColors.accent,
             '--color-orbit-surface': colors.surface ?? '#ffffff',
             '--color-orbit-muted': colors.muted ?? '#f1f5f9',
         };
@@ -357,8 +485,17 @@ export function useBrandTheme(brand: OrbitBrand | undefined): React.CSSPropertie
             style[`--color-orbit-${key.replace(/^color_/, '').replace(/_/g, '-')}`] = value;
         });
 
+        style['--color-orbit-nav-section-fg'] =
+            tokens.color_nav_section_fg ?? tokens.color_secondary ?? colors.secondary;
+        style['--color-orbit-nav-group-fg'] =
+            tokens.color_nav_group_fg ?? tokens.color_secondary ?? colors.secondary;
+        style['--color-orbit-nav-section-bg'] =
+            tokens.color_nav_section_bg ?? tokens.color_nav_muted ?? colors.muted;
+        style['--color-orbit-nav-section-border'] =
+            tokens.color_nav_section_border ?? tokens.color_nav_border ?? '#e2e8f0';
+
         (['primary', 'secondary', 'accent'] as const).forEach((token) => {
-            const shades = generateShades(colors[token]);
+            const shades = generateShades(shadeColors[token]);
             SHADE_KEYS.forEach((shade) => {
                 style[`--color-orbit-${token}-${shade}`] = shades[shade];
             });

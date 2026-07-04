@@ -142,7 +142,7 @@ class LayoutThemeRegistry
                 foreach ($tokens as $token) {
                     $default = $presets[$defaultPreset][$tone][$token['key']]
                         ?? $presets[$defaultPreset]['colors'][$token['key']]
-                        ?? '#64748b';
+                        ?? $this->fallbackTokenDefault($token['key'], $tone);
 
                     Config::registerItem(
                         'Admin Design',
@@ -159,7 +159,7 @@ class LayoutThemeRegistry
         }
 
         foreach ($tokens as $token) {
-            $default = $presets[$defaultPreset]['colors'][$token['key']] ?? '#64748b';
+            $default = $presets[$defaultPreset]['colors'][$token['key']] ?? $this->fallbackTokenDefault($token['key'], 'light');
 
             Config::registerItem('Admin Design', "theme.{$mode}.{$token['key']}", 'color', $default, $section, [
                 'title' => $token['label'],
@@ -207,5 +207,14 @@ class LayoutThemeRegistry
         }
 
         return $colors;
+    }
+
+    protected function fallbackTokenDefault(string $key, string $tone): string
+    {
+        return match ($key) {
+            'color_nav_section_fg' => $tone === 'dark' ? '#e2e8f0' : '#334155',
+            'color_nav_group_fg'   => $tone === 'dark' ? '#cbd5e1' : '#475569',
+            default                => '#64748b',
+        };
     }
 }

@@ -28,6 +28,19 @@ class SettingsScreen extends Screen
     }
 
     /**
+     * Keep the settings hub inside the standard Orbit shell while inheriting
+     * the shared admin content width.
+     *
+     * @return array{contentWidth: null}
+     */
+    public function shell(): array
+    {
+        return [
+            'contentWidth' => null,
+        ];
+    }
+
+    /**
      * @return array<string, mixed>
      */
     public function query(): array
