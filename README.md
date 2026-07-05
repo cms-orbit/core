@@ -27,9 +27,30 @@ composer require cms-orbit/core:^4.0
 php artisan orbit:install
 ```
 
-`orbit:install`은 설정/마이그레이션/스텁 게시, `entities/`·`OrbitProvider` 준비, 설치된 `cms-orbit/*` 패키지의 Inertia/Vite 연결(`orbit:frontend-sync`), AI 가이드 배포(`orbit:ai`)까지 한 번에 처리합니다.
+`orbit:install`은 설정/마이그레이션/스텁 게시, `entities/`·`OrbitProvider` 준비, Inertia/Vite 연결(`orbit:frontend-sync`), AI 가이드(`orbit:ai`), **Laravel Boost 자동 갱신**(아래 참고)까지 처리합니다.
 
-Laravel Boost를 쓰는 프로젝트라면 설치 후 `php artisan boost:install`을 실행해 각 패키지의 `resources/boost` 가이드라인·스킬을 병합할 수 있습니다.
+설치 직후 관리자 계정을 만들려면:
+
+```bash
+php artisan orbit:admin
+```
+
+프런트 자산을 개발/빌드하려면:
+
+```bash
+npm install
+npm run dev   # 또는 npm run build
+```
+
+### Laravel Boost
+
+| 상황 | 할 일 |
+| --- | --- |
+| Laravel Boost **미설치** | `orbit:ai`만 실행 — `AGENTS.md`, `.cursor/rules` 등에 Orbit 가이드 배포 |
+| Boost **설치됐지만 최초 설정 전** | `php artisan boost:install` **1회** 실행 |
+| Boost **이미 설정됨** (`boost.json` 존재) | `orbit:install` / `orbit:sync`가 cms-orbit 패키지를 Boost에 등록하고 **`boost:update` 자동 실행** |
+
+각 `cms-orbit/*` 패키지의 `resources/boost/guidelines/`·`resources/boost/skills/`는 위 흐름으로 IDE에 병합됩니다. 패키지를 추가/업그레이드한 뒤에는 `orbit:frontend-sync`와 함께 `orbit:sync` 또는 `boost:update`를 실행하세요.
 
 ## 호스트 설정 (수동 작업 최소화)
 

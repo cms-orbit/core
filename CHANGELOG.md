@@ -14,6 +14,8 @@
 
 - README에 **호스트 설정** 표를 추가해 필수/선택 수동 작업을 구분했습니다. 순정 Laravel + Composer 설치만으로 동작하도록 Vite alias·브리지 수동 편집을 줄였습니다.
 - Boost 가이드라인에 **패키지 독립성**·**다국어 필수**·호스트 코드 포함 금지 규칙을 명시했습니다.
+- `orbit:install` / `orbit:sync`가 Laravel Boost가 이미 설정된 호스트에서 cms-orbit 패키지를 Boost에 등록하고 `boost:update`를 자동 실행합니다.
+- README에 Laravel Boost 흐름, `orbit:admin`, `npm run dev` 안내를 보강했습니다.
 
 ## 4.0.0-beta4 - 2026-07-04
 

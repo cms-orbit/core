@@ -1,5 +1,5 @@
 import { Link, router, usePage } from '@inertiajs/react';
-import type { ReactNode } from 'react';
+import type { PointerEvent as ReactPointerEvent, ReactNode } from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ColumnNode, FieldNode } from '../contract';
 import { SelectField } from '../fields/choice';
@@ -15,6 +15,39 @@ type PaginationLinkItem =
     | { type: 'page'; page: number; url: string; active: boolean }
     | { type: 'ellipsis' };
 
+const FILTER_POPOVER_DEFAULT_HEIGHT = 280;
+const FILTER_POPOVER_MIN_HEIGHT = 200;
+const FILTER_POPOVER_MAX_HEIGHT = 640;
+const FILTER_POPOVER_HEIGHT_STORAGE_KEY = 'orbit.table.filterPopoverHeight';
+
+function readStoredFilterPopoverHeight(): number {
+    if (typeof window === 'undefined') {
+        return FILTER_POPOVER_DEFAULT_HEIGHT;
+    }
+
+    const stored = window.localStorage.getItem(FILTER_POPOVER_HEIGHT_STORAGE_KEY);
+
+    if (!stored) {
+        return FILTER_POPOVER_DEFAULT_HEIGHT;
+    }
+
+    const parsed = Number(stored);
+
+    if (!Number.isFinite(parsed)) {
+        return FILTER_POPOVER_DEFAULT_HEIGHT;
+    }
+
+    return Math.min(FILTER_POPOVER_MAX_HEIGHT, Math.max(FILTER_POPOVER_MIN_HEIGHT, parsed));
+}
+
+function resolveFilterPopoverMaxHeight(): number {
+    if (typeof window === 'undefined') {
+        return FILTER_POPOVER_MAX_HEIGHT;
+    }
+
+    return Math.min(FILTER_POPOVER_MAX_HEIGHT, Math.round(window.innerHeight * 0.75));
+}
+
 function readSearchParam(column: string): string {
     if (typeof window === 'undefined') {
         return '';
@@ -29,13 +62,31 @@ function uniqueFilterValues(values: string[]): string[] {
     return [...new Set(values.filter(Boolean))];
 }
 
-/** Read multiselect filter values from the current location (URL is the source of truth). */
-function readInlineFilterFromLocation(name: string | null | undefined): string[] {
-    if (!name || typeof window === 'undefined') {
+function searchFromPageUrl(pageUrl?: string): string {
+    if (pageUrl && pageUrl.includes('?')) {
+        return pageUrl.split('?')[1] ?? '';
+    }
+
+    if (typeof window !== 'undefined') {
+        return window.location.search.slice(1);
+    }
+
+    return '';
+}
+
+/** Read multiselect filter values from a query string (URL is the source of truth). */
+function readInlineFilterFromSearch(name: string | null | undefined, pageUrl?: string): string[] {
+    if (!name) {
         return [];
     }
 
-    const params = new URLSearchParams(window.location.search);
+    const search = searchFromPageUrl(pageUrl);
+
+    if (search === '') {
+        return [];
+    }
+
+    const params = new URLSearchParams(search);
     const scalar = params.get(name);
 
     if (scalar !== null && scalar !== '') {
@@ -47,57 +98,103 @@ function readInlineFilterFromLocation(name: string | null | undefined): string[]
     return readLegacyIndexedFilterParams(params, name);
 }
 
-/** Backwards compatibility for older indexed filter URLs. */
+/** Read multiselect filter values from the current location. */
+function readInlineFilterFromLocation(name: string | null | undefined): string[] {
+    return readInlineFilterFromSearch(name);
+}
+
+/** Backwards compatibility for indexed / nested legacy filter URLs. */
 function readLegacyIndexedFilterParams(params: URLSearchParams, name: string): string[] {
-    const escaped = escapeRegExp(name);
-    const indexedPattern = new RegExp(`^${escaped}\\[(\\d+)]$`);
-    const indexed: Array<{ index: number; value: string }> = [];
+    const values: string[] = [];
 
     params.forEach((value, key) => {
         if (value === '') {
             return;
         }
 
-        const indexedMatch = key.match(indexedPattern);
-
-        if (indexedMatch) {
-            indexed.push({ index: Number(indexedMatch[1]), value });
-
-            return;
-        }
-
-        if (key === `${name}[]`) {
-            indexed.push({ index: indexed.length, value });
+        if (key.startsWith(`${name}[`)) {
+            values.push(value);
         }
     });
 
-    if (indexed.length > 0) {
-        return uniqueFilterValues(
-            indexed.sort((left, right) => left.index - right.index).map((item) => item.value),
-        );
-    }
-
-    const bracketValues = params.getAll(`${name}[]`);
-
-    if (bracketValues.length > 0) {
-        return uniqueFilterValues(bracketValues);
-    }
-
-    return [];
+    return uniqueFilterValues(values);
 }
 
-function copyParamsExceptKeys(source: URLSearchParams, excludedKeys: (name: string) => boolean): URLSearchParams {
-    const next = new URLSearchParams();
+function paramsToFlatQueryObject(params: URLSearchParams): Record<string, string> {
+    const data: Record<string, string> = {};
 
-    source.forEach((value, key) => {
-        if (excludedKeys(key)) {
-            return;
-        }
-
-        next.append(key, value);
+    params.forEach((value, key) => {
+        data[key] = value;
     });
 
-    return next;
+    return data;
+}
+
+function clearFilterParamKeys(params: URLSearchParams, filterName: string): void {
+    for (const key of [...params.keys()]) {
+        if (isFilterParamKey(key, filterName)) {
+            params.delete(key);
+        }
+    }
+}
+
+function visitTableGet(
+    mutator: (params: URLSearchParams) => void,
+    options: NonNullable<Parameters<typeof router.get>[2]> = {},
+) {
+    const params = new URLSearchParams(window.location.search);
+    mutator(params);
+
+    router.get(window.location.pathname, paramsToFlatQueryObject(params), {
+        preserveScroll: true,
+        preserveState: true,
+        replace: true,
+        ...options,
+    });
+}
+
+function serializeFilterFieldValue(value: unknown): { scalar?: string; range?: Record<string, string> } {
+    if (value === null || value === undefined || value === '') {
+        return {};
+    }
+
+    if (Array.isArray(value)) {
+        const flat = uniqueFilterValues(value.map(String));
+
+        return flat.length > 0 ? { scalar: flat.join(',') } : {};
+    }
+
+    if (typeof value === 'object') {
+        const range: Record<string, string> = {};
+
+        Object.entries(value as Record<string, unknown>).forEach(([key, subValue]) => {
+            if (subValue !== null && subValue !== undefined && subValue !== '') {
+                range[key] = String(subValue);
+            }
+        });
+
+        return Object.keys(range).length > 0 ? { range } : {};
+    }
+
+    return { scalar: String(value) };
+}
+
+function appendFilterFieldToParams(params: URLSearchParams, name: string, value: unknown): void {
+    clearFilterParamKeys(params, name);
+
+    const serialized = serializeFilterFieldValue(value);
+
+    if (serialized.scalar !== undefined) {
+        params.set(name, serialized.scalar);
+
+        return;
+    }
+
+    if (serialized.range) {
+        Object.entries(serialized.range).forEach(([key, subValue]) => {
+            params.set(`${name}[${key}]`, subValue);
+        });
+    }
 }
 
 function isFilterParamKey(key: string, filterName: string): boolean {
@@ -109,25 +206,17 @@ function visitWithInlineFilter(
     values: string[],
     options: NonNullable<Parameters<typeof router.get>[2]> = {},
 ) {
-    const next = copyParamsExceptKeys(new URLSearchParams(window.location.search), (key) =>
-        isFilterParamKey(key, filterName),
-    );
-
     const unique = uniqueFilterValues(values);
 
-    if (unique.length > 0) {
-        next.set(filterName, unique.join(','));
-    }
+    visitTableGet((params) => {
+        clearFilterParamKeys(params, filterName);
 
-    next.delete('page');
+        if (unique.length > 0) {
+            params.set(filterName, unique.join(','));
+        }
 
-    const query = next.toString();
-
-    router.get(query ? `${window.location.pathname}?${query}` : window.location.pathname, {}, {
-        preserveScroll: true,
-        preserveState: true,
-        ...options,
-    });
+        params.delete('page');
+    }, options);
 }
 
 function hasFilterValue(params: URLSearchParams, name: string): boolean {
@@ -138,10 +227,6 @@ function hasFilterValue(params: URLSearchParams, name: string): boolean {
     }
 
     return readLegacyIndexedFilterParams(params, name).length > 0;
-}
-
-function escapeRegExp(value: string): string {
-    return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 function toSelectedValues(value: unknown): string[] {
@@ -176,6 +261,7 @@ function countActiveFilters(fields: FieldNode[]): number {
 
 function InlineTableFilter({ field }: { field: FieldNode }) {
     const fieldName = field.name;
+    const { url } = usePage();
     const placeholder =
         (field.attributes?.placeholder as string | undefined) ??
         (field.attributes?.title as string | undefined) ??
@@ -187,16 +273,8 @@ function InlineTableFilter({ field }: { field: FieldNode }) {
             return;
         }
 
-        const syncFromLocation = () => {
-            setSelected(readInlineFilterFromLocation(fieldName));
-        };
-
-        window.addEventListener('popstate', syncFromLocation);
-
-        return () => {
-            window.removeEventListener('popstate', syncFromLocation);
-        };
-    }, [fieldName]);
+        setSelected(readInlineFilterFromSearch(fieldName, url));
+    }, [fieldName, url]);
 
     const apply = (values: string[]) => {
         if (!fieldName) {
@@ -252,7 +330,124 @@ function InlineTableFilters({ fields }: { fields: FieldNode[] }) {
     );
 }
 
-function FilterPopoverForm({
+function FilterPopoverPanel({
+    fields,
+    onClose,
+}: {
+    fields: FieldNode[];
+    onClose: () => void;
+}) {
+    const t = useT();
+    const [height, setHeight] = useState(readStoredFilterPopoverHeight);
+    const [isResizing, setIsResizing] = useState(false);
+    const resizeStartY = useRef(0);
+    const resizeStartHeight = useRef(FILTER_POPOVER_DEFAULT_HEIGHT);
+
+    useEffect(() => {
+        if (!isResizing) {
+            return;
+        }
+
+        const maxHeight = resolveFilterPopoverMaxHeight();
+
+        const onPointerMove = (event: PointerEvent) => {
+            const delta = event.clientY - resizeStartY.current;
+            const next = Math.min(
+                maxHeight,
+                Math.max(FILTER_POPOVER_MIN_HEIGHT, resizeStartHeight.current + delta),
+            );
+
+            setHeight(next);
+        };
+
+        const onPointerUp = () => {
+            setIsResizing(false);
+            setHeight((current) => {
+                window.localStorage.setItem(FILTER_POPOVER_HEIGHT_STORAGE_KEY, String(current));
+
+                return current;
+            });
+        };
+
+        document.body.style.userSelect = 'none';
+        document.body.style.cursor = 'nwse-resize';
+        document.addEventListener('pointermove', onPointerMove);
+        document.addEventListener('pointerup', onPointerUp);
+
+        return () => {
+            document.body.style.userSelect = '';
+            document.body.style.cursor = '';
+            document.removeEventListener('pointermove', onPointerMove);
+            document.removeEventListener('pointerup', onPointerUp);
+        };
+    }, [isResizing]);
+
+    const startResize = (event: ReactPointerEvent<HTMLButtonElement>) => {
+        event.preventDefault();
+        event.stopPropagation();
+        resizeStartY.current = event.clientY;
+        resizeStartHeight.current = height;
+        setIsResizing(true);
+    };
+
+    return (
+        <div
+            className="relative flex w-[min(100vw-2rem,22rem)] flex-col overflow-hidden rounded-lg border border-[var(--color-orbit-panel-border,#e2e8f0)] bg-[var(--color-orbit-panel-bg,#ffffff)] shadow-lg"
+            style={{ height: `${height}px` }}
+        >
+            <div className="flex shrink-0 items-center justify-between border-b border-[var(--color-orbit-panel-border,#e2e8f0)] px-4 py-3">
+                <p className="text-sm font-semibold text-[var(--color-orbit-secondary,#334155)]">{t('Filters')}</p>
+                <button
+                    type="button"
+                    className="text-xs text-[var(--color-orbit-nav-group-fg,#94a3b8)] hover:text-[var(--color-orbit-secondary,#64748b)]"
+                    onClick={onClose}
+                >
+                    {t('Close')}
+                </button>
+            </div>
+
+            <div className="flex min-h-0 flex-1 flex-col px-4 py-3">
+                <FormProvider initialData={{}} state={null}>
+                    <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pr-1">
+                        <div className="space-y-3 pb-1">
+                            {fields.map((field, index) => (
+                                <FieldRenderer
+                                    key={field.name ?? `${field.component}-${index}`}
+                                    node={field}
+                                    data={{}}
+                                />
+                            ))}
+                        </div>
+                    </div>
+                    <FilterPopoverActions fields={fields} onClose={onClose} />
+                </FormProvider>
+            </div>
+
+            <button
+                type="button"
+                aria-label={t('Resize filters panel')}
+                onPointerDown={startResize}
+                className={cn(
+                    'absolute bottom-0 right-0 z-10 flex h-5 w-5 cursor-nwse-resize items-end justify-end p-0.5',
+                    'text-[var(--color-orbit-nav-group-fg,#94a3b8)] hover:text-[var(--color-orbit-secondary,#64748b)]',
+                    isResizing && 'text-[var(--color-orbit-secondary,#64748b)]',
+                )}
+            >
+                <svg viewBox="0 0 12 12" className="h-3 w-3 shrink-0" aria-hidden="true">
+                    <path
+                        d="M11 11V7.5M11 11H7.5M11 11L7 7"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeLinecap="round"
+                        strokeWidth="1.5"
+                    />
+                </svg>
+            </button>
+        </div>
+    );
+}
+
+function FilterPopoverActions({
     fields,
     onClose,
 }: {
@@ -263,32 +458,38 @@ function FilterPopoverForm({
     const form = useOrbitForm();
 
     const apply = () => {
-        form.submit('get', window.location.pathname);
+        visitTableGet((params) => {
+            params.delete('page');
+
+            for (const field of fields) {
+                if (!field.name) {
+                    continue;
+                }
+
+                appendFilterFieldToParams(params, field.name, form.getValue(field.name));
+            }
+        });
+
         onClose();
     };
 
     const reset = () => {
-        router.get(window.location.pathname);
+        router.get(window.location.pathname, {}, { preserveScroll: true, replace: true });
         onClose();
     };
 
     return (
-        <div className="space-y-3">
-            {fields.map((field, index) => (
-                <FieldRenderer key={field.name ?? `${field.component}-${index}`} node={field} data={{}} />
-            ))}
-            <div className="flex items-center gap-2 border-t border-[var(--color-orbit-panel-border,#e2e8f0)] pt-3">
-                <UiButton type="button" variant="primary" size="sm" onClick={apply}>
-                    {t('Apply filters')}
-                </UiButton>
-                <button
-                    type="button"
-                    onClick={reset}
-                    className="text-xs font-medium text-red-600 hover:text-red-500"
-                >
-                    {t('Reset')}
-                </button>
-            </div>
+        <div className="mt-3 flex shrink-0 items-center gap-2 border-t border-[var(--color-orbit-panel-border,#e2e8f0)] pt-3">
+            <UiButton type="button" variant="primary" size="sm" onClick={apply}>
+                {t('Apply filters')}
+            </UiButton>
+            <button
+                type="button"
+                onClick={reset}
+                className="text-xs font-medium text-red-600 hover:text-red-500"
+            >
+                {t('Reset')}
+            </button>
         </div>
     );
 }
@@ -376,21 +577,14 @@ export function EntityTableToolbar({
         }
 
         const handle = window.setTimeout(() => {
-            const params = new URLSearchParams(window.location.search);
+            visitTableGet((params) => {
+                if (search.trim() === '') {
+                    params.delete(`filter[${searchColumn}]`);
+                } else {
+                    params.set(`filter[${searchColumn}]`, search.trim());
+                }
 
-            if (search.trim() === '') {
-                params.delete(`filter[${searchColumn}]`);
-            } else {
-                params.set(`filter[${searchColumn}]`, search.trim());
-            }
-
-            params.delete('page');
-
-            const query = params.toString();
-
-            router.get(query ? `${window.location.pathname}?${query}` : window.location.pathname, {}, {
-                preserveScroll: true,
-                preserveState: true,
+                params.delete('page');
             });
         }, 350);
 
@@ -445,25 +639,11 @@ export function EntityTableToolbar({
                                 ) : null}
                             </UiButton>
                             {filtersOpen ? (
-                                <div className="absolute right-0 z-50 mt-2 w-[min(100vw-2rem,22rem)] rounded-lg border border-[var(--color-orbit-panel-border,#e2e8f0)] bg-[var(--color-orbit-panel-bg,#ffffff)] p-4 shadow-lg">
-                                    <div className="mb-3 flex items-center justify-between">
-                                        <p className="text-sm font-semibold text-[var(--color-orbit-secondary,#334155)]">
-                                            {t('Filters')}
-                                        </p>
-                                        <button
-                                            type="button"
-                                            className="text-xs text-[var(--color-orbit-nav-group-fg,#94a3b8)] hover:text-[var(--color-orbit-secondary,#64748b)]"
-                                            onClick={() => setFiltersOpen(false)}
-                                        >
-                                            {t('Close')}
-                                        </button>
-                                    </div>
-                                    <FormProvider initialData={{}} state={null}>
-                                        <FilterPopoverForm
-                                            fields={filterFields}
-                                            onClose={() => setFiltersOpen(false)}
-                                        />
-                                    </FormProvider>
+                                <div className="absolute right-0 z-50 mt-2">
+                                    <FilterPopoverPanel
+                                        fields={filterFields}
+                                        onClose={() => setFiltersOpen(false)}
+                                    />
                                 </div>
                             ) : null}
                         </div>
@@ -616,16 +796,10 @@ export function TablePagination({
     const options = [...new Set([...perPageOptions, perPage])].sort((a, b) => a - b);
 
     const visitWithPerPage = (nextPerPage: number) => {
-        const params = new URLSearchParams(window.location.search);
-        params.set('per_page', String(nextPerPage));
-        params.delete('page');
-
-        const query = params.toString();
-
-        router.get(query ? `${window.location.pathname}?${query}` : window.location.pathname, {}, {
-            preserveScroll: true,
-            preserveState: true,
-        });
+        visitTableGet((params) => {
+            params.set('per_page', String(nextPerPage));
+            params.delete('page');
+        }, { preserveState: true });
     };
 
     if (total === 0) {
@@ -669,7 +843,7 @@ export function defaultHiddenColumnSlugs(columns: ColumnNode[]): string[] {
     return columns.filter((column) => column.defaultHidden).map((column) => column.slug);
 }
 
-export { asFields as tableFilterFields };
+export { asFields as tableFilterFields, appendFilterFieldToParams, visitTableGet };
 
 function asFields(value: unknown): FieldNode[] {
     return Array.isArray(value) ? (value as FieldNode[]) : [];
@@ -724,15 +898,7 @@ function visitWithParams(
     mutator: (params: URLSearchParams) => void,
     options: NonNullable<Parameters<typeof router.get>[2]> = {},
 ) {
-    const params = new URLSearchParams(window.location.search);
-    mutator(params);
-    const query = params.toString();
-
-    router.get(query ? `${window.location.pathname}?${query}` : window.location.pathname, {}, {
-        preserveScroll: true,
-        preserveState: true,
-        ...options,
-    });
+    visitTableGet(mutator, options);
 }
 
 export function TableFilterTabs({ column, total }: { column: ColumnNode; total?: number }) {

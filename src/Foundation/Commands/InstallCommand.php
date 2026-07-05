@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CmsOrbit\Core\Foundation\Commands;
 
 use App\Models\User;
+use CmsOrbit\Core\Boost\BoostPackageSync;
 use CmsOrbit\Core\Foundation\Commands\Support\InstallLocale;
 use CmsOrbit\Core\Foundation\Commands\Support\InstallMessages;
 use CmsOrbit\Core\Foundation\Events\InstallEvent;
@@ -13,6 +14,7 @@ use CmsOrbit\Core\Support\Facades\Orbit;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Traits\Conditionable;
+use Laravel\Boost\BoostServiceProvider;
 use Symfony\Component\Console\Attribute\AsCommand;
 
 #[AsCommand(name: 'orbit:install')]
@@ -56,6 +58,7 @@ class InstallCommand extends Command
             ->prepareOrbitProvider()
             ->syncFrontendScaffolding()
             ->publishAiSkills()
+            ->syncBoostGuidelines()
             ->promptForStargazer($locale)
             ->finish();
 
@@ -261,6 +264,31 @@ class InstallCommand extends Command
         $this->info($this->messages->get('step_frontend_sync'));
 
         return $this->executeCommand('orbit:frontend-sync');
+    }
+
+    /**
+     * @return $this
+     */
+    private function syncBoostGuidelines(): self
+    {
+        $sync = app(BoostPackageSync::class);
+        $packageCount = $sync->registerOrbitPackages();
+
+        if ($packageCount > 0) {
+            $this->line($this->messages->get('boost_packages_registered', ['count' => $packageCount]));
+        }
+
+        if (! $sync->canRefresh()) {
+            if (class_exists(BoostServiceProvider::class)) {
+                $this->comment($this->messages->get('boost_install_hint'));
+            }
+
+            return $this;
+        }
+
+        $this->info($this->messages->get('step_boost_update'));
+
+        return $this->executeCommand('boost:update');
     }
 
     /**

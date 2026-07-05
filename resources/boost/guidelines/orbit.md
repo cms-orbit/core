@@ -112,4 +112,6 @@ conventions and respect the theme tokens and dark mode.
   Use factories and existing states. Do not delete tests without approval.
 - **Deferred props** (Inertia v3): show a pulsing skeleton empty state while data resolves.
 - **Laravel Boost:** ship AI context under `resources/boost/guidelines/` and
-  `resources/boost/skills/{name}/SKILL.md`. Host apps merge them via `php artisan boost:install`.
+  `resources/boost/skills/{name}/SKILL.md`. Host apps merge them via `php artisan boost:install`
+  (first time) or automatically through `orbit:install` / `orbit:sync` → `boost:update` when Boost
+  is already configured.

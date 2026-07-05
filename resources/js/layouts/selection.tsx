@@ -1,6 +1,7 @@
 import { router } from '@inertiajs/react';
 import type { FieldNode, LayoutComponentProps } from '../contract';
 import { FormProvider, useOrbitForm } from '../form-context';
+import { appendFilterFieldToParams, visitTableGet } from './entity-table-toolbar';
 import { FieldRenderer } from '../screen-renderer';
 import { UiButton } from '../ui/button';
 import { Card, CardBody, CardHeader } from '../ui/card';
@@ -44,11 +45,21 @@ function SelectionForm({
     const form = useOrbitForm();
 
     const apply = () => {
-        form.submit('get', window.location.pathname);
+        visitTableGet((params) => {
+            params.delete('page');
+
+            for (const field of fields) {
+                if (!field.name) {
+                    continue;
+                }
+
+                appendFilterFieldToParams(params, field.name, form.getValue(field.name));
+            }
+        });
     };
 
     const reset = () => {
-        router.get(window.location.pathname);
+        router.get(window.location.pathname, {}, { preserveScroll: true, replace: true });
     };
 
     return (

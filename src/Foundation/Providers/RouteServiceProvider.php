@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CmsOrbit\Core\Foundation\Providers;
 
+use CmsOrbit\Core\Filters\Http\Middleware\NormalizeTableFilterQuery;
 use CmsOrbit\Core\Foundation\Http\Middleware\Access;
 use CmsOrbit\Core\Foundation\Http\Middleware\SetOrbitLocale;
 use CmsOrbit\Core\Support\Facades\Orbit;
@@ -20,6 +21,7 @@ class RouteServiceProvider extends ServiceProvider
     {
         Route::middlewareGroup('orbit', [
             SetOrbitLocale::class,
+            NormalizeTableFilterQuery::class,
             Access::class,
         ]);
 
@@ -69,8 +71,8 @@ class RouteServiceProvider extends ServiceProvider
     {
         return match (config('orbit.access.mode', 'subdomain')) {
             'subdomain' => $this->subdomainHost(),
-            'domain' => config('orbit.access.domain'),
-            default => null,
+            'domain'    => config('orbit.access.domain'),
+            default     => null,
         };
     }
 

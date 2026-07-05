@@ -495,6 +495,25 @@ export function useBrandTheme(brand: OrbitBrand | undefined): React.CSSPropertie
         applyFavicon(brand?.favicon, brand?.faviconVariants);
     }, [brand?.favicon, brand?.faviconVariants]);
 
+    useEffect(() => {
+        if (typeof document === 'undefined') {
+            return;
+        }
+
+        const root = document.documentElement;
+        const pageBg = tokens.color_page_bg ?? '#f8fafc';
+
+        root.classList.add('orbit-admin');
+        root.style.setProperty('--color-orbit-page-bg', pageBg);
+        root.style.backgroundColor = 'var(--color-orbit-page-bg, #f8fafc)';
+
+        return () => {
+            root.classList.remove('orbit-admin');
+            root.style.removeProperty('--color-orbit-page-bg');
+            root.style.removeProperty('background-color');
+        };
+    }, [tokens]);
+
     return useMemo(() => {
         const shadeColors = {
             primary: resolveOpaqueColor(tokens.color_primary, colors.primary),
