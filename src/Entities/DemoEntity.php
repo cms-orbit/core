@@ -11,7 +11,7 @@ use CmsOrbit\Core\Screen\Fields\Code;
 use CmsOrbit\Core\Screen\Fields\DateTimer;
 use CmsOrbit\Core\Screen\Fields\Group;
 use CmsOrbit\Core\Screen\Fields\Input;
-use CmsOrbit\Core\Screen\Fields\Quill;
+use CmsOrbit\Core\Screen\Fields\RichText;
 use CmsOrbit\Core\Screen\Fields\Radio;
 use CmsOrbit\Core\Screen\Fields\Range;
 use CmsOrbit\Core\Screen\Fields\Select;
@@ -116,7 +116,7 @@ class DemoEntity extends Entity
 
             TextArea::make('bio')->title(__('Textarea'))->rows(3)->placeholder(__('A short bio…')),
 
-            Quill::make('body')->title(__('Rich text (Quill)')),
+            RichText::make('body')->title(__('Rich text')),
 
             Code::make('snippet')->title(__('Code'))->language('json')->lineNumbers(),
         ];

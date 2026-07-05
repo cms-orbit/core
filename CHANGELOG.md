@@ -2,6 +2,24 @@
 
 이 문서는 `cms-orbit/core`의 릴리스 노트를 기록합니다.
 
+## 4.0.1 - 2026-07-05
+
+### 추가
+
+- Notion형 블록 에디터 `RichText` 필드(BlockNote): `/` 슬래시 메뉴, `#`/`##` 마크다운 단축키, HTML 저장
+- `RichTextConverter::toMarkdown()` — 저장된 HTML을 Markdown으로 변환
+
+### 변경
+
+- **Breaking:** `Quill` 필드 및 `quill` React 컴포넌트 제거 → `RichText::make()` 사용
+- `DocumentEntity` 기본 content 필드를 RichText로 전환
+- 필드 쇼케이스(DemoEntity, ExampleTextEditorsScreen) RichText 반영
+- 설정 허브 **브랜딩설정**과 **관리자 디자인설정** 설정 그룹을 분리했습니다
+
+### 제거
+
+- npm `quill` 의존성
+
 ## 4.0.0 - 2026-07-05
 
 ### 추가

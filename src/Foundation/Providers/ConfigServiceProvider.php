@@ -88,11 +88,11 @@ class ConfigServiceProvider extends ServiceProvider
     }
 
     /**
-     * All config keys rendered by the admin design settings screen.
+     * Config keys rendered by the branding settings screen.
      *
      * @return string[]
      */
-    public static function designSettingFieldKeys(): array
+    public static function brandingSettingFieldKeys(): array
     {
         return [
             'branding.name',
@@ -103,6 +103,21 @@ class ConfigServiceProvider extends ServiceProvider
             'branding.favicon',
             'branding.theme_toggle_enabled',
             'branding.theme_mode',
+            'branding.palette',
+            'branding.color_primary',
+            'branding.color_secondary',
+            'branding.color_accent',
+        ];
+    }
+
+    /**
+     * Config keys rendered by the admin design settings screen.
+     *
+     * @return string[]
+     */
+    public static function designSettingFieldKeys(): array
+    {
+        return [
             'layout.mode',
             'layout.content_width',
             ...self::designSettingThemeFieldKeys(),
@@ -618,22 +633,22 @@ class ConfigServiceProvider extends ServiceProvider
             'options' => ['index,follow', 'noindex,follow', 'index,nofollow', 'noindex,nofollow'],
         ]);
 
-        // Admin design (branding + layout theme) --------------------------------
-        Config::registerGroup('Admin Design', 810, [
-            'icon'        => 'bs.palette',
-            'title'       => '관리자 디자인설정',
-            'description' => 'Admin panel branding, layout mode and per-layout colours.',
+        // Branding ---------------------------------------------------------
+        Config::registerGroup('Branding', 820, [
+            'icon'        => 'bs.bookmark-star',
+            'title'       => '브랜딩설정',
+            'description' => 'Admin panel name, logos, icons and brand colours.',
             'hubSection'  => 'basic',
         ]);
-        Config::registerSection('Admin Design', 'identity', ['title' => 'Identity', 'priority' => 40]);
-        Config::registerItem('Admin Design', 'branding.name', 'input', config('app.name'), 'identity', ['title' => '관리자 페이지 이름']);
-        Config::registerItem('Admin Design', 'branding.logo', 'attach', '/vendor/orbit/SVG/logo.svg', 'identity', ['title' => '로고']);
-        Config::registerItem('Admin Design', 'branding.logo_dark', 'attach', '/vendor/orbit/SVG/logo.svg', 'identity', ['title' => '다크 모드 로고']);
-        Config::registerItem('Admin Design', 'branding.symbol', 'attach', '/vendor/orbit/SVG/symbol.svg', 'identity', ['title' => '아이콘 마크']);
-        Config::registerItem('Admin Design', 'branding.symbol_dark', 'attach', '/vendor/orbit/SVG/symbol.svg', 'identity', ['title' => '다크 모드 아이콘 마크']);
-        Config::registerItem('Admin Design', 'branding.favicon', 'attach', '/vendor/orbit/favicon/favicon.ico', 'identity', ['title' => '파비콘']);
-        Config::registerItem('Admin Design', 'branding.theme_toggle_enabled', 'switcher', true, 'identity', ['title' => '라이트/다크 전환 허용']);
-        Config::registerItem('Admin Design', 'branding.theme_mode', 'select', 'light', 'identity', [
+        Config::registerSection('Branding', 'identity', ['title' => 'Identity', 'priority' => 40]);
+        Config::registerItem('Branding', 'branding.name', 'input', config('app.name'), 'identity', ['title' => '관리자 페이지 이름']);
+        Config::registerItem('Branding', 'branding.logo', 'attach', '/vendor/orbit/SVG/logo.svg', 'identity', ['title' => '로고']);
+        Config::registerItem('Branding', 'branding.logo_dark', 'attach', '/vendor/orbit/SVG/logo.svg', 'identity', ['title' => '다크 모드 로고']);
+        Config::registerItem('Branding', 'branding.symbol', 'attach', '/vendor/orbit/SVG/symbol.svg', 'identity', ['title' => '아이콘 마크']);
+        Config::registerItem('Branding', 'branding.symbol_dark', 'attach', '/vendor/orbit/SVG/symbol.svg', 'identity', ['title' => '다크 모드 아이콘 마크']);
+        Config::registerItem('Branding', 'branding.favicon', 'attach', '/vendor/orbit/favicon/favicon.ico', 'identity', ['title' => '파비콘']);
+        Config::registerItem('Branding', 'branding.theme_toggle_enabled', 'switcher', true, 'identity', ['title' => '라이트/다크 전환 허용']);
+        Config::registerItem('Branding', 'branding.theme_mode', 'select', 'light', 'identity', [
             'title'   => '기본 테마 모드',
             'options' => [
                 'light'  => '라이트',
@@ -641,8 +656,8 @@ class ConfigServiceProvider extends ServiceProvider
                 'system' => '시스템',
             ],
         ]);
-        Config::registerSection('Admin Design', 'colors', ['title' => 'Default colours', 'priority' => 35]);
-        Config::registerItem('Admin Design', 'branding.palette', 'select', 'orbit', 'colors', [
+        Config::registerSection('Branding', 'colors', ['title' => 'Default colours', 'priority' => 35]);
+        Config::registerItem('Branding', 'branding.palette', 'select', 'orbit', 'colors', [
             'title'   => 'Palette preset',
             'options' => [
                 'orbit'       => 'Orbit',
@@ -656,9 +671,17 @@ class ConfigServiceProvider extends ServiceProvider
                 'custom'      => 'Custom',
             ],
         ]);
-        Config::registerItem('Admin Design', 'branding.color_primary', 'color', '#17ce91', 'colors', ['title' => 'Primary']);
-        Config::registerItem('Admin Design', 'branding.color_secondary', 'color', '#64748b', 'colors', ['title' => 'Secondary']);
-        Config::registerItem('Admin Design', 'branding.color_accent', 'color', '#fc8024', 'colors', ['title' => 'Accent']);
+        Config::registerItem('Branding', 'branding.color_primary', 'color', '#17ce91', 'colors', ['title' => 'Primary']);
+        Config::registerItem('Branding', 'branding.color_secondary', 'color', '#64748b', 'colors', ['title' => 'Secondary']);
+        Config::registerItem('Branding', 'branding.color_accent', 'color', '#fc8024', 'colors', ['title' => 'Accent']);
+
+        // Admin design (layout + per-layout theme) -------------------------
+        Config::registerGroup('Admin Design', 810, [
+            'icon'        => 'bs.palette',
+            'title'       => '관리자 디자인설정',
+            'description' => 'Admin panel layout mode and per-layout colours.',
+            'hubSection'  => 'basic',
+        ]);
         Config::registerSection('Admin Design', 'layout', ['title' => 'Layout', 'priority' => 30]);
         Config::registerItem('Admin Design', 'layout.mode', 'select', 'palette-split', 'layout', [
             'title'   => 'Active layout',

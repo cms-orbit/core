@@ -7,7 +7,7 @@ namespace CmsOrbit\Core\Foundation\Entity;
 use CmsOrbit\Core\Screen\Field;
 use CmsOrbit\Core\Screen\Fields\CheckBox;
 use CmsOrbit\Core\Screen\Fields\Input;
-use CmsOrbit\Core\Screen\Fields\Quill;
+use CmsOrbit\Core\Screen\Fields\RichText;
 use CmsOrbit\Core\Screen\Fields\Select;
 use CmsOrbit\Core\Screen\Fields\TextArea;
 use CmsOrbit\Core\Screen\Sight;
@@ -44,7 +44,7 @@ abstract class DocumentEntity extends Entity
         return [
             Input::make('title')->title(__('Title'))->required(),
             Input::make('slug')->title(__('Slug'))->help(__('Leave blank to auto-generate.')),
-            Quill::make('content')->title(__('Content')),
+            RichText::make('content')->title(__('Content')),
             TextArea::make('description')->title(__('Description'))->rows(2),
             Select::make('approved')
                 ->title(__('Approval'))

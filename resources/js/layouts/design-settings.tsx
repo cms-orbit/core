@@ -5,7 +5,6 @@ import { useOptionalOrbitForm } from '../form-context';
 import { cn } from '../lib/cn';
 import { useT } from '../lib/i18n';
 import { readLayoutData } from '../lib/layout-data';
-import type { MediaItem } from '../media/types';
 import { FieldRenderer } from '../screen-renderer';
 import {
     CONTENT_WIDTH_LABELS,
@@ -19,22 +18,8 @@ import { toPreviewColors } from '../theme/layout-themes';
 import type { LayoutThemeDefinition, LayoutThemeToken, LayoutThemes } from '../theme/layout-themes';
 import { Card, CardBody, CardHeader } from '../ui/card';
 
-const GENERAL_KEYS = [
-    'branding.name',
-    'branding.theme_toggle_enabled',
-    'branding.theme_mode',
+const LAYOUT_KEYS = [
     'layout.content_width',
-] as const;
-
-const LOGO_KEYS = [
-    'branding.logo',
-    'branding.logo_dark',
-] as const;
-
-const SYMBOL_KEYS = [
-    'branding.symbol',
-    'branding.symbol_dark',
-    'branding.favicon',
 ] as const;
 
 const TOKEN_DEFAULTS: Record<string, string> = {
@@ -107,30 +92,6 @@ function readLayoutTokenColors(
     return colors;
 }
 
-function resolveMediaUrl(value: unknown): string | null {
-    if (typeof value === 'string' && value.length > 0) {
-        return value;
-    }
-
-    if (value && typeof value === 'object' && !Array.isArray(value)) {
-        const item = value as MediaItem;
-
-        return item.url ?? item.thumbnail ?? item.relativeUrl ?? null;
-    }
-
-    if (Array.isArray(value) && value.length > 0) {
-        const first = value[0];
-
-        if (typeof first === 'object' && first !== null) {
-            const item = first as MediaItem;
-
-            return item.url ?? item.thumbnail ?? item.relativeUrl ?? null;
-        }
-    }
-
-    return null;
-}
-
 function groupTokens(theme: LayoutThemeDefinition | undefined): Array<[string, LayoutThemeToken[]]> {
     if (!theme) {
         return [];
@@ -187,7 +148,7 @@ function tokenSwatches(colors: Record<string, string>, tokens: LayoutThemeToken[
     return tokens.slice(0, 6).map((token) => colors[token.key]).filter(Boolean);
 }
 
-/** Unified admin design settings: identity, layout theme presets and live preview. */
+/** Admin design settings: layout mode, content width and per-layout theme colours. */
 export function DesignSettingsLayout({ node }: LayoutComponentProps) {
     const t = useT();
     const layoutData = readLayoutData(node);
@@ -197,9 +158,7 @@ export function DesignSettingsLayout({ node }: LayoutComponentProps) {
     const layoutModes = (layoutData.layoutModes as Record<LayoutMode, string> | undefined) ?? LAYOUT_MODE_LABELS;
     const layoutThemes = (layoutData.layoutThemes as LayoutThemes | undefined) ?? {};
 
-    const generalFields = fieldsByKeys(fields, GENERAL_KEYS);
-    const logoFields = fieldsByKeys(fields, LOGO_KEYS);
-    const symbolFields = fieldsByKeys(fields, SYMBOL_KEYS);
+    const layoutFields = fieldsByKeys(fields, LAYOUT_KEYS);
 
     const selectedMode = (config[configKey('layout.mode')] as LayoutMode | undefined) ?? 'palette-split';
     const contentWidth = normalizeContentWidth(
@@ -209,9 +168,7 @@ export function DesignSettingsLayout({ node }: LayoutComponentProps) {
     const layoutPalette = String(config[configKey(`theme.${selectedMode}.palette`)] ?? '');
     const selectedLayoutPalette =
         activeTheme && (layoutPalette === 'custom' || layoutPalette in activeTheme.presets) ? layoutPalette : 'custom';
-    const defaultThemeMode = String(config[configKey('branding.theme_mode')] ?? 'light');
-    const initialPreviewTone: Tone = defaultThemeMode === 'dark' ? 'dark' : 'light';
-    const [previewTone, setPreviewTone] = useState<Tone>(initialPreviewTone);
+    const [previewTone, setPreviewTone] = useState<Tone>('light');
     const layoutColors = activeTheme ? readLayoutTokenColors(config, selectedMode, activeTheme, 'light') : {};
     const layoutColorsDark =
         activeTheme?.dualTone ? readLayoutTokenColors(config, selectedMode, activeTheme, 'dark') : {};
@@ -219,24 +176,9 @@ export function DesignSettingsLayout({ node }: LayoutComponentProps) {
     const activeToneColors = activePreviewTone === 'dark' ? layoutColorsDark : layoutColors;
     const previewColors = toPreviewColors(activeToneColors);
     const tokenGroups = groupTokens(activeTheme);
-
-    const brandName = String(config[configKey('branding.name')] ?? 'Orbit');
-    const logoUrl = resolveMediaUrl(config[configKey('branding.logo')] ?? findFieldByKey(fields, 'branding.logo')?.value);
-    const logoUrlDark = resolveMediaUrl(
-        config[configKey('branding.logo_dark')] ?? findFieldByKey(fields, 'branding.logo_dark')?.value,
-    );
-    const symbolUrl = resolveMediaUrl(
-        config[configKey('branding.symbol')] ?? findFieldByKey(fields, 'branding.symbol')?.value,
-    );
-    const symbolUrlDark = resolveMediaUrl(
-        config[configKey('branding.symbol_dark')] ?? findFieldByKey(fields, 'branding.symbol_dark')?.value,
-    );
-    const activeLogoUrl = activePreviewTone === 'dark' ? logoUrlDark ?? logoUrl : logoUrl ?? logoUrlDark;
-    const activeSymbolUrl = activePreviewTone === 'dark' ? symbolUrlDark ?? symbolUrl : symbolUrl ?? symbolUrlDark;
     const contentWidthLabel = CONTENT_WIDTH_LABELS[contentWidth];
 
     const selectMode = (mode: LayoutMode) => {
-        setPreviewTone(initialPreviewTone);
         form?.setValue(`config[${configKey('layout.mode')}]`, mode);
     };
 
@@ -300,148 +242,19 @@ export function DesignSettingsLayout({ node }: LayoutComponentProps) {
         <div className="space-y-6">
             <section className="space-y-3">
                 <div>
-                    <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">브랜딩</h2>
-                    <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                        브랜드 미리보기와 아이덴티티 입력을 한 화면에서 함께 조정합니다.
-                    </p>
-                </div>
-                <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
-                    <Card className="xl:col-span-1">
-                        <CardHeader title="브랜드 미리보기" description="현재 로고와 선택한 테마가 반영됩니다." />
-                        <CardBody className="space-y-4">
-                            <div
-                                className="rounded-2xl border p-4"
-                                style={{
-                                    backgroundColor: activeToneColors.color_panel_bg ?? '#ffffff',
-                                    borderColor: activeToneColors.color_panel_border ?? '#e2e8f0',
-                                }}
-                            >
-                                <div className="flex items-center gap-3">
-                                    {activeLogoUrl || activeSymbolUrl ? (
-                                        <img
-                                            src={activeLogoUrl ?? activeSymbolUrl ?? ''}
-                                            alt=""
-                                            className="h-12 max-w-[120px] object-contain"
-                                        />
-                                    ) : (
-                                        <span
-                                            className="flex h-12 w-12 items-center justify-center rounded-2xl text-base font-bold text-white"
-                                            style={{ backgroundColor: previewColors.primary }}
-                                        >
-                                            {brandName.slice(0, 1).toUpperCase()}
-                                        </span>
-                                    )}
-                                    <div className="min-w-0 flex-1">
-                                        <p className="truncate text-base font-semibold text-gray-900 dark:text-gray-100">
-                                            {brandName}
-                                        </p>
-                                        <p className="truncate text-xs text-gray-500 dark:text-gray-400">
-                                            {t(layoutModes[selectedMode] ?? selectedMode)}
-                                            {activeTheme?.dualTone ? ` · ${t(previewTone === 'dark' ? 'Dark' : 'Light')}` : ''}
-                                            {` · ${contentWidthLabel}`}
-                                        </p>
-                                    </div>
-                                </div>
-                                <div
-                                    className="mt-4 rounded-xl border p-3"
-                                    style={{
-                                        backgroundColor: activeToneColors.color_nav_bg ?? '#ffffff',
-                                        borderColor: activeToneColors.color_nav_border ?? '#e2e8f0',
-                                    }}
-                                >
-                                    <div className="mb-3 flex gap-2">
-                                        {tokenSwatches(activeToneColors, activeTheme?.tokens ?? []).map((color, index) => (
-                                            <span
-                                                key={`brand-swatch-${index}`}
-                                                className="h-3 flex-1 rounded-full"
-                                                style={{ backgroundColor: color }}
-                                            />
-                                        ))}
-                                    </div>
-                                    <div className="space-y-2">
-                                        <div
-                                            className="h-3 rounded-full"
-                                            style={{ backgroundColor: activeToneColors.color_primary ?? '#10b981', width: '44%' }}
-                                        />
-                                        <div
-                                            className="h-2 rounded-full"
-                                            style={{ backgroundColor: activeToneColors.color_nav_muted ?? '#e2e8f0', width: '70%' }}
-                                        />
-                                        <div
-                                            className="h-2 rounded-full"
-                                            style={{ backgroundColor: activeToneColors.color_nav_muted ?? '#e2e8f0', width: '58%' }}
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-                        </CardBody>
-                    </Card>
-
-                    <Card className="xl:col-span-2">
-                        <CardHeader
-                            title="아이덴티티"
-                            description="관리자 이름, 컨텐츠 폭, 로고, 심볼, 파비콘과 테마 전환 동작을 더 컴팩트하게 설정합니다."
-                        />
-                        <CardBody className="space-y-4">
-                            {generalFields.length > 0 || logoFields.length > 0 || symbolFields.length > 0 ? (
-                                <div className="space-y-6">
-                                    {generalFields.length > 0 ? (
-                                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                                            {generalFields.map((field, index) => (
-                                                <FieldRenderer key={field.name ?? `general-${index}`} node={field} data={{}} />
-                                            ))}
-                                        </div>
-                                    ) : null}
-
-                                    {logoFields.length > 0 ? (
-                                        <div className="space-y-3">
-                                            <div>
-                                                <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">로고</h3>
-                                                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                                                    라이트/다크 로고를 한 줄에서 비교하며 배치합니다.
-                                                </p>
-                                            </div>
-                                            <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
-                                                {logoFields.map((field, index) => (
-                                                    <FieldRenderer key={field.name ?? `logo-${index}`} node={field} data={{}} />
-                                                ))}
-                                            </div>
-                                        </div>
-                                    ) : null}
-
-                                    {symbolFields.length > 0 ? (
-                                        <div className="space-y-3">
-                                            <div>
-                                                <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">심볼 · 파비콘</h3>
-                                                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                                                    심벌과 파비콘은 더 작은 미리보기로 한 줄에 정리합니다.
-                                                </p>
-                                            </div>
-                                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                                                {symbolFields.map((field, index) => (
-                                                    <FieldRenderer key={field.name ?? `symbol-${index}`} node={field} data={{}} />
-                                                ))}
-                                            </div>
-                                        </div>
-                                    ) : null}
-                                </div>
-                            ) : (
-                                <p className="text-sm text-gray-500 dark:text-gray-400">
-                                    아이덴티티 필드를 불러오지 못했습니다. 페이지를 새로고침해 주세요.
-                                </p>
-                            )}
-                        </CardBody>
-                    </Card>
-                </div>
-            </section>
-
-            <section className="space-y-3">
-                <div>
                     <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">레이아웃 선택</h2>
                     <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                         레이아웃은 가로 스크롤 카드로 빠르게 비교하고 전환할 수 있습니다.
+                        {contentWidthLabel ? ` · ${contentWidthLabel}` : ''}
                     </p>
                 </div>
+                {layoutFields.length > 0 ? (
+                    <div className="grid grid-cols-1 gap-4 md:max-w-md">
+                        {layoutFields.map((field, index) => (
+                            <FieldRenderer key={field.name ?? `layout-${index}`} node={field} data={{}} />
+                        ))}
+                    </div>
+                ) : null}
                 <div className="-mx-1 overflow-x-auto px-1 pb-1">
                     <div className="flex min-w-max gap-3">
                         {(Object.keys(layoutModes) as LayoutMode[]).map((mode) => {

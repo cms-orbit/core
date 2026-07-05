@@ -7,7 +7,7 @@ namespace CmsOrbit\Core\Screen\Fields;
 use CmsOrbit\Core\Screen\Field;
 
 /**
- * Class Quill.
+ * Notion-style block rich text editor (BlockNote) rendered in React.
  *
  * @method $this autofocus($value = true)
  * @method $this disabled($value = true)
@@ -27,33 +27,24 @@ use CmsOrbit\Core\Screen\Field;
  * @method $this height($value = '300px')
  * @method $this title(string $value = null)
  * @method $this popover(string $value = null)
- * @method $this toolbar(array $options)
- * @method $this base64(bool $value = true)
- * @method $this groups(string $value = null)
  */
-class Quill extends Field
+class RichText extends Field
 {
     /**
      * @var string
      */
-    protected $view = 'orbit::fields.quill';
+    protected $view = 'orbit::fields.rich-text';
 
     /**
-     * All attributes that are available to the field.
-     *
-     * @var array
+     * @var array<string, mixed>
      */
     protected $attributes = [
         'value' => null,
-        'toolbar' => ['text', 'color', 'quote', 'header', 'list', 'format', 'media'],
         'height' => '300px',
-        'base64' => false,
     ];
 
     /**
-     * Attributes available for a particular tag.
-     *
-     * @var array
+     * @var array<int, string>
      */
     protected $inlineAttributes = [
         'accesskey',
@@ -74,6 +65,5 @@ class Quill extends Field
         'step',
         'tabindex',
         'height',
-        'groups',
     ];
 }

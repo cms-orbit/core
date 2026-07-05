@@ -85,7 +85,7 @@ class ConfigGroup
     {
         $permissions = ['orbit.configs', $this->getPermission()];
 
-        if ($this->uriKey === 'admin-design') {
+        if (in_array($this->uriKey, ['admin-design', 'branding'], true)) {
             $permissions[] = 'orbit.configs.appearance';
             $permissions[] = 'orbit.configs.branding';
             $permissions[] = 'orbit.configs.theme';

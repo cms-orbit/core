@@ -8,6 +8,7 @@ import { LocaleTabsLayout } from './layouts/locale-tabs';
 import { ModalLayout } from './layouts/modal';
 import { SelectionLayout } from './layouts/selection';
 import { DesignSettingsLayout } from './layouts/design-settings';
+import { BrandingSettingsLayout } from './layouts/branding-settings';
 import { SeoSettingsLayout } from './layouts/seo-settings';
 import { SettingsHubLayout } from './layouts/settings-hub';
 import { SortableLayout } from './layouts/sortable';
@@ -770,6 +771,7 @@ export const layoutComponents: Record<string, LayoutComponent> = {
     content: ContentLayout,
     card: CardLayout,
     'settings-hub': SettingsHubLayout,
+    'branding-settings': BrandingSettingsLayout,
     'design-settings': DesignSettingsLayout,
     'seo-settings': SeoSettingsLayout,
     view: ViewLayout,

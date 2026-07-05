@@ -96,6 +96,14 @@ class ConfigGroupScreen extends Screen
     {
         $uriKey = $this->group()->getUriKey();
 
+        if ($uriKey === 'branding') {
+            return [
+                LayoutFactory::component('branding-settings', [
+                    'fields' => $this->serializeFields(ConfigServiceProvider::brandingSettingFieldKeys()),
+                ]),
+            ];
+        }
+
         if ($uriKey === 'admin-design') {
             $themeRegistry = app(LayoutThemeRegistry::class);
 

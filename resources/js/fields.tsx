@@ -14,7 +14,7 @@ import { MarkdownField } from './fields/markdown';
 import { MatrixField } from './fields/matrix';
 import { GroupField, UtmField, ViewFieldField } from './fields/misc';
 import { PermissionMatrixField } from './fields/permission-matrix';
-import { QuillField } from './fields/quill';
+import { RichTextField } from './fields/rich-text';
 import { NumberRangeField, RangeField } from './fields/range';
 import { attr, bool, str } from './fields/shared';
 import { AttachField, PictureField } from './fields/upload';
@@ -127,7 +127,7 @@ export { SelectField };
 
 /**
  * All field registry slots. Heavy widgets are backed by React ecosystem
- * libraries (Quill, CodeMirror 6, Leaflet, Cropper.js, marked).
+ * libraries (BlockNote, CodeMirror 6, Leaflet, Cropper.js, marked).
  */
 export const fieldComponents: Record<string, FieldComponent> = {
     input: InputField,
@@ -148,7 +148,7 @@ export const fieldComponents: Record<string, FieldComponent> = {
     attach: AttachField,
     picture: PictureField,
     cropper: CropperField,
-    quill: QuillField,
+    'rich-text': RichTextField,
     markdown: MarkdownField,
     'simple-m-d-e': MarkdownField,
     code: CodeField,

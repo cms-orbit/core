@@ -21,7 +21,7 @@ use CmsOrbit\Core\Support\Locale;
  * Usage inside an Entity or Screen layout:
  *   LocaleTabs::make([
  *       Input::make('title')->title(__('Title')),
- *       Quill::make('content')->title(__('Content')),
+ *       RichText::make('content')->title(__('Content')),
  *   ])
  */
 class LocaleTabs extends Layout

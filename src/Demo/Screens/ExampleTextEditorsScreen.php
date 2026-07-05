@@ -7,7 +7,7 @@ namespace CmsOrbit\Core\Demo\Screens;
 use CmsOrbit\Core\Demo\DemoScreen;
 use CmsOrbit\Core\Demo\Layouts\ExampleElements;
 use CmsOrbit\Core\Screen\Fields\Code;
-use CmsOrbit\Core\Screen\Fields\Quill;
+use CmsOrbit\Core\Screen\Fields\RichText;
 use CmsOrbit\Core\Screen\Fields\SimpleMDE;
 use CmsOrbit\Core\Support\Facades\Layout;
 use Illuminate\Support\Str;
@@ -20,7 +20,7 @@ class ExampleTextEditorsScreen extends DemoScreen
     public function query(): array
     {
         return [
-            'quill'     => __('Hello! We collected all the fields in one place'),
+            'rich_text' => __('Hello! We collected all the fields in one place'),
             'simplemde' => '# Big header',
             'code'      => Str::limit((string) file_get_contents(__FILE__), 500),
         ];
@@ -46,9 +46,9 @@ class ExampleTextEditorsScreen extends DemoScreen
                     ->title('SimpleMDE')
                     ->popover(__('SimpleMDE is a simple, embeddable, and beautiful JS markdown editor')),
 
-                Quill::make('quill')
-                    ->title('Quill')
-                    ->popover(__('Quill is a free, open source WYSIWYG editor built for the modern web.')),
+                RichText::make('rich_text')
+                    ->title('RichText')
+                    ->popover(__('Notion-style block editor with slash commands and markdown shortcuts.')),
 
                 Code::make('code')
                     ->title(__('Snippet')),

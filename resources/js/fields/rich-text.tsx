@@ -3,7 +3,7 @@ import type { FieldComponentProps } from '../contract';
 import { FieldShell, fieldInputClass } from '../ui/field-shell';
 import { attr, str } from './shared';
 
-function QuillPlaceholder(props: FieldComponentProps) {
+function RichTextPlaceholder(props: FieldComponentProps) {
     const { name, value, errors, onChange } = props;
     const height = attr<string>(props, 'height') ?? '300px';
 
@@ -29,14 +29,14 @@ function QuillPlaceholder(props: FieldComponentProps) {
 }
 
 /**
- * SSR-safe Quill wrapper. The Quill bundle loads only in the browser.
+ * SSR-safe BlockNote wrapper. The editor bundle loads only in the browser.
  */
-export function QuillField(props: FieldComponentProps) {
+export function RichTextField(props: FieldComponentProps) {
     const [ClientField, setClientField] = useState<ComponentType<FieldComponentProps> | null>(null);
 
     useEffect(() => {
-        void import('./quill.client').then((module) => {
-            setClientField(() => module.QuillFieldClient);
+        void import('./rich-text.client').then((module) => {
+            setClientField(() => module.RichTextFieldClient);
         });
     }, []);
 
@@ -44,5 +44,5 @@ export function QuillField(props: FieldComponentProps) {
         return <ClientField {...props} />;
     }
 
-    return <QuillPlaceholder {...props} />;
+    return <RichTextPlaceholder {...props} />;
 }
