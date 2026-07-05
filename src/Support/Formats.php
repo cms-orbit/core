@@ -58,4 +58,16 @@ class Formats
 <time datetime="{$iso}" class="whitespace-nowrap tabular-nums">{$display}</time>
 HTML;
     }
+
+    public static function deviceTypeLabel(?string $type): string
+    {
+        return match (strtolower(trim((string) $type))) {
+            'mobile'      => __('Mobile'),
+            'desktop'     => __('Desktop'),
+            'tablet'      => __('Tablet'),
+            'bot'         => __('Bot'),
+            'unknown', '' => __('Unknown'),
+            default       => ucfirst((string) $type),
+        };
+    }
 }

@@ -12,6 +12,7 @@ use CmsOrbit\Core\Entities\Screens\VisitorRecordViewScreen;
 use CmsOrbit\Core\Foundation\Entity\Entity;
 use CmsOrbit\Core\Screen\Sight;
 use CmsOrbit\Core\Screen\TD;
+use CmsOrbit\Core\Support\Formats;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -139,12 +140,12 @@ class VisitorRecordEntity extends Entity
                 ->sort()
                 ->filter(TD::FILTER_SELECT, $this->deviceFilterOptions())
                 ->render(fn (Model $model) => $this->renderBadge(
-                    (string) ($model->getAttribute('device_type') ?? 'unknown'),
+                    Formats::deviceTypeLabel($model->getAttribute('device_type')),
                     'blue',
                 )),
             TD::make('referrer_host', __('Referrer'))
                 ->filter(TD::FILTER_TEXT)
-                ->render(fn (Model $model) => e((string) ($model->getAttribute('referrer_host') ?? 'Direct'))),
+                ->render(fn (Model $model) => e((string) ($model->getAttribute('referrer_host') ?? __('Direct')))),
             TD::make('country_code', __('Country'))
                 ->sort()
                 ->filter(TD::FILTER_SELECT, $this->countryFilterOptions())
@@ -160,7 +161,7 @@ class VisitorRecordEntity extends Entity
                 ->sort()
                 ->defaultHidden()
                 ->filter(TD::FILTER_SELECT, $this->browserFilterOptions())
-                ->render(fn (Model $model) => e((string) ($model->getAttribute('browser_family') ?? 'Unknown'))),
+                ->render(fn (Model $model) => e((string) ($model->getAttribute('browser_family') ?? __('Unknown')))),
             TD::make('ip_address', __('IP'))
                 ->defaultHidden()
                 ->filter(TD::FILTER_TEXT)
@@ -269,7 +270,7 @@ class VisitorRecordEntity extends Entity
                 [
                     'label' => __('Device'),
                     'html'  => $this->renderBadge(
-                        (string) ($model->getAttribute('device_type') ?? 'unknown'),
+                        Formats::deviceTypeLabel($model->getAttribute('device_type')),
                         'blue',
                     ),
                 ],
@@ -308,7 +309,7 @@ class VisitorRecordEntity extends Entity
                 ->render(fn (Model $model) => $this->renderPageCell($model)),
             TD::make('device_type', __('Device'))
                 ->render(fn (Model $model) => $this->renderBadge(
-                    (string) ($model->getAttribute('device_type') ?? 'unknown'),
+                    Formats::deviceTypeLabel($model->getAttribute('device_type')),
                     'blue',
                 )),
             TD::make('referrer_host', __('Referrer'))
@@ -372,6 +373,9 @@ class VisitorRecordEntity extends Entity
             ->distinct()
             ->orderBy('device_type')
             ->pluck('device_type', 'device_type')
+            ->mapWithKeys(fn (string $type, string $key): array => [
+                $key => Formats::deviceTypeLabel($type),
+            ])
             ->all();
     }
 

@@ -59,6 +59,20 @@ function deviceTone(device: string): string {
     }
 }
 
+function deviceTypeLabel(t: (key: string) => string, device: string): string {
+    const normalized = device.toLowerCase();
+
+    return (
+        {
+            mobile: t('Mobile'),
+            desktop: t('Desktop'),
+            tablet: t('Tablet'),
+            bot: t('Bot'),
+            unknown: t('Unknown'),
+        }[normalized] ?? device
+    );
+}
+
 /** Read-only visitor record detail panel with visit, visitor, and technical metadata. */
 export function VisitorRecordDetailView({ props: customProps }: CustomComponentProps) {
     const t = useT();
@@ -66,7 +80,8 @@ export function VisitorRecordDetailView({ props: customProps }: CustomComponentP
     const routeName = customProps?.route_name as string | null | undefined;
     const routeUri = customProps?.route_uri as string | null | undefined;
     const browserFamily = String(customProps?.browser_family ?? t('Unknown'));
-    const deviceType = String(customProps?.device_type ?? 'unknown');
+    const deviceTypeRaw = String(customProps?.device_type ?? 'unknown');
+    const deviceType = deviceTypeLabel(t, deviceTypeRaw);
     const userAgent = String(customProps?.user_agent ?? '');
     const visitorHash = String(customProps?.visitor_hash ?? '');
     const summary = (customProps?.summary as VisitorSummary | undefined) ?? {
@@ -102,7 +117,7 @@ export function VisitorRecordDetailView({ props: customProps }: CustomComponentP
                         <span
                             className={cn(
                                 'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium',
-                                deviceTone(deviceType),
+                                deviceTone(deviceTypeRaw),
                             )}
                         >
                             {deviceType}

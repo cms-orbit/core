@@ -61,6 +61,16 @@ class UserEntity extends Entity
         return 'bs.people';
     }
 
+    public function label(): string
+    {
+        return __('Users');
+    }
+
+    public function singularLabel(): string
+    {
+        return __('User');
+    }
+
     public function section(): string
     {
         return __('Users & Roles');
@@ -177,7 +187,7 @@ class UserEntity extends Entity
                 ->title(__('Password'))
                 ->value(fn () => '')
                 ->placeholder('••••••••')
-                ->help(__('Leave blank to keep the current password. 로컬 로그인 계정이 없으면 비워둘 수 있습니다.')),
+                ->help(__('Leave blank to keep the current password.')),
 
             Group::make([
                 CheckBox::make('email_verified')

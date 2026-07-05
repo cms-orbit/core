@@ -42,6 +42,16 @@ class RoleEntity extends Entity
         return 'bs.shield-lock';
     }
 
+    public function label(): string
+    {
+        return __('Roles');
+    }
+
+    public function singularLabel(): string
+    {
+        return __('Role');
+    }
+
     public function section(): string
     {
         return __('Users & Roles');

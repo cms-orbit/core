@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CmsOrbit\Core\Analytics;
 
 use CmsOrbit\Core\Analytics\Models\AnalyticsPageview;
+use CmsOrbit\Core\Support\Formats;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Route;
 
@@ -137,9 +138,12 @@ class VisitorRecordInsights
                 $share = $grandTotal > 0 ? round(($countRaw / $grandTotal) * 100, 1) : 0.0;
 
                 return [
-                    'label'     => $column === 'referrer_host'
-                        ? (string) $row->label
-                        : (($column === 'country_code') ? strtoupper((string) $row->label) : (string) $row->label),
+                    'label'     => match ($column) {
+                        'device_type'   => Formats::deviceTypeLabel((string) $row->label),
+                        'referrer_host' => (string) $row->label,
+                        'country_code'  => strtoupper((string) $row->label),
+                        default         => (string) $row->label,
+                    },
                     'count'     => number_format($countRaw),
                     'count_raw' => $countRaw,
                     'share'     => number_format($share, 1),

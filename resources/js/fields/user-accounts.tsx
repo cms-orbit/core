@@ -117,7 +117,7 @@ export function UserEmailsEditor({
                                         type="email"
                                         className={inputClass}
                                         value={row.address}
-                                        placeholder="jane@example.com"
+                                        placeholder={t('name@example.com')}
                                         onChange={(event) => updateAddress(index, event.target.value)}
                                     />
                                 </td>

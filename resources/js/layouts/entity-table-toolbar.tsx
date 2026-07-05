@@ -3,6 +3,12 @@ import type { PointerEvent as ReactPointerEvent, ReactNode } from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ColumnNode, FieldNode } from '../contract';
 import { SelectField } from '../fields/choice';
+import {
+    readFilterValuesFromQuery,
+    readLegacyIndexedFilterParams,
+    normalizeFilterParamName,
+    uniqueFilterValues,
+} from '../lib/inline-filter-query.mjs';
 import { FormProvider, useOrbitForm } from '../form-context';
 import { cn } from '../lib/cn';
 import { useT } from '../lib/i18n';
@@ -58,66 +64,13 @@ function readSearchParam(column: string): string {
     return params.get(`filter[${column}]`) ?? '';
 }
 
-function uniqueFilterValues(values: string[]): string[] {
-    return [...new Set(values.filter(Boolean))];
-}
-
-function searchFromPageUrl(pageUrl?: string): string {
-    if (pageUrl && pageUrl.includes('?')) {
-        return pageUrl.split('?')[1] ?? '';
-    }
-
-    if (typeof window !== 'undefined') {
-        return window.location.search.slice(1);
-    }
-
-    return '';
-}
-
-/** Read multiselect filter values from a query string (URL is the source of truth). */
-function readInlineFilterFromSearch(name: string | null | undefined, pageUrl?: string): string[] {
-    if (!name) {
-        return [];
-    }
-
-    const search = searchFromPageUrl(pageUrl);
-
-    if (search === '') {
-        return [];
-    }
-
-    const params = new URLSearchParams(search);
-    const scalar = params.get(name);
-
-    if (scalar !== null && scalar !== '') {
-        return scalar.includes(',')
-            ? uniqueFilterValues(scalar.split(',').map((item) => item.trim()))
-            : [scalar];
-    }
-
-    return readLegacyIndexedFilterParams(params, name);
-}
-
 /** Read multiselect filter values from the current location. */
 function readInlineFilterFromLocation(name: string | null | undefined): string[] {
-    return readInlineFilterFromSearch(name);
-}
+    if (!name || typeof window === 'undefined') {
+        return [];
+    }
 
-/** Backwards compatibility for indexed / nested legacy filter URLs. */
-function readLegacyIndexedFilterParams(params: URLSearchParams, name: string): string[] {
-    const values: string[] = [];
-
-    params.forEach((value, key) => {
-        if (value === '') {
-            return;
-        }
-
-        if (key.startsWith(`${name}[`)) {
-            values.push(value);
-        }
-    });
-
-    return uniqueFilterValues(values);
+    return readFilterValuesFromQuery(name, window.location.search.slice(1));
 }
 
 function paramsToFlatQueryObject(params: URLSearchParams): Record<string, string> {
@@ -131,8 +84,10 @@ function paramsToFlatQueryObject(params: URLSearchParams): Record<string, string
 }
 
 function clearFilterParamKeys(params: URLSearchParams, filterName: string): void {
+    const base = normalizeFilterParamName(filterName) ?? filterName;
+
     for (const key of [...params.keys()]) {
-        if (isFilterParamKey(key, filterName)) {
+        if (isFilterParamKey(key, base)) {
             params.delete(key);
         }
     }
@@ -180,25 +135,29 @@ function serializeFilterFieldValue(value: unknown): { scalar?: string; range?: R
 }
 
 function appendFilterFieldToParams(params: URLSearchParams, name: string, value: unknown): void {
-    clearFilterParamKeys(params, name);
+    const paramName = normalizeFilterParamName(name) ?? name;
+
+    clearFilterParamKeys(params, paramName);
 
     const serialized = serializeFilterFieldValue(value);
 
     if (serialized.scalar !== undefined) {
-        params.set(name, serialized.scalar);
+        params.set(paramName, serialized.scalar);
 
         return;
     }
 
     if (serialized.range) {
         Object.entries(serialized.range).forEach(([key, subValue]) => {
-            params.set(`${name}[${key}]`, subValue);
+            params.set(`${paramName}[${key}]`, subValue);
         });
     }
 }
 
 function isFilterParamKey(key: string, filterName: string): boolean {
-    return key === filterName || key.startsWith(`${filterName}[`);
+    const base = normalizeFilterParamName(filterName) ?? filterName;
+
+    return key === base || key === `${base}[]` || key.startsWith(`${base}[`);
 }
 
 function visitWithInlineFilter(
@@ -206,13 +165,14 @@ function visitWithInlineFilter(
     values: string[],
     options: NonNullable<Parameters<typeof router.get>[2]> = {},
 ) {
+    const paramName = normalizeFilterParamName(filterName) ?? filterName;
     const unique = uniqueFilterValues(values);
 
     visitTableGet((params) => {
-        clearFilterParamKeys(params, filterName);
+        clearFilterParamKeys(params, paramName);
 
         if (unique.length > 0) {
-            params.set(filterName, unique.join(','));
+            params.set(paramName, unique.join(','));
         }
 
         params.delete('page');
@@ -220,13 +180,18 @@ function visitWithInlineFilter(
 }
 
 function hasFilterValue(params: URLSearchParams, name: string): boolean {
-    const scalar = params.get(name);
+    const paramName = normalizeFilterParamName(name) ?? name;
+    const scalar = params.get(paramName);
 
     if (scalar !== null && scalar !== '') {
         return true;
     }
 
-    return readLegacyIndexedFilterParams(params, name).length > 0;
+    if (params.getAll(`${paramName}[]`).length > 0) {
+        return true;
+    }
+
+    return readLegacyIndexedFilterParams(params, paramName).length > 0;
 }
 
 function toSelectedValues(value: unknown): string[] {
@@ -261,20 +226,29 @@ function countActiveFilters(fields: FieldNode[]): number {
 
 function InlineTableFilter({ field }: { field: FieldNode }) {
     const fieldName = field.name;
+    const paramName = normalizeFilterParamName(fieldName) ?? fieldName;
     const { url } = usePage();
     const placeholder =
         (field.attributes?.placeholder as string | undefined) ??
         (field.attributes?.title as string | undefined) ??
         '';
-    const [selected, setSelected] = useState<string[]>(() => uniqueFilterValues(toSelectedValues(field.value)));
-
-    useEffect(() => {
-        if (!fieldName) {
-            return;
+    const committed = useMemo(() => {
+        if (typeof window === 'undefined') {
+            return uniqueFilterValues(toSelectedValues(field.value));
         }
 
-        setSelected(readInlineFilterFromSearch(fieldName, url));
-    }, [fieldName, url]);
+        // usePage().url triggers re-renders after Inertia visits; read the live location.
+        void url;
+
+        return readInlineFilterFromLocation(paramName);
+    }, [fieldName, field.value, paramName, url]);
+    const [pending, setPending] = useState<string[] | null>(null);
+
+    useEffect(() => {
+        setPending(null);
+    }, [committed]);
+
+    const selected = pending ?? committed;
 
     const apply = (values: string[]) => {
         if (!fieldName) {
@@ -283,13 +257,8 @@ function InlineTableFilter({ field }: { field: FieldNode }) {
 
         const next = uniqueFilterValues(values);
 
-        setSelected(next);
-
-        visitWithInlineFilter(fieldName, next, {
-            onFinish: () => {
-                setSelected(readInlineFilterFromLocation(fieldName));
-            },
-        });
+        setPending(next);
+        visitWithInlineFilter(paramName, next);
     };
 
     return (
@@ -843,7 +812,11 @@ export function defaultHiddenColumnSlugs(columns: ColumnNode[]): string[] {
     return columns.filter((column) => column.defaultHidden).map((column) => column.slug);
 }
 
-export { asFields as tableFilterFields, appendFilterFieldToParams, visitTableGet };
+export {
+    asFields as tableFilterFields,
+    appendFilterFieldToParams,
+    visitTableGet,
+};
 
 function asFields(value: unknown): FieldNode[] {
     return Array.isArray(value) ? (value as FieldNode[]) : [];
@@ -915,7 +888,10 @@ export function TableFilterTabs({ column, total }: { column: ColumnNode; total?:
         return null;
     }
 
-    const tabs = [{ value: '', label: t('All') }, ...options];
+    const tabs = [
+        { value: '', label: t('All') },
+        ...options.map((option) => ({ ...option, label: t(option.label) })),
+    ];
 
     const selectTab = (value: string) => {
         setActive(value);

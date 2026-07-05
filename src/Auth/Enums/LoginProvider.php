@@ -26,12 +26,12 @@ enum LoginProvider: string
     public function label(): string
     {
         return match ($this) {
-            self::Id     => __('아이디'),
-            self::Email  => __('이메일'),
-            self::Phone  => __('휴대폰'),
-            self::Kakao  => __('카카오'),
-            self::Apple  => __('애플'),
-            self::Google => __('구글'),
+            self::Id     => __('ID login'),
+            self::Email  => __('Email'),
+            self::Phone  => __('Phone'),
+            self::Kakao  => __('Kakao'),
+            self::Apple  => __('Apple'),
+            self::Google => __('Google'),
         };
     }
 

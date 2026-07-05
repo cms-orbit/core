@@ -259,7 +259,9 @@ abstract class Entity
      */
     public function label(): string
     {
-        return (string) Str::of(static::nameWithoutSuffix())->snake(' ')->title()->plural();
+        $key = (string) Str::of(static::nameWithoutSuffix())->snake(' ')->title()->plural();
+
+        return (string) __($key);
     }
 
     /**
@@ -267,7 +269,9 @@ abstract class Entity
      */
     public function singularLabel(): string
     {
-        return (string) Str::of(static::nameWithoutSuffix())->snake(' ')->title()->singular();
+        $key = (string) Str::of(static::nameWithoutSuffix())->snake(' ')->title()->singular();
+
+        return (string) __($key);
     }
 
     /**

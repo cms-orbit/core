@@ -116,16 +116,16 @@ class OrbitActivity extends Model
     public static function eventOptions(): array
     {
         return [
-            'created'          => 'Created',
-            'updated'          => 'Updated',
-            'deleted'          => 'Deleted',
-            'restored'         => 'Restored',
-            'force_deleted'    => 'Force Deleted',
-            'login_succeeded'  => 'Login Succeeded',
-            'login_failed'     => 'Login Failed',
-            'logged_out'       => 'Logged Out',
-            'locked_out'       => 'Locked Out',
-            'password_changed' => 'Password Changed',
+            'created'          => __('Record created'),
+            'updated'          => __('Record updated'),
+            'deleted'          => __('Record deleted'),
+            'restored'         => __('Record restored'),
+            'force_deleted'    => __('Record force deleted'),
+            'login_succeeded'  => __('Login succeeded'),
+            'login_failed'     => __('Login failed'),
+            'logged_out'       => __('Logged out'),
+            'locked_out'       => __('Login locked'),
+            'password_changed' => __('Password changed'),
         ];
     }
 
