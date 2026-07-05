@@ -27,7 +27,10 @@ use Illuminate\Support\Carbon;
  * @property string|null $route_uri
  * @property string      $page_path
  * @property string|null $referrer_host
+ * @property string|null $ip_address
+ * @property string|null $country_code
  * @property string|null $browser_family
+ * @property string|null $user_agent
  * @property string|null $device_type
  * @property bool        $is_bot
  * @property Carbon      $visited_on
@@ -46,12 +49,15 @@ class AnalyticsPageview extends Model
     protected $allowedFilters = [
         'user_id'        => WhereIn::class,
         'user_email'     => Like::class,
+        'visitor_hash'   => Like::class,
         'browser_family' => WhereIn::class,
         'device_type'    => WhereIn::class,
+        'country_code'   => WhereIn::class,
         'route_name'     => Like::class,
         'route_uri'      => Like::class,
         'page_path'      => Like::class,
         'referrer_host'  => Like::class,
+        'ip_address'     => Like::class,
         'created_at'     => WhereDateStartEnd::class,
     ];
 
@@ -63,6 +69,7 @@ class AnalyticsPageview extends Model
         'user_email',
         'browser_family',
         'device_type',
+        'country_code',
         'route_name',
         'page_path',
     ];

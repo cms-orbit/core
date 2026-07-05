@@ -50,7 +50,7 @@ class ActivityEntity extends Entity
 
     public function section(): string
     {
-        return __('Access Control');
+        return __('Users & Roles');
     }
 
     public function sectionKey(): string

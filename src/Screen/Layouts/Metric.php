@@ -48,7 +48,7 @@ class Metric extends Layout
         $metrics = collect($this->labels)->map(fn (string $value) => $repository->getContent($value, ''));
 
         return view($this->template, [
-            'title' => $this->title,
+            'title'   => $this->title,
             'metrics' => $metrics,
         ]);
     }
@@ -70,23 +70,25 @@ class Metric extends Layout
 
                 if (is_array($content)) {
                     return [
-                        'label' => $label,
-                        'value' => $content['value'] ?? null,
-                        'diff' => $content['diff'] ?? null,
+                        'label'      => $label,
+                        'value'      => $content['value'] ?? null,
+                        'diff'       => $content['diff'] ?? null,
+                        'detail'     => $content['detail'] ?? null,
+                        'detailTone' => $content['detailTone'] ?? null,
                     ];
                 }
 
                 return [
                     'label' => $label,
                     'value' => $content,
-                    'diff' => null,
+                    'diff'  => null,
                 ];
             })
             ->values()
             ->all();
 
         return [
-            'title' => $this->title,
+            'title'   => $this->title,
             'metrics' => $metrics,
         ];
     }

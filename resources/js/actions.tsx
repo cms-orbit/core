@@ -24,6 +24,46 @@ function bool(value: unknown): boolean {
     return value === true || value === 'true' || value === 1 || value === '1';
 }
 
+function isTableRowLink(attributes: Record<string, unknown>): boolean {
+    const className = typeof attributes['class'] === 'string' ? attributes['class'] : '';
+
+    return className.includes('btn-link') && iconName(attributes) !== null;
+}
+
+function TableIconLink({
+    href,
+    icon,
+    title,
+    downloadLink,
+}: {
+    href: string;
+    icon: string;
+    title: string;
+    downloadLink: boolean;
+}) {
+    const className = cn(
+        'inline-flex h-8 w-8 items-center justify-center rounded-lg transition',
+        'text-gray-500 hover:bg-gray-100 hover:text-gray-700',
+        'dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orbit-primary-500/30',
+    );
+    const content = <Icon name={icon} className="text-base" />;
+
+    if (downloadLink) {
+        return (
+            <a href={href} className={className} title={title} aria-label={title} download>
+                {content}
+            </a>
+        );
+    }
+
+    return (
+        <Link href={href} className={className} title={title} aria-label={title}>
+            {content}
+        </Link>
+    );
+}
+
 function variantFromClass(className: unknown): 'primary' | 'default' | 'danger' | 'link' {
     const value = typeof className === 'string' ? className : '';
 
@@ -91,21 +131,29 @@ export function ButtonAction(props: FieldComponentProps) {
 export function LinkAction(props: FieldComponentProps) {
     const href = (props.attributes['action'] as string | undefined) ?? (props.attributes['href'] as string | undefined) ?? '#';
     const downloadLink = Boolean(props.attributes['download']);
+    const icon = iconName(props.attributes);
+    const text = label(props);
+    const title = (props.attributes['title'] as string | undefined) ?? text;
+
+    if (isTableRowLink(props.attributes) && icon) {
+        return <TableIconLink href={href} icon={icon} title={title} downloadLink={downloadLink} />;
+    }
+
     const className = 'inline-flex items-center gap-2 text-sm text-orbit-primary hover:underline';
 
     if (downloadLink) {
         return (
             <a href={href} className={className} download>
-                <Icon name={iconName(props.attributes)} />
-                {label(props)}
+                <Icon name={icon} />
+                {text}
             </a>
         );
     }
 
     return (
         <Link href={href} className={className}>
-            <Icon name={iconName(props.attributes)} />
-            {label(props)}
+            <Icon name={icon} />
+            {text}
         </Link>
     );
 }

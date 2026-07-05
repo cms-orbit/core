@@ -1,11 +1,14 @@
 import { useCallback, useId, useRef, useState } from 'react';
 import type { FieldComponentProps } from '../contract';
+import { isTransparentColor, TRANSPARENT_COLOR } from '../lib/color-value';
 import { cn } from '../lib/cn';
 import { useT } from '../lib/i18n';
 import { FieldShell } from '../ui/field-shell';
 import { str } from './shared';
 
 const HEX_PATTERN = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i;
+const CHECKERBOARD =
+    'linear-gradient(45deg, #cbd5e1 25%, transparent 25%), linear-gradient(-45deg, #cbd5e1 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #cbd5e1 75%), linear-gradient(-45deg, transparent 75%, #cbd5e1 75%)';
 
 function normalizeHex(value: string): string {
     const trimmed = value.trim();
@@ -23,18 +26,34 @@ function normalizeHex(value: string): string {
     return trimmed.toLowerCase();
 }
 
+function resolveDisplayColor(value: string): { color: string; transparent: boolean } {
+    if (isTransparentColor(value)) {
+        return { color: TRANSPARENT_COLOR, transparent: true };
+    }
+
+    return { color: normalizeHex(value || '#000000'), transparent: false };
+}
+
 /** Polished colour picker with swatch, hex input and native picker fallback. */
 export function ColorField(props: FieldComponentProps) {
     const t = useT();
     const { name, value, errors, onChange } = props;
     const inputId = useId();
     const pickerRef = useRef<HTMLInputElement>(null);
-    const color = normalizeHex(str(value) || '#000000');
+    const rawValue = str(value);
+    const { color, transparent } = resolveDisplayColor(rawValue);
     const [draft, setDraft] = useState(color);
     const [focused, setFocused] = useState(false);
 
     const commit = useCallback(
         (next: string) => {
+            if (isTransparentColor(next)) {
+                setDraft(TRANSPARENT_COLOR);
+                onChange?.(TRANSPARENT_COLOR);
+
+                return;
+            }
+
             const normalized = normalizeHex(next);
 
             if (HEX_PATTERN.test(normalized)) {
@@ -67,11 +86,24 @@ export function ColorField(props: FieldComponentProps) {
                 <button
                     type="button"
                     aria-label={t('Open colour picker')}
-                    className="group relative h-10 w-10 shrink-0 overflow-hidden rounded-lg shadow-inner ring-1 ring-black/10 transition hover:scale-105 dark:ring-white/10"
-                    style={{ backgroundColor: color }}
-                    onClick={() => pickerRef.current?.click()}
+                    className={cn(
+                        'group relative h-10 w-10 shrink-0 overflow-hidden rounded-lg shadow-inner ring-1 ring-black/10 transition hover:scale-105 dark:ring-white/10',
+                        transparent && 'bg-[length:8px_8px] bg-[position:0_0,0_4px,4px_-4px,-4px_0px]',
+                    )}
+                    style={
+                        transparent
+                            ? { backgroundImage: CHECKERBOARD }
+                            : { backgroundColor: color }
+                    }
+                    onClick={() => {
+                        if (!transparent) {
+                            pickerRef.current?.click();
+                        }
+                    }}
                 >
-                    <span className="absolute inset-0 bg-gradient-to-br from-white/25 to-transparent opacity-0 transition group-hover:opacity-100" />
+                    {!transparent ? (
+                        <span className="absolute inset-0 bg-gradient-to-br from-white/25 to-transparent opacity-0 transition group-hover:opacity-100" />
+                    ) : null}
                 </button>
 
                 <input
@@ -109,13 +141,27 @@ export function ColorField(props: FieldComponentProps) {
                     />
                 </div>
 
-                <button
-                    type="button"
-                    className="shrink-0 rounded-md px-2 py-1 text-xs font-medium text-gray-500 transition hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/10 dark:hover:text-gray-200"
-                    onClick={() => pickerRef.current?.click()}
-                >
-                    {t('Pick')}
-                </button>
+                <div className="flex shrink-0 items-center gap-1">
+                    <button
+                        type="button"
+                        className={cn(
+                            'rounded-md px-2 py-1 text-xs font-medium transition',
+                            transparent
+                                ? 'bg-orbit-primary/10 text-orbit-primary'
+                                : 'text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/10 dark:hover:text-gray-200',
+                        )}
+                        onClick={() => commit(TRANSPARENT_COLOR)}
+                    >
+                        {t('No color')}
+                    </button>
+                    <button
+                        type="button"
+                        className="rounded-md px-2 py-1 text-xs font-medium text-gray-500 transition hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/10 dark:hover:text-gray-200"
+                        onClick={() => pickerRef.current?.click()}
+                    >
+                        {t('Pick')}
+                    </button>
+                </div>
             </div>
         </FieldShell>
     );

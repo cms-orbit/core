@@ -104,6 +104,16 @@ abstract class Entity
     }
 
     /**
+     * Columns searched by the table toolbar search box.
+     *
+     * @return array<int, string>
+     */
+    public function searchColumns(): array
+    {
+        return [];
+    }
+
+    /**
      * Bulk actions available on the list screen.
      *
      * @return array<int, mixed>
@@ -300,6 +310,22 @@ abstract class Entity
     public function perPage(): int
     {
         return 25;
+    }
+
+    /**
+     * Allowed page sizes for the list table footer.
+     *
+     * @return array<int, int>
+     */
+    public function perPageOptions(): array
+    {
+        $default = $this->perPage();
+
+        return collect([10, 25, 50, 100, $default])
+            ->unique()
+            ->sort()
+            ->values()
+            ->all();
     }
 
     /**

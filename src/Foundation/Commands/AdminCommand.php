@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace CmsOrbit\Core\Foundation\Commands;
 
+use CmsOrbit\Core\Auth\Enums\LoginProvider;
+use CmsOrbit\Core\Auth\Models\UserAccount;
+use CmsOrbit\Core\Auth\Support\LoginIdentifierNormalizer;
+use CmsOrbit\Core\Auth\UserAccountManager;
 use CmsOrbit\Core\Foundation\Models\Role;
 use CmsOrbit\Core\Foundation\Models\User as OrbitUser;
 use CmsOrbit\Core\Support\Facades\Orbit;
@@ -31,7 +35,7 @@ class AdminCommand extends Command
     /**
      * @var string
      */
-    protected $signature = 'orbit:admin {name=Admin} {email?} {password?} {--id=}';
+    protected $signature = 'orbit:admin {name=Admin} {identifier?} {password?} {--provider=email} {--id=}';
 
     /**
      * The console command description.
@@ -39,6 +43,12 @@ class AdminCommand extends Command
      * @var string
      */
     protected $description = 'Create or update an Orbit admin user';
+
+    public function __construct(
+        protected UserAccountManager $accounts,
+    ) {
+        parent::__construct();
+    }
 
     /**
      * Execute the console command.
@@ -67,17 +77,22 @@ class AdminCommand extends Command
     {
         $role = $this->ensureSuperAdminRole();
         $name = (string) $this->argument('name');
-        $email = $this->resolveEmail();
+        $provider = $this->resolveProvider();
+        $identifier = $this->resolveIdentifier($provider);
         $userModelClass = $this->resolveUserModelClass();
 
         /** @var Model|null $existingUser */
-        $existingUser = $userModelClass::query()
-            ->where('email', $email)
-            ->first();
+        $existingUser = match ($provider) {
+            LoginProvider::Email => $userModelClass::query()->where('email', $identifier)->first(),
+            default              => UserAccount::query()
+                ->where('provider', $provider->value)
+                ->where('normalized_identifier', LoginIdentifierNormalizer::normalize($provider, $identifier))
+                ->first()?->user,
+        };
 
         if ($existingUser !== null) {
             $this->attachRole($existingUser, $role);
-            $this->info(sprintf('Admin user "%s" already exists. Ensured the super-admin role.', $email));
+            $this->info(sprintf('Admin user "%s" already exists. Ensured the super-admin role.', $identifier));
 
             return;
         }
@@ -85,15 +100,23 @@ class AdminCommand extends Command
         /** @var Model $user */
         $user = $userModelClass::query()->create([
             'name'                 => $name,
-            'email'                => $email,
+            'email'                => $provider === LoginProvider::Email ? $identifier : null,
             'password'             => Hash::make($this->resolvePassword()),
             'must_change_password' => true,
             'permissions'          => [],
         ]);
 
+        $this->accounts->syncManagedAccounts($user, [
+            'primary_email'  => $provider === LoginProvider::Email ? $identifier : null,
+            'login_id'       => $provider === LoginProvider::Id ? $identifier : null,
+            'phone'          => $provider === LoginProvider::Phone ? $identifier : null,
+            'email_verified' => $provider === LoginProvider::Email,
+            'phone_verified' => $provider === LoginProvider::Phone,
+        ]);
+
         $this->attachRole($user, $role);
 
-        $this->info(sprintf('Admin user "%s" created successfully.', $email));
+        $this->info(sprintf('Admin user "%s" created successfully.', $identifier));
     }
 
     /**
@@ -113,21 +136,23 @@ class AdminCommand extends Command
         $this->info('User permissions updated.');
     }
 
-    protected function resolveEmail(): string
+    protected function resolveIdentifier(LoginProvider $provider): string
     {
-        $email = $this->argument('email');
+        $identifier = $this->argument('identifier');
 
-        if (is_string($email) && filled($email)) {
-            return $email;
+        if (is_string($identifier) && filled($identifier)) {
+            return $identifier;
         }
 
-        $default = $this->defaultAdminEmail();
+        $default = $provider === LoginProvider::Email
+            ? $this->defaultAdminEmail()
+            : ($provider === LoginProvider::Phone ? '01012345678' : 'orbitadmin');
 
         if (! $this->input->isInteractive()) {
             return $default;
         }
 
-        return (string) $this->ask('What is the admin email?', $default);
+        return (string) $this->ask(sprintf('What is the admin %s?', $provider->label()), $default);
     }
 
     protected function resolvePassword(): string
@@ -158,6 +183,15 @@ class AdminCommand extends Command
         $domain = Str::contains($host, '.') ? $host : "{$host}.test";
 
         return "admin@{$domain}";
+    }
+
+    protected function resolveProvider(): LoginProvider
+    {
+        $provider = (string) $this->option('provider');
+
+        return in_array($provider, [LoginProvider::Email->value, LoginProvider::Id->value, LoginProvider::Phone->value], true)
+            ? LoginProvider::from($provider)
+            : LoginProvider::Email;
     }
 
     /**

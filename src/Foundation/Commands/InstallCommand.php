@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace CmsOrbit\Core\Foundation\Commands;
 
 use App\Models\User;
+use CmsOrbit\Core\Foundation\Commands\Support\InstallLocale;
+use CmsOrbit\Core\Foundation\Commands\Support\InstallMessages;
 use CmsOrbit\Core\Foundation\Events\InstallEvent;
 use CmsOrbit\Core\Foundation\Providers\ConsoleServiceProvider;
 use CmsOrbit\Core\Support\Facades\Orbit;
@@ -19,58 +21,297 @@ class InstallCommand extends Command
     use Conditionable;
 
     /**
-     * The console command signature.
-     *
      * @var string
      */
     protected $signature = 'orbit:install';
 
     /**
-     * The console command description.
-     *
      * @var string
      */
     protected $description = 'Install all of the Orbit files';
 
+    private InstallMessages $messages;
+
     /**
-     * Execute the console command.
-     *
-     * @return void
+     * @return int
      */
-    public function handle()
+    public function handle(): int
     {
-        $this->comment('Installation started. Please wait...');
-        $this->info('Version: '.Orbit::version());
+        $locale = $this->resolveInstallLocale();
+        $this->messages = InstallMessages::for($locale);
+
+        $this->comment($this->messages->get('started'));
+        $this->info($this->messages->get('version', ['version' => Orbit::version()]));
 
         $this
-            ->executeCommand('vendor:publish', [
-                '--provider' => ConsoleServiceProvider::class,
-                '--tag' => [
-                    'orbit-config',
-                    'orbit-migrations',
-                    'orbit-app-stubs',
-                    'orbit-assets',
-                ],
-            ])
-            ->executeCommand('migrate')
-            ->executeCommand('storage:link')
-            ->changeUserModel()
+            ->publishPackageAssets()
+            ->runMigrations()
+            ->linkStorage()
+            ->configureUserModel()
             ->when(class_exists(User::class), function () {
+                $this->info($this->messages->get('step_namespace_replace'));
                 $this->replaceInFiles(app_path(), 'use CmsOrbit\\Core\\Foundation\\Models\\User;', 'use App\\Models\\User;');
             })
-            ->createEntitiesDirectory()
-            ->createOrbitProvider()
-            ->executeCommand('orbit:ai')
-            ->showMeLove();
-
-        $this->info('Completed!');
-        $this->comment("To create a user, run 'artisan orbit:admin'");
-        $this->line("To start the embedded server, run 'artisan serve'");
+            ->prepareEntitiesDirectory()
+            ->prepareOrbitProvider()
+            ->syncFrontendScaffolding()
+            ->publishAiSkills()
+            ->promptForStargazer($locale)
+            ->finish();
 
         event(new InstallEvent($this));
+
+        return self::SUCCESS;
+    }
+
+    private function resolveInstallLocale(): InstallLocale
+    {
+        $default = InstallLocale::defaultFromAppLocale();
+
+        if ($this->shouldSkipPrompts()) {
+            return $default;
+        }
+
+        $options = array_map(
+            static fn (InstallLocale $locale): string => $locale->label(),
+            InstallLocale::cases(),
+        );
+
+        $selected = $this->choice(
+            'Select installation language / 설치 언어를 선택하세요',
+            $options,
+            $default === InstallLocale::Korean ? 0 : 1,
+        );
+
+        return $selected === InstallLocale::Korean->label()
+            ? InstallLocale::Korean
+            : InstallLocale::English;
+    }
+
+    private function shouldSkipPrompts(): bool
+    {
+        return App::runningUnitTests() || $this->option('no-interaction');
     }
 
     /**
+     * @return $this
+     */
+    private function publishPackageAssets(): self
+    {
+        $this->info($this->messages->get('step_publish'));
+
+        return $this->executeCommand('vendor:publish', [
+            '--provider' => ConsoleServiceProvider::class,
+            '--tag'      => [
+                'orbit-config',
+                'orbit-migrations',
+                'orbit-app-stubs',
+                'orbit-assets',
+            ],
+        ]);
+    }
+
+    /**
+     * @return $this
+     */
+    private function runMigrations(): self
+    {
+        $this->info($this->messages->get('step_migrate'));
+
+        return $this->executeCommand('migrate');
+    }
+
+    /**
+     * @return $this
+     */
+    private function linkStorage(): self
+    {
+        $this->info($this->messages->get('step_storage_link'));
+
+        return $this->executeCommand('storage:link');
+    }
+
+    /**
+     * @return $this
+     */
+    private function configureUserModel(string $path = 'Models/User.php'): self
+    {
+        $this->info($this->messages->get('step_user_model'));
+
+        $absolutePath = app_path($path);
+
+        if (! file_exists($absolutePath)) {
+            $this->info($this->messages->get('user_model_creating'));
+            $this->writeUserStub($absolutePath);
+
+            return $this;
+        }
+
+        if ($this->shouldOverwriteUserModel()) {
+            $this->info($this->messages->get('user_model_overwriting'));
+            $this->writeUserStub($absolutePath);
+
+            return $this;
+        }
+
+        $this->info($this->messages->get('user_model_kept'));
+        $this->displayUserModelCompatibilityGuide();
+
+        return $this;
+    }
+
+    private function shouldOverwriteUserModel(): bool
+    {
+        if ($this->shouldSkipPrompts()) {
+            return false;
+        }
+
+        $this->newLine();
+        $this->warn($this->messages->get('user_model_overwrite_warning'));
+
+        return $this->confirm(
+            $this->messages->get('user_model_overwrite_confirm'),
+            true,
+        );
+    }
+
+    private function writeUserStub(string $absolutePath): void
+    {
+        $directory = dirname($absolutePath);
+
+        if (! is_dir($directory)) {
+            mkdir($directory, 0755, true);
+        }
+
+        file_put_contents($absolutePath, file_get_contents(Orbit::path('stubs/app/User.stub')));
+    }
+
+    private function displayUserModelCompatibilityGuide(): void
+    {
+        $this->newLine();
+        $this->components->twoColumnDetail(
+            $this->messages->get('user_model_compat_title'),
+            '',
+        );
+
+        foreach ([
+            'user_model_compat_intro',
+            'user_model_compat_option_extend',
+            'user_model_compat_option_traits',
+            'user_model_compat_trait_user_access',
+            'user_model_compat_trait_accounts',
+            'user_model_compat_use_model',
+            'user_model_compat_use_model_code',
+            'user_model_compat_auth',
+            'user_model_compat_casts',
+        ] as $key) {
+            $this->line($this->messages->get($key));
+        }
+
+        $this->newLine();
+    }
+
+    /**
+     * @return $this
+     */
+    private function prepareEntitiesDirectory(): self
+    {
+        $this->info($this->messages->get('step_entities'));
+
+        $path = base_path('entities');
+
+        if (! is_dir($path)) {
+            mkdir($path, 0755, true);
+            file_put_contents($path.'/.gitkeep', '');
+            $this->info($this->messages->get('entities_created'));
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return $this
+     */
+    private function prepareOrbitProvider(): self
+    {
+        $this->info($this->messages->get('step_orbit_provider'));
+
+        $path = app_path('Orbit/OrbitProvider.php');
+
+        if (file_exists($path)) {
+            return $this;
+        }
+
+        if (! is_dir(dirname($path))) {
+            mkdir(dirname($path), 0755, true);
+        }
+
+        file_put_contents($path, file_get_contents(Orbit::path('stubs/app/OrbitProvider.stub')));
+
+        $this->info($this->messages->get('orbit_provider_created'));
+
+        return $this;
+    }
+
+    /**
+     * @return $this
+     */
+    private function syncFrontendScaffolding(): self
+    {
+        $this->info($this->messages->get('step_frontend_sync'));
+
+        return $this->executeCommand('orbit:frontend-sync');
+    }
+
+    /**
+     * @return $this
+     */
+    private function publishAiSkills(): self
+    {
+        $this->info($this->messages->get('step_ai'));
+
+        return $this->executeCommand('orbit:ai');
+    }
+
+    private function finish(): void
+    {
+        $this->info($this->messages->get('completed'));
+        $this->comment($this->messages->get('create_admin_hint'));
+        $this->line($this->messages->get('serve_hint'));
+    }
+
+    /**
+     * @return $this
+     */
+    private function promptForStargazer(InstallLocale $locale): self
+    {
+        if ($this->shouldSkipPrompts()) {
+            return $this;
+        }
+
+        $messages = InstallMessages::for($locale);
+
+        if (! $this->confirm($messages->get('show_love_confirm'))) {
+            return $this;
+        }
+
+        $repo = 'https://github.com/orchidsoftware/platform';
+
+        match (PHP_OS_FAMILY) {
+            'Darwin'  => exec('open '.$repo),
+            'Windows' => exec('start '.$repo),
+            'Linux'   => exec('xdg-open '.$repo),
+            default   => $this->line($messages->get('show_love_link', ['url' => $repo])),
+        };
+
+        $this->line($messages->get('show_love_thanks'));
+
+        return $this;
+    }
+
+    /**
+     * @param array<string, mixed> $parameters
+     *
      * @return $this
      */
     private function executeCommand(string $command, array $parameters = []): self
@@ -83,9 +324,12 @@ class InstallCommand extends Command
         }
 
         if ($result) {
-            $parameters = http_build_query($parameters, '', ' ');
-            $parameters = str_replace('%5C', '/', $parameters);
-            $this->alert("An error has occurred. The '{$command} {$parameters}' command was not executed");
+            $encodedParameters = http_build_query($parameters, '', ' ');
+            $encodedParameters = str_replace('%5C', '/', $encodedParameters);
+            $this->alert($this->messages->get('command_failed', [
+                'command'    => $command,
+                'parameters' => $encodedParameters,
+            ]));
         }
 
         return $this;
@@ -93,123 +337,6 @@ class InstallCommand extends Command
 
     /**
      * @return $this
-     */
-    private function changeUserModel(string $path = 'Models/User.php'): self
-    {
-        $this->info('Attempting to set ORCHID User model as parent to App\User');
-
-        if (! file_exists(app_path($path))) {
-            $this->warn('Unable to locate "app/Models/User.php".  Did you move this file?');
-            $this->warn('You will need to update this manually.');
-            $this->warn('Change "extends Authenticatable" to "extends \CmsOrbit\Core\Foundation\Models\User" in your User model');
-            $this->warn('Also pay attention to the properties so that they are not overwritten.');
-
-            return $this;
-        }
-
-        $user = file_get_contents(Orbit::path('stubs/app/User.stub'));
-        file_put_contents(app_path($path), $user);
-
-        return $this;
-    }
-
-    /**
-     * @return false|string
-     */
-    private function fileGetContent(string $file)
-    {
-        if (! is_file($file)) {
-            return '';
-        }
-
-        return file_get_contents($file);
-    }
-
-    /**
-     * Create the root /entities directory the registry scans by default.
-     *
-     * @return $this
-     */
-    private function createEntitiesDirectory(): self
-    {
-        $path = base_path('entities');
-
-        if (! is_dir($path)) {
-            mkdir($path, 0755, true);
-            file_put_contents($path.'/.gitkeep', '');
-            $this->info('Created root /entities directory.');
-        }
-
-        return $this;
-    }
-
-    /**
-     * Scaffold the host application's OrbitProvider when missing.
-     *
-     * @return $this
-     */
-    private function createOrbitProvider(): self
-    {
-        $path = app_path('Orbit/OrbitProvider.php');
-
-        if (file_exists($path)) {
-            return $this;
-        }
-
-        if (! is_dir(dirname($path))) {
-            mkdir(dirname($path), 0755, true);
-        }
-
-        file_put_contents($path, <<<'PHP'
-<?php
-
-declare(strict_types=1);
-
-namespace App\Orbit;
-
-use CmsOrbit\Core\Foundation\OrbitServiceProvider;
-use CmsOrbit\Core\Support\Facades\Orbit;
-
-class OrbitProvider extends OrbitServiceProvider
-{
-    public function boot(): void
-    {
-        Orbit::registerEntities(base_path('entities'));
-    }
-}
-
-PHP);
-
-        $this->info('Created App\\Orbit\\OrbitProvider.');
-
-        return $this;
-    }
-
-    /**
-     * @return $this
-     */
-    private function showMeLove(): self
-    {
-        if (App::runningUnitTests() || ! $this->confirm('Would you like to show a little love by starting with ⭐')) {
-            return $this;
-        }
-
-        $repo = 'https://github.com/orchidsoftware/platform';
-
-        match (PHP_OS_FAMILY) {
-            'Darwin' => exec('open '.$repo),
-            'Windows' => exec('start '.$repo),
-            'Linux' => exec('xdg-open '.$repo),
-            default => $this->line('You can find us at '.$repo),
-        };
-
-        $this->line('Thank you! It means a lot to us! 🙏');
-
-        return $this;
-    }
-
-    /**
-     * @return void
      */
     private function replaceInFiles(string $directory, string $search, string $replace): self
     {
@@ -218,12 +345,10 @@ PHP);
         }
 
         $files = new \RecursiveIteratorIterator(
-            new \RecursiveDirectoryIterator($directory)
+            new \RecursiveDirectoryIterator($directory),
         );
 
-        // Iterate through all files in the directory
         foreach ($files as $file) {
-            // Skip if not a .php file
             if ($file->getExtension() !== 'php') {
                 continue;
             }
@@ -231,16 +356,11 @@ PHP);
             $filePath = $file->getRealPath();
             $fileContents = file_get_contents($filePath);
 
-            // Skip if the file does not contain the old namespace
             if (! str_contains($fileContents, $search)) {
                 continue;
             }
 
-            // Replace the old namespace with the new one
-            $updatedContents = str_replace($search, $replace, $fileContents);
-
-            // Save the changes
-            file_put_contents($filePath, $updatedContents);
+            file_put_contents($filePath, str_replace($search, $replace, $fileContents));
         }
 
         return $this;

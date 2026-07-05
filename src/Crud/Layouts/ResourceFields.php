@@ -18,7 +18,7 @@ class ResourceFields extends Rows
     public const PREFIX = 'model';
 
     /**
-     * @param  Field[]  $fields
+     * @param Field[] $fields
      */
     public function __construct(private array $fieldset) {}
 
@@ -32,7 +32,7 @@ class ResourceFields extends Rows
         $form = new Builder($this->fields(), $repository);
 
         return view($this->template, [
-            'form' => $form->setPrefix(self::PREFIX)->generateForm(),
+            'form'  => $form->setPrefix(self::PREFIX)->generateForm(),
             'title' => $this->title,
         ]);
     }
@@ -40,10 +40,23 @@ class ResourceFields extends Rows
     protected function serialize(Repository $repository): array
     {
         return [
-            'title' => $this->title,
+            'title'  => $this->title,
             'fields' => (new Builder($this->fields(), $repository))
                 ->setPrefix(self::PREFIX)
                 ->generateArray(),
+            'wrapped' => $this->wrapped,
         ];
     }
+
+    /**
+     * Render fields inline (no Card wrapper). Use inside a parent Block/column.
+     */
+    public function unwrapped(): self
+    {
+        $this->wrapped = false;
+
+        return $this;
+    }
+
+    protected bool $wrapped = true;
 }

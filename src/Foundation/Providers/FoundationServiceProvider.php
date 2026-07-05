@@ -121,6 +121,7 @@ class FoundationServiceProvider extends ServiceProvider
             DemoServiceProvider::class,
             EntityServiceProvider::class,
             ConfigServiceProvider::class,
+            AuthServiceProvider::class,
             AnalyticsServiceProvider::class,
             AuditServiceProvider::class,
             SeoServiceProvider::class,

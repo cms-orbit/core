@@ -54,14 +54,15 @@ class AnalyticsTracker
 
         $this->pruneExpiredIfDue($instanceId, (int) $this->setting('analytics.retention_days', 90, $instanceId));
 
-        $visitorId = (string) ($request->cookie(self::VISITOR_COOKIE) ?: Str::uuid());
-        $visitToken = (string) ($request->cookie(self::VISIT_COOKIE) ?: Str::uuid());
-        $isEntrance = blank($request->cookie(self::VISIT_COOKIE));
-        $user = $request->user((string) config('orbit.guard'));
+        $visitorId = $this->cookieValue($request, self::VISITOR_COOKIE) ?? (string) Str::uuid();
+        $visitToken = $this->cookieValue($request, self::VISIT_COOKIE) ?? (string) Str::uuid();
+        $isEntrance = $this->cookieValue($request, self::VISIT_COOKIE) === null;
+        $user = $this->requestUser($request);
+        $network = $this->networkPayload($request);
 
         AnalyticsPageview::query()->create([
             'instance_id' => $instanceId,
-            ...$this->userPayload($user instanceof Model ? $user : null),
+            ...$this->userPayload($user),
             'visitor_hash'   => hash_hmac('sha256', $visitorId, $this->hashKey()),
             'visit_token'    => $visitToken,
             'is_entrance'    => $isEntrance,
@@ -69,14 +70,22 @@ class AnalyticsTracker
             'route_uri'      => $this->normalizePath($request->route()?->uri()),
             'page_path'      => $this->normalizePath($request->path()) ?? '/',
             'referrer_host'  => $this->referrerHost($request),
+            'ip_address'     => $network['ip_address'],
+            'country_code'   => $network['country_code'],
             'browser_family' => $details['browser_family'],
             'device_type'    => $details['device_type'],
+            'user_agent'     => $request->userAgent(),
             'is_bot'         => $details['is_bot'],
             'visited_on'     => today()->toDateString(),
         ]);
 
-        $this->attachCookie($request, $response, self::VISITOR_COOKIE, $visitorId, self::VISITOR_LIFETIME_MINUTES);
-        $this->attachCookie($request, $response, self::VISIT_COOKIE, $visitToken, self::VISIT_LIFETIME_MINUTES);
+        if ($this->cookieValue($request, self::VISITOR_COOKIE) === null) {
+            $this->attachCookie($request, $response, self::VISITOR_COOKIE, $visitorId, self::VISITOR_LIFETIME_MINUTES);
+        }
+
+        if ($this->cookieValue($request, self::VISIT_COOKIE) === null) {
+            $this->attachCookie($request, $response, self::VISIT_COOKIE, $visitToken, self::VISIT_LIFETIME_MINUTES);
+        }
     }
 
     public function attributeCurrentVisitToAuthenticatedUser(?Request $request = null, ?Model $user = null): void
@@ -328,9 +337,55 @@ class AnalyticsTracker
             return null;
         }
 
-        $user = $request->user((string) config('orbit.guard'));
+        $guards = array_values(array_unique(array_filter([
+            config('orbit.guard'),
+            config('auth.defaults.guard'),
+            'web',
+        ], fn ($guard) => is_string($guard) && filled($guard))));
 
-        return $user instanceof Model ? $user : null;
+        foreach ($guards as $guard) {
+            $user = $request->user($guard);
+
+            if ($user instanceof Model) {
+                return $user;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @return array{ip_address: ?string, country_code: ?string}
+     */
+    protected function networkPayload(Request $request): array
+    {
+        return [
+            'ip_address'   => $this->anonymizeIp($request->ip()),
+            'country_code' => app(AnalyticsGeoLocator::class)->countryCode($request),
+        ];
+    }
+
+    protected function anonymizeIp(?string $ipAddress): ?string
+    {
+        if ($ipAddress === null || $ipAddress === '') {
+            return null;
+        }
+
+        if (filter_var($ipAddress, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
+            $parts = explode('.', $ipAddress);
+            $parts[3] = '0';
+
+            return implode('.', $parts);
+        }
+
+        if (filter_var($ipAddress, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)) {
+            $segments = explode(':', $ipAddress);
+            $segments = array_pad($segments, 8, '0');
+
+            return implode(':', array_slice($segments, 0, 4)).'::';
+        }
+
+        return null;
     }
 
     protected function cookieValue(Request $request, string $name): ?string
@@ -388,8 +443,6 @@ class AnalyticsTracker
             return ltrim($domain, '.');
         }
 
-        $host = parse_url((string) config('app.url'), PHP_URL_HOST);
-
-        return is_string($host) && filled($host) ? $host : null;
+        return null;
     }
 }

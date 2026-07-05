@@ -56,24 +56,24 @@ class Select extends Field implements ComplexFieldConcern
      * @var array<string, mixed>
      */
     protected $attributes = [
-        'class' => 'form-control',
-        'options' => [],
-        'allowEmpty' => false,
-        'allowCreate' => false,
-        'isOptionList' => false,
-        'lazyChunk' => null,
-        'relationModel' => null,
-        'relationName' => null,
-        'relationKey' => null,
-        'relationScope' => null,
-        'relationAppend' => null,
+        'class'                 => 'form-control',
+        'options'               => [],
+        'allowEmpty'            => false,
+        'allowCreate'           => false,
+        'isOptionList'          => false,
+        'lazyChunk'             => null,
+        'relationModel'         => null,
+        'relationName'          => null,
+        'relationKey'           => null,
+        'relationScope'         => null,
+        'relationAppend'        => null,
         'relationSearchColumns' => null,
-        'relationHandler' => false,
-        'choices' => null,
-        'isLazy' => false,
-        'selectedValues' => [],
-        'allowEmptyValue' => 'false',
-        'allowCreateValue' => 'false',
+        'relationHandler'       => false,
+        'choices'               => null,
+        'isLazy'                => false,
+        'selectedValues'        => [],
+        'allowEmptyValue'       => 'false',
+        'allowCreateValue'      => 'false',
     ];
 
     /**
@@ -138,7 +138,7 @@ class Select extends Field implements ComplexFieldConcern
     public function applyScope(string $scope, mixed ...$parameters): static
     {
         return $this->set('relationScope', [
-            'name' => lcfirst($scope),
+            'name'       => lcfirst($scope),
             'parameters' => $parameters,
         ]);
     }
@@ -232,8 +232,8 @@ class Select extends Field implements ComplexFieldConcern
     /**
      * Prepend an empty option to the list.
      *
-     * @param  string  $name  Label for the empty option
-     * @param  string  $key  Value for the empty option
+     * @param string $name Label for the empty option
+     * @param string $key  Value for the empty option
      */
     public function empty(string $name = '', string $key = ''): static
     {
@@ -398,8 +398,11 @@ class Select extends Field implements ComplexFieldConcern
             ? array_keys($value)
             : Arr::wrap($value);
 
-        return collect($items)
+        return collect(Arr::flatten($items))
             ->map(fn ($item): string => (string) $this->enumValue($item))
+            ->filter(static fn (string $item): bool => $item !== '')
+            ->unique()
+            ->values()
             ->all();
     }
 

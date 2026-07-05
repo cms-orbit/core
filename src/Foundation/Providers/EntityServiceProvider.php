@@ -8,6 +8,7 @@ use CmsOrbit\Core\Entities\ActivityEntity;
 use CmsOrbit\Core\Entities\DemoEntity;
 use CmsOrbit\Core\Entities\LoginHistoryEntity;
 use CmsOrbit\Core\Entities\RoleEntity;
+use CmsOrbit\Core\Entities\UserAccountEntity;
 use CmsOrbit\Core\Entities\UserEntity;
 use CmsOrbit\Core\Entities\VisitorRecordEntity;
 use CmsOrbit\Core\Foundation\Entity\Entity;
@@ -33,6 +34,7 @@ class EntityServiceProvider extends ServiceProvider
      */
     protected array $entities = [
         UserEntity::class,
+        UserAccountEntity::class,
         RoleEntity::class,
         ActivityEntity::class,
         LoginHistoryEntity::class,
@@ -60,7 +62,7 @@ class EntityServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        Orbit::registerSection('access-control', 'bs.shield-lock', __('Access Control'), 1000);
+        Orbit::registerSection('access-control', 'bs.people-fill', __('Users & Roles'), 1000);
         $this->registerAccessControlGroups();
 
         $this->app->booted(function () {
@@ -74,10 +76,11 @@ class EntityServiceProvider extends ServiceProvider
             Menu::make(__('Identity'))
                 ->slug(self::ACCESS_CONTROL_IDENTITY_GROUP)
                 ->sort(1000)
-                ->set('section', __('Access Control'))
+                ->set('section', __('Users & Roles'))
                 ->set('sectionKey', 'access-control')
                 ->set('permission', [
                     app(UserEntity::class)->permissionKey(),
+                    app(UserAccountEntity::class)->permissionKey(),
                     app(RoleEntity::class)->permissionKey(),
                     app(LoginHistoryEntity::class)->permissionKey(),
                 ])
@@ -87,7 +90,7 @@ class EntityServiceProvider extends ServiceProvider
             Menu::make(__('Records'))
                 ->slug(self::ACCESS_CONTROL_RECORDS_GROUP)
                 ->sort(1200)
-                ->set('section', __('Access Control'))
+                ->set('section', __('Users & Roles'))
                 ->set('sectionKey', 'access-control')
                 ->set('permission', [
                     app(ActivityEntity::class)->permissionKey(),

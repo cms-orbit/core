@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CmsOrbit\Core\Config;
 
 use CmsOrbit\Core\Config\Models\OrbitConfig;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Str;
 
 /**
@@ -120,6 +121,8 @@ class ConfigRegistry
      */
     public function get(string $key, mixed $default = null, ?int $instanceId = null): mixed
     {
+        $item = $this->findItem($key);
+
         foreach ($this->candidates($key, $instanceId) as [$candidateKey, $candidateInstance]) {
             $row = OrbitConfig::query()
                 ->where('key', $candidateKey)
@@ -127,11 +130,23 @@ class ConfigRegistry
                 ->first();
 
             if ($row !== null) {
-                return $row->value['data'] ?? null;
+                $payload = $row->value ?? [];
+                $value = $payload['data'] ?? null;
+                $encrypted = (bool) ($payload['encrypted'] ?? false)
+                    || (bool) $item?->getAttribute('encrypted', false)
+                    || $item?->getType() === 'secret';
+
+                if (! $encrypted || ! is_string($value) || $value === '') {
+                    return $value;
+                }
+
+                try {
+                    return Crypt::decryptString($value);
+                } catch (\Throwable) {
+                    return $value;
+                }
             }
         }
-
-        $item = $this->findItem($key);
 
         return $item?->getDefault() ?? $default;
     }
@@ -141,9 +156,16 @@ class ConfigRegistry
      */
     public function set(string $key, mixed $value, ?int $instanceId = null): void
     {
+        $item = $this->findItem($key);
+        $encrypted = (bool) $item?->getAttribute('encrypted', false) || $item?->getType() === 'secret';
+
+        if ($encrypted && is_string($value) && $value !== '') {
+            $value = Crypt::encryptString($value);
+        }
+
         OrbitConfig::query()->updateOrCreate(
             ['key' => $key, 'instance_id' => $instanceId],
-            ['value' => ['data' => $value]],
+            ['value' => ['data' => $value, 'encrypted' => $encrypted]],
         );
     }
 

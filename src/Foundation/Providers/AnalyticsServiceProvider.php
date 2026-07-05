@@ -5,10 +5,13 @@ declare(strict_types=1);
 namespace CmsOrbit\Core\Foundation\Providers;
 
 use CmsOrbit\Core\Analytics\AnalyticsDashboard;
+use CmsOrbit\Core\Analytics\AnalyticsGeoLocator;
 use CmsOrbit\Core\Analytics\AnalyticsTracker;
 use CmsOrbit\Core\Analytics\Http\Middleware\CaptureAnalytics;
+use CmsOrbit\Core\Analytics\MaxMindCountryResolver;
 use CmsOrbit\Core\Support\Facades\Config as OrbitConfig;
 use Illuminate\Contracts\Http\Kernel;
+use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Support\ServiceProvider;
 
 class AnalyticsServiceProvider extends ServiceProvider
@@ -17,11 +20,20 @@ class AnalyticsServiceProvider extends ServiceProvider
     {
         $this->app->singleton(AnalyticsDashboard::class);
         $this->app->singleton(AnalyticsTracker::class);
-        $this->app->afterResolving(Kernel::class, function (Kernel $kernel): void {
-            $kernel->pushMiddleware(CaptureAnalytics::class);
-        });
+        $this->app->singleton(MaxMindCountryResolver::class);
+        $this->app->singleton(AnalyticsGeoLocator::class);
 
         $this->registerAnalyticsConfigGroup();
+    }
+
+    public function boot(): void
+    {
+        EncryptCookies::except([
+            AnalyticsTracker::VISITOR_COOKIE,
+            AnalyticsTracker::VISIT_COOKIE,
+        ]);
+
+        $this->app->make(Kernel::class)->pushMiddleware(CaptureAnalytics::class);
     }
 
     protected function registerAnalyticsConfigGroup(): void

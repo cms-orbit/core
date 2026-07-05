@@ -52,14 +52,16 @@ class HttpFilter
     /**
      * HttpFilter constructor.
      *
-     * @param  Request|null  $request  The request object to use. If null, use the default request object.
+     * @param Request|null $request The request object to use. If null, use the default request object.
      */
     public function __construct(?Request $request = null)
     {
         $this->request = $request ?? request();
 
         // Extract filters from the request
-        $this->filters = $this->request->collect('filter')->filter(fn ($item) => $item !== null);
+        $this->filters = $this->request->collect('filter')
+            ->filter(fn ($item) => $item !== null)
+            ->map(fn ($value) => FilterQuery::normalizeValue($value));
 
         // Extract sorts from the request
         $this->sorts = collect($this->request->collect('sort'));
@@ -68,10 +70,11 @@ class HttpFilter
     /**
      * Builds the query based on the filters and sorts extracted from the request.
      *
-     * @param  Builder  $builder  The builder to add the filters and sorts to.
-     * @return Builder The builder with the filters and sorts added.
+     * @param Builder $builder The builder to add the filters and sorts to.
      *
      * @throws BindingResolutionException
+     *
+     * @return Builder The builder with the filters and sorts added.
      */
     public function build(Builder $builder): Builder
     {
@@ -87,10 +90,11 @@ class HttpFilter
     /**
      * Sanitizes a column name to ensure that it's valid.
      *
-     * @param  string  $column  The column name to sanitize.
-     * @return string The sanitized column name.
+     * @param string $column The column name to sanitize.
      *
      * @throws HttpException
+     *
+     * @return string The sanitized column name.
      */
     public static function sanitize(string $column): string
     {
@@ -102,10 +106,11 @@ class HttpFilter
     /**
      * Adds filters to the query.
      *
-     * @param  Builder  $builder  The builder to add the filters to.
-     * @return HttpFilter This HttpFilter instance.
+     * @param Builder $builder The builder to add the filters to.
      *
      * @throws BindingResolutionException
+     *
+     * @return HttpFilter This HttpFilter instance.
      */
     protected function addFiltersToQuery(Builder $builder)
     {
@@ -120,7 +125,8 @@ class HttpFilter
     /**
      * Applies the sorts to the Eloquent query builder.
      *
-     * @param  Builder  $builder  The Eloquent query builder to apply sorts to.
+     * @param Builder $builder The Eloquent query builder to apply sorts to.
+     *
      * @return HttpFilter This HttpFilter instance.
      */
     protected function addSortsToQuery(Builder $builder)

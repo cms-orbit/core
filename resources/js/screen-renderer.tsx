@@ -1,13 +1,16 @@
 import type {
+    CustomComponentProps,
     FieldComponentProps,
     FieldNode,
     LayoutComponentProps,
     LayoutNode,
     ScreenContext,
 } from './contract';
+import { readLayoutData } from './lib/layout-data';
 import { useOptionalOrbitForm } from './form-context';
 import {
     MissingComponent,
+    isBuiltInLayout,
     resolveAction,
     resolveComponent,
     resolveField,
@@ -28,6 +31,10 @@ export function FieldRenderer({
     screen?: ScreenContext;
 }) {
     const form = useOptionalOrbitForm();
+
+    if (!isFieldVisible(node, form)) {
+        return null;
+    }
 
     // Group nodes carry nested fields and have no value of their own.
     if (node.fields && node.fields.length > 0) {
@@ -155,6 +162,21 @@ export function LayoutNodeRenderer({
         return null;
     }
 
+    const customComponent = resolveComponent(node.type);
+
+    if (customComponent && !isBuiltInLayout(node.type)) {
+        const componentProps: CustomComponentProps = {
+            data,
+            screen,
+            node,
+            props: readLayoutData(node),
+        };
+
+        const CustomComponentImpl = customComponent;
+
+        return <CustomComponentImpl {...componentProps} />;
+    }
+
     const Component = resolveLayout(node.type) as LayoutComponent | undefined;
 
     if (!Component) {
@@ -212,4 +234,27 @@ export function ScreenRenderer({
 
 function fieldKey(node: FieldNode, index: number): string {
     return `${node.name ?? node.component}-${index}`;
+}
+
+function isFieldVisible(
+    node: FieldNode,
+    form: ReturnType<typeof useOptionalOrbitForm>,
+): boolean {
+    const conditions = node.attributes?.visibleWhen;
+
+    if (!conditions || typeof conditions !== 'object' || Array.isArray(conditions)) {
+        return true;
+    }
+
+    const config = (form?.getValue('config') as Record<string, unknown> | undefined) ?? {};
+
+    return Object.entries(conditions as Record<string, unknown>).every(([key, expected]) => {
+        const actual = config[key];
+
+        if (Array.isArray(expected)) {
+            return expected.includes(actual);
+        }
+
+        return actual === expected;
+    });
 }

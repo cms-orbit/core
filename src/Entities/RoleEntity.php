@@ -6,6 +6,7 @@ namespace CmsOrbit\Core\Entities;
 
 use CmsOrbit\Core\Entities\Concerns\LogsCrudActivity;
 use CmsOrbit\Core\Entities\Concerns\RendersAccessBadges;
+use CmsOrbit\Core\Entities\Concerns\RendersAuditCells;
 use CmsOrbit\Core\Foundation\Entity\Entity;
 use CmsOrbit\Core\Foundation\Models\Role;
 use CmsOrbit\Core\Screen\Field;
@@ -17,8 +18,6 @@ use CmsOrbit\Core\Screen\TD;
 use CmsOrbit\Core\Support\Facades\Orbit;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
-use Illuminate\Support\Carbon;
-use Illuminate\Support\CarbonInterface;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
@@ -31,6 +30,7 @@ class RoleEntity extends Entity
 {
     use LogsCrudActivity;
     use RendersAccessBadges;
+    use RendersAuditCells;
 
     public function model(): string
     {
@@ -44,7 +44,7 @@ class RoleEntity extends Entity
 
     public function section(): string
     {
-        return __('Access Control');
+        return __('Users & Roles');
     }
 
     public function sectionKey(): string
@@ -296,24 +296,5 @@ class RoleEntity extends Entity
                 );
             })
             ->pipe(fn ($sections) => '<div class="grid max-h-80 grid-cols-1 gap-3 overflow-y-auto pr-1 md:grid-cols-2">'.$sections->implode('').'</div>');
-    }
-
-    protected function renderTimestamp(mixed $value): string
-    {
-        if ($value === null) {
-            return '—';
-        }
-
-        $date = $value instanceof CarbonInterface ? $value : Carbon::parse($value);
-        $absolute = e($date->translatedFormat('Y.m.d H:i'));
-        $relative = e($date->diffForHumans());
-        $iso = e($date->toIso8601String());
-
-        return <<<HTML
-<time datetime="{$iso}" class="inline-flex flex-col leading-tight">
-    <span>{$absolute}</span>
-    <span class="text-xs text-gray-500">{$relative}</span>
-</time>
-HTML;
     }
 }

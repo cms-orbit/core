@@ -1,0 +1,14 @@
+{
+    "alias": "@cms-orbit/core",
+    "jsPath": "resources/js",
+    "pages": [
+        {
+            "component": "orbit/screen",
+            "export": "pages/orbit/screen"
+        },
+        {
+            "component": "orbit/auth/login",
+            "export": "pages/orbit/auth/login"
+        }
+    ]
+}

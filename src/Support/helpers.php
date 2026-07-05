@@ -6,6 +6,7 @@ use CmsOrbit\Core\Alert\Alert;
 use CmsOrbit\Core\Config\ConfigRegistry;
 use CmsOrbit\Core\Filters\HttpFilter;
 use CmsOrbit\Core\Support\Color;
+use Illuminate\Support\Arr;
 
 if (! function_exists('orbit_config')) {
     /**
@@ -55,28 +56,57 @@ if (! function_exists('get_filter')) {
      */
     function get_filter(string $property)
     {
-        return (new HttpFilter)->getFilter($property);
+        return normalize_filter_values((new HttpFilter)->getFilter($property));
+    }
+}
+
+if (! function_exists('normalize_filter_values')) {
+    /**
+     * Flatten list-style filter values while preserving range-style arrays.
+     *
+     * @return string|array<int, mixed>|array<string, mixed>|null
+     */
+    function normalize_filter_values(mixed $filter): mixed
+    {
+        if (is_string($filter)) {
+            return str_contains($filter, ',')
+                ? array_values(array_filter(array_map('trim', explode(',', $filter))))
+                : $filter;
+        }
+
+        if (! is_array($filter)) {
+            return $filter;
+        }
+
+        if (isset($filter['start']) || isset($filter['end']) || isset($filter['min']) || isset($filter['max'])) {
+            return $filter;
+        }
+
+        return array_values(array_filter(
+            Arr::flatten($filter),
+            static fn ($item) => $item !== null && $item !== '',
+        ));
     }
 }
 
 if (! function_exists('get_filter_string')) {
     function get_filter_string(string $property): ?string
     {
-        $filter = get_filter($property);
+        $filter = normalize_filter_values(get_filter($property));
 
-        if (is_array($filter) && (isset($filter['min']) || isset($filter['max']))) {
+        if (! is_array($filter)) {
+            return $filter;
+        }
+
+        if (isset($filter['min']) || isset($filter['max'])) {
             return sprintf('%s - %s', $filter['min'] ?? '', $filter['max'] ?? '');
         }
 
-        if (is_array($filter) && (isset($filter['start']) || isset($filter['end']))) {
+        if (isset($filter['start']) || isset($filter['end'])) {
             return sprintf('%s - %s', $filter['start'] ?? '', $filter['end'] ?? '');
         }
 
-        if (is_array($filter)) {
-            return implode(', ', $filter);
-        }
-
-        return $filter;
+        return implode(', ', $filter);
     }
 }
 

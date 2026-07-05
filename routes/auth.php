@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Http\Controllers\Orbit\ForcePasswordController;
 use CmsOrbit\Core\Foundation\Http\Controllers\LocaleController;
 use CmsOrbit\Core\Foundation\Http\Controllers\LoginController;
+use CmsOrbit\Core\Foundation\Http\Controllers\SocialLoginController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -16,6 +17,12 @@ if (config('orbit.auth', true)) {
     // Authentication Routes...
     Route::get('login', [LoginController::class, 'showLoginForm'])->name('login');
     Route::post('login', [LoginController::class, 'login'])->name('login.auth');
+    Route::get('login/{provider}/redirect', [SocialLoginController::class, 'redirect'])
+        ->whereIn('provider', ['google', 'kakao', 'apple'])
+        ->name('login.social.redirect');
+    Route::get('login/{provider}/callback', [SocialLoginController::class, 'callback'])
+        ->whereIn('provider', ['google', 'kakao', 'apple'])
+        ->name('login.social.callback');
 
     Route::get('lock', [LoginController::class, 'resetCookieLockMe'])->name('login.lock');
 }

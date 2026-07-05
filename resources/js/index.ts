@@ -7,6 +7,8 @@
  */
 import { actionComponents } from './actions';
 import { ColorPickerField, RoleIdCell } from './fields/custom';
+import { UserDetailView, UserEmailsEditor, UserLinkedAccountsPanel } from './fields/user-accounts';
+import { VisitorRecordDetailView } from './fields/visitor-record-detail';
 import { fieldComponents } from './fields';
 import { layoutComponents } from './layouts';
 import { ContainerGridScreen } from './screens/container-grid-screen';
@@ -29,6 +31,10 @@ export function registerOrbitComponents(): void {
         ColorPicker: ColorPickerField,
         ContainerGridScreen,
         RoleIdCell,
+        UserEmailsEditor,
+        UserLinkedAccountsPanel,
+        UserDetailView,
+        VisitorRecordDetailView,
     });
 }
 

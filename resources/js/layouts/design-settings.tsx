@@ -14,6 +14,7 @@ import {
     type LayoutMode,
 } from '../theme/branding';
 import { LAYOUT_MODE_LABELS, LayoutPreview } from '../theme/layout-previews';
+import { TablePreviewSnippet } from '../theme/table-preview';
 import { toPreviewColors } from '../theme/layout-themes';
 import type { LayoutThemeDefinition, LayoutThemeToken, LayoutThemes } from '../theme/layout-themes';
 import { Card, CardBody, CardHeader } from '../ui/card';
@@ -54,6 +55,7 @@ const TOKEN_DEFAULTS: Record<string, string> = {
     color_nav_active_fg: '#047857',
     color_rail_bg: '#ffffff',
     color_rail_border: '#e2e8f0',
+    color_rail_symbol_bg: '#17ce91',
     color_rail_icon: '#64748b',
     color_rail_active_bg: '#d1fae5',
     color_rail_active_fg: '#047857',
@@ -505,6 +507,7 @@ export function DesignSettingsLayout({ node }: LayoutComponentProps) {
                             />
                             <CardBody className="space-y-4">
                                 <LayoutPreview mode={selectedMode} colors={previewColors} variant="live" className="shadow-sm" />
+                                <TablePreviewSnippet colors={previewColors} />
                                 <div className="grid grid-cols-2 gap-3">
                                     {[
                                         ['Page', activeToneColors.color_page_bg],

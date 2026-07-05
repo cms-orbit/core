@@ -7,6 +7,7 @@ namespace CmsOrbit\Core\Foundation\Providers;
 use CmsOrbit\Core\Activity\ActivityLogger;
 use CmsOrbit\Core\Activity\Models\OrbitActivity;
 use CmsOrbit\Core\Analytics\AnalyticsTracker;
+use CmsOrbit\Core\Auth\Support\LoginIdentifierNormalizer;
 use CmsOrbit\Core\Support\Facades\Config as OrbitConfig;
 use Illuminate\Auth\Events\Failed;
 use Illuminate\Auth\Events\Lockout;
@@ -37,9 +38,7 @@ class AuditServiceProvider extends ServiceProvider
                 description: __('Signed in'),
                 subject: $user,
                 causer: $user,
-                authIdentifier: is_object($event->user) && method_exists($event->user, 'getAttribute')
-                    ? (string) $event->user->getAttribute('email')
-                    : null,
+                authIdentifier: $this->authIdentifierFromRequest($request) ?? $this->authIdentifierFromUser($user),
             );
 
             if ($user !== null) {
@@ -73,9 +72,7 @@ class AuditServiceProvider extends ServiceProvider
                 description: __('Signed out'),
                 subject: $user,
                 causer: $user,
-                authIdentifier: is_object($event->user) && method_exists($event->user, 'getAttribute')
-                    ? (string) $event->user->getAttribute('email')
-                    : null,
+                authIdentifier: $this->authIdentifierFromRequest($request) ?? $this->authIdentifierFromUser($user),
             );
 
             app(AnalyticsTracker::class)->forgetIdentityAfterLogout($request);
@@ -89,7 +86,8 @@ class AuditServiceProvider extends ServiceProvider
                 request: $event->request,
                 authIdentifier: $this->authIdentifierFromRequest($event->request),
                 properties: [
-                    'email' => $event->request->input('email'),
+                    'provider'   => $event->request->input('provider'),
+                    'identifier' => $event->request->input('identifier', $event->request->input('email')),
                 ],
             );
         });
@@ -113,11 +111,45 @@ class AuditServiceProvider extends ServiceProvider
         return null;
     }
 
-    protected function authIdentifierFromRequest(Request $request): ?string
+    protected function authIdentifierFromRequest(?Request $request): ?string
     {
-        $value = $request->input('email');
+        if ($request === null) {
+            return null;
+        }
 
-        return is_string($value) && filled($value) ? $value : null;
+        $attribute = $request->attributes->get('orbit_auth_identifier');
+
+        if (is_string($attribute) && filled($attribute)) {
+            return $attribute;
+        }
+
+        $provider = (string) ($request->input('provider') ?: 'email');
+        $value = $request->input('identifier') ?? $request->input('email');
+
+        if (! is_string($value) || ! filled($value)) {
+            return null;
+        }
+
+        $normalized = LoginIdentifierNormalizer::normalize($provider, $value) ?? $value;
+
+        return $provider.':'.$normalized;
+    }
+
+    protected function authIdentifierFromUser(?Model $user): ?string
+    {
+        if ($user === null) {
+            return null;
+        }
+
+        foreach (['email', 'name'] as $attribute) {
+            $value = $user->getAttribute($attribute);
+
+            if (is_string($value) && filled($value)) {
+                return $value;
+            }
+        }
+
+        return (string) $user->getKey();
     }
 
     protected function registerSecurityConfigGroup(): void

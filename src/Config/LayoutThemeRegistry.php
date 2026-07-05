@@ -212,9 +212,10 @@ class LayoutThemeRegistry
     protected function fallbackTokenDefault(string $key, string $tone): string
     {
         return match ($key) {
-            'color_nav_section_fg' => $tone === 'dark' ? '#e2e8f0' : '#334155',
-            'color_nav_group_fg'   => $tone === 'dark' ? '#cbd5e1' : '#475569',
-            default                => '#64748b',
+            'color_nav_section_fg'  => $tone === 'dark' ? '#e2e8f0' : '#334155',
+            'color_nav_group_fg'    => $tone === 'dark' ? '#cbd5e1' : '#475569',
+            'color_rail_symbol_bg'  => $tone === 'dark' ? '#065f46' : '#17ce91',
+            default                 => '#64748b',
         };
     }
 }

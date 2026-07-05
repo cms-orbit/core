@@ -63,6 +63,10 @@ export function resolveLayout(type: string): LayoutComponent | CustomComponent |
     return layoutRegistry[type] ?? customRegistry[type];
 }
 
+export function isBuiltInLayout(type: string): boolean {
+    return type in layoutRegistry;
+}
+
 export function resolveField(name: string): FieldComponent | CustomComponent | undefined {
     return fieldRegistry[name] ?? customRegistry[name];
 }

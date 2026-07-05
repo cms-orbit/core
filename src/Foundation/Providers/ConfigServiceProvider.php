@@ -138,6 +138,7 @@ class ConfigServiceProvider extends ServiceProvider
             self::token('color_page_bg', 'Page background', 'Content'),
             self::token('color_panel_bg', 'Panel background', 'Content'),
             self::token('color_panel_border', 'Panel border', 'Content'),
+            self::token('color_table_row_border', 'Table row border', 'Content'),
             self::token('color_header_bg', 'Header background', 'Header'),
             self::token('color_header_border', 'Header border', 'Header'),
             self::token('color_nav_bg', 'Navigation background', 'Navigation'),
@@ -159,6 +160,7 @@ class ConfigServiceProvider extends ServiceProvider
             ...self::commonShellTokens(),
             self::token('color_rail_bg', 'Rail background', 'Rail'),
             self::token('color_rail_border', 'Rail border', 'Rail'),
+            self::token('color_rail_symbol_bg', 'Rail symbol background', 'Rail'),
             self::token('color_rail_icon', 'Rail icon', 'Rail'),
             self::token('color_rail_active_bg', 'Rail active background', 'Rail'),
             self::token('color_rail_active_fg', 'Rail active text', 'Rail'),
@@ -429,26 +431,28 @@ class ConfigServiceProvider extends ServiceProvider
     protected static function layoutTone(string $layout, array $tone): array
     {
         $colors = [
-            'color_primary'        => $tone['primary'],
-            'color_secondary'      => $tone['secondary'],
-            'color_accent'         => $tone['accent'],
-            'color_page_bg'        => $tone['page'],
-            'color_panel_bg'       => $tone['panel'],
-            'color_panel_border'   => $tone['line'],
-            'color_header_bg'      => $tone['panel'],
-            'color_header_border'  => $tone['line'],
-            'color_nav_bg'         => $layout === 'palette-split' ? $tone['panel'] : $tone['nav'],
-            'color_nav_border'     => $tone['line'],
-            'color_nav_muted'      => $tone['muted'],
-            'color_nav_section_fg' => $tone['section'],
-            'color_nav_group_fg'   => $tone['group'],
-            'color_nav_active_bg'  => $tone['active'],
-            'color_nav_active_fg'  => $tone['activeFg'],
+            'color_primary'          => $tone['primary'],
+            'color_secondary'        => $tone['secondary'],
+            'color_accent'           => $tone['accent'],
+            'color_page_bg'          => $tone['page'],
+            'color_panel_bg'         => $tone['panel'],
+            'color_panel_border'     => $tone['line'],
+            'color_table_row_border' => $tone['muted'],
+            'color_header_bg'        => $tone['panel'],
+            'color_header_border'    => $tone['line'],
+            'color_nav_bg'           => $layout === 'palette-split' ? $tone['panel'] : $tone['nav'],
+            'color_nav_border'       => $tone['line'],
+            'color_nav_muted'        => $tone['muted'],
+            'color_nav_section_fg'   => $tone['section'],
+            'color_nav_group_fg'     => $tone['group'],
+            'color_nav_active_bg'    => $tone['active'],
+            'color_nav_active_fg'    => $tone['activeFg'],
         ];
 
         if ($layout === 'palette-split') {
             $colors['color_rail_bg'] = $tone['nav'];
             $colors['color_rail_border'] = $tone['line'];
+            $colors['color_rail_symbol_bg'] = $tone['primary'];
             $colors['color_rail_icon'] = $tone['group'];
             $colors['color_rail_active_bg'] = $tone['active'];
             $colors['color_rail_active_fg'] = $tone['activeFg'];

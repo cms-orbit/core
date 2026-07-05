@@ -3,6 +3,7 @@ import {
     type DarkModeSetting,
     ORBIT_THEME_MODE_EVENT,
     type ThemeModeOption,
+    normalizeThemeMode,
     resolveThemeMode,
     storeThemeMode,
 } from '../theme/branding';
@@ -23,7 +24,7 @@ const OPTIONS: Array<{
 export function ThemeModeSwitcher({ defaultMode }: { defaultMode?: DarkModeSetting | null }) {
     const t = useT();
     const [open, setOpen] = useState(false);
-    const [mode, setMode] = useState<ThemeModeOption>(() => resolveThemeMode(defaultMode));
+    const [mode, setMode] = useState<ThemeModeOption>(() => normalizeThemeMode(defaultMode));
 
     useEffect(() => {
         setMode(resolveThemeMode(defaultMode));

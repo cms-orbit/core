@@ -1,32 +1,40 @@
-import type { ReactNode, ThHTMLAttributes, TdHTMLAttributes } from 'react';
+import type { CSSProperties, ReactNode, ThHTMLAttributes, TdHTMLAttributes } from 'react';
 import { cn } from '../lib/cn';
 import { Icon } from './icon';
 
-/** Scrollable table wrapper with Filament-style header/row styling. */
+const rowDividerClass =
+    '[&>tr:not(:last-child)>td]:border-b [&>tr:not(:last-child)>td]:border-[var(--color-orbit-table-row-border,#f1f5f9)]';
+
+/** Scrollable table wrapper; parent should use `overflow-hidden rounded-*` for clean corners. */
 export function Table({ className, children }: { className?: string; children: ReactNode }) {
     return (
-        <div className="overflow-x-auto">
-            <table
-                className={cn('min-w-full divide-y', className)}
-                style={{ borderColor: 'var(--color-orbit-panel-border, #e2e8f0)' }}
-            >
-                {children}
-            </table>
+        <div className="overflow-x-auto rounded-[inherit]">
+            <table className={cn('min-w-full border-separate border-spacing-0 text-sm', className)}>{children}</table>
         </div>
     );
 }
 
 export function TableHead({ children }: { children: ReactNode }) {
-    return <thead style={{ backgroundColor: 'var(--color-orbit-nav-section-bg, #f8fafc)' }}>{children}</thead>;
+    return (
+        <thead className="border-b border-[var(--color-orbit-panel-border,#e2e8f0)]">
+            {children}
+        </thead>
+    );
 }
 
 export function TableBody({ children }: { children: ReactNode }) {
-    return <tbody style={{ borderColor: 'var(--color-orbit-panel-border, #e2e8f0)' }}>{children}</tbody>;
+    return (
+        <tbody
+            className={cn('bg-[var(--color-orbit-panel-bg,#ffffff)]', rowDividerClass)}
+        >
+            {children}
+        </tbody>
+    );
 }
 
 export function TableRow({
     className,
-    interactive = false,
+    interactive = true,
     children,
     ...props
 }: {
@@ -36,8 +44,10 @@ export function TableRow({
 } & React.HTMLAttributes<HTMLTableRowElement>) {
     return (
         <tr
-            className={cn(interactive && 'cursor-pointer', className)}
-            style={interactive ? { backgroundColor: 'transparent' } : undefined}
+            className={cn(
+                interactive && 'transition-colors hover:bg-[color-mix(in_srgb,var(--color-orbit-nav-muted,#f8fafc)_55%,transparent)]',
+                className,
+            )}
             {...props}
         >
             {children}
@@ -69,7 +79,7 @@ export function TableHeaderCell({
     return (
         <th
             className={cn(
-                'px-4 py-2.5 text-xs font-semibold uppercase tracking-wide',
+                'px-4 py-2.5 text-xs font-medium first:pl-5 last:pr-5',
                 alignClass,
                 className,
             )}
@@ -80,12 +90,12 @@ export function TableHeaderCell({
                 <button
                     type="button"
                     onClick={onSort}
-                    className="inline-flex items-center gap-1"
+                    className="inline-flex items-center gap-1 hover:text-[var(--color-orbit-secondary,#334155)]"
                 >
                     {children}
                     <Icon
                         name={sortDirection === 'asc' ? 'bs.sort-up' : sortDirection === 'desc' ? 'bs.sort-down' : 'bs.arrow-down-up'}
-                        className={cn('text-sm', sortDirection ? 'text-orbit-primary-600' : 'text-gray-300')}
+                        className={cn('text-sm', sortDirection ? 'text-orbit-primary-600' : 'opacity-40')}
                     />
                 </button>
             ) : (
@@ -105,7 +115,7 @@ export function TableCell({ align = 'left', className, children, ...props }: Cel
 
     return (
         <td
-            className={cn('px-4 py-2.5 text-sm', alignClass, className)}
+            className={cn('px-4 py-2.5 first:pl-5 last:pr-5', alignClass, className)}
             style={{ color: 'var(--color-orbit-secondary, #334155)' }}
             {...props}
         >

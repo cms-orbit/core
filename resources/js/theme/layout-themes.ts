@@ -39,8 +39,10 @@ export interface LayoutPreviewColors {
     navSectionBorder: string;
     navActiveBg: string;
     navActiveFg: string;
+    tableRowBorder: string;
     railBg: string;
     railBorder: string;
+    railSymbolBg: string;
     railIcon: string;
     railActiveBg: string;
     railActiveFg: string;
@@ -70,8 +72,10 @@ export function toPreviewColors(tokens: Record<string, string>): LayoutPreviewCo
         navSectionBorder: tokens.color_nav_section_border ?? tokens.color_nav_border ?? '#e2e8f0',
         navActiveBg: tokens.color_nav_active_bg ?? '#d1fae5',
         navActiveFg: tokens.color_nav_active_fg ?? '#047857',
+        tableRowBorder: tokens.color_table_row_border ?? tokens.color_nav_muted ?? '#f1f5f9',
         railBg: tokens.color_rail_bg ?? navBg,
         railBorder: tokens.color_rail_border ?? tokens.color_nav_border ?? '#e2e8f0',
+        railSymbolBg: tokens.color_rail_symbol_bg ?? tokens.color_rail_active_bg ?? '#17ce91',
         railIcon: tokens.color_rail_icon ?? tokens.color_secondary ?? '#64748b',
         railActiveBg: tokens.color_rail_active_bg ?? tokens.color_nav_active_bg ?? '#d1fae5',
         railActiveFg: tokens.color_rail_active_fg ?? '#047857',

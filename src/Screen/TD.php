@@ -12,6 +12,7 @@ use CmsOrbit\Core\Screen\Fields\Group;
 use CmsOrbit\Core\Screen\Fields\Input;
 use CmsOrbit\Core\Screen\Fields\NumberRange;
 use CmsOrbit\Core\Screen\Fields\Select;
+use CmsOrbit\Core\Support\Formats;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Database\Eloquent\Model;
@@ -99,6 +100,20 @@ class TD extends Cell
     protected $defaultHidden = false;
 
     /**
+     * Render a select column filter as top tabs (Filament-style).
+     *
+     * @var bool
+     */
+    protected $filterAsTabs = false;
+
+    /**
+     * Render the column filter inline in the table toolbar instead of the popover.
+     *
+     * @var bool
+     */
+    protected $filterInline = false;
+
+    /**
      * Possible options for filters if it's select
      *
      * @var array
@@ -174,6 +189,26 @@ class TD extends Cell
         }
 
         $this->filter = $filter;
+
+        return $this;
+    }
+
+    /**
+     * @return $this
+     */
+    public function filterAsTabs(bool $tabs = true): self
+    {
+        $this->filterAsTabs = $tabs;
+
+        return $this;
+    }
+
+    /**
+     * @return $this
+     */
+    public function filterInline(bool $inline = true): self
+    {
+        $this->filterInline = $inline;
 
         return $this;
     }
@@ -263,6 +298,14 @@ class TD extends Cell
             } else {
                 $rendered = $value instanceof Htmlable ? $value->toHtml() : (string) $value;
             }
+        } elseif ($repository !== null && $this->shouldAutoFormatDateTime()) {
+            $raw = $repository instanceof Model
+                ? $repository->getAttribute($this->column)
+                : $repository->getContent($this->name);
+
+            if ($raw !== null && $raw !== '') {
+                $rendered = Formats::formatDateTimeForTable($raw);
+            }
         }
 
         return [
@@ -276,6 +319,7 @@ class TD extends Cell
             'sortUrl'         => $this->buildSortUrl(),
             'filter'          => $filter?->toArray(),
             'filterString'    => $this->buildFilterString(),
+            'filterTabs'      => $this->filterAsTabs,
             'popover'         => $this->popover,
             'defaultHidden'   => $this->defaultHidden,
             'allowUserHidden' => $this->allowUserHidden,
@@ -322,24 +366,51 @@ class TD extends Cell
             $filter = $this->detectConstantFilter($filter);
         }
 
-        return $filter->name("filter[$this->column]")
-            ->placeholder(__('Filter'))
+        $built = $filter->name("filter[$this->column]")
+            ->placeholder($this->title ?: __('Filter'))
             ->form('filters')
-            ->value(get_filter($this->column))
+            ->value(normalize_filter_values(get_filter($this->column)))
+            ->set('inline', $this->filterInline)
+            ->set('compact', true)
             ->autofocus();
+
+        if (! $this->filterInline) {
+            $built->title($this->title);
+        }
+
+        if ($built instanceof Select) {
+            $built->allowEmpty();
+
+            if ($this->filterInline) {
+                $built->set('searchable', true);
+            }
+        }
+
+        return $built;
     }
 
     protected function detectConstantFilter(string $filter): Field
     {
         $input = match ($filter) {
-            self::FILTER_DATE_RANGE   => DateRange::make()->disableMobile(),
+            self::FILTER_DATE_RANGE   => DateRange::make()->disableMobile()->set('layout', 'stack'),
             self::FILTER_NUMBER_RANGE => NumberRange::make(),
-            self::FILTER_SELECT       => Select::make()->options($this->filterOptions)->multiple(),
+            self::FILTER_SELECT       => $this->buildSelectFilter(),
             self::FILTER_DATE         => DateTimer::make()->inline()->format('Y-m-d'),
             default                   => Input::make()->type($filter),
         };
 
         return $input;
+    }
+
+    protected function buildSelectFilter(): Select
+    {
+        $select = Select::make()->options($this->filterOptions);
+
+        if (! $this->filterAsTabs) {
+            $select->multiple();
+        }
+
+        return $select;
     }
 
     /**
@@ -393,6 +464,17 @@ class TD extends Cell
         return Str::slug($this->name);
     }
 
+    protected function shouldAutoFormatDateTime(): bool
+    {
+        if ($this->render !== null) {
+            return false;
+        }
+
+        return Str::endsWith($this->column, '_at')
+            || Str::endsWith($this->column, '_date')
+            || $this->filter === self::FILTER_DATE;
+    }
+
     /**
      * Prevents the user from hiding a column in the interface.
      */
@@ -440,7 +522,7 @@ class TD extends Cell
 
     protected function buildFilterString(): ?string
     {
-        $filter = get_filter($this->column);
+        $filter = normalize_filter_values(get_filter($this->column));
 
         if ($filter === null) {
             return null;
@@ -456,12 +538,15 @@ class TD extends Cell
             }
 
             if ($this->filterOptions) {
-                $filter = array_map(fn ($val) => $this->filterOptions[$val] ?? $val, $filter);
+                $filter = array_map(
+                    fn ($val) => $this->filterOptions[$val] ?? $val,
+                    $filter,
+                );
             }
 
             return implode(', ', $filter);
         }
 
-        return $filter;
+        return (string) $filter;
     }
 }

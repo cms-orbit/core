@@ -51,7 +51,7 @@ class LoginHistoryEntity extends Entity
 
     public function section(): string
     {
-        return __('Access Control');
+        return __('Users & Roles');
     }
 
     public function sectionKey(): string
@@ -89,9 +89,11 @@ class LoginHistoryEntity extends Entity
             TD::make('event', __('Event'))
                 ->sort()
                 ->filter(TD::FILTER_SELECT, OrbitActivity::loginHistoryEventOptions())
+                ->filterAsTabs()
                 ->render(fn (Model $model) => $this->renderEvent($model)),
             TD::make('subject_id', __('User'))
                 ->filter(TD::FILTER_SELECT, $this->userOptions())
+                ->filterInline()
                 ->render(fn (Model $model) => e((string) ($model->getAttribute('subject_label') ?? $model->getAttribute('auth_identifier') ?? '—'))),
             TD::make('causer_label', __('Actor'))
                 ->defaultHidden()

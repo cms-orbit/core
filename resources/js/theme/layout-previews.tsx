@@ -53,7 +53,7 @@ function PaletteSplitPreview({
     return (
         <>
             <Bar x={0} y={0} w={rail} h={h} fill={colors.railBg} rx={0} />
-            <Bar x={3 * scale} y={6 * scale} w={8 * scale} h={8 * scale} fill={colors.railActiveBg} rx={2} />
+            <Bar x={3 * scale} y={6 * scale} w={8 * scale} h={8 * scale} fill={colors.railSymbolBg} rx={2} />
             <Bar x={3 * scale} y={20 * scale} w={8 * scale} h={8 * scale} fill={colors.railIcon} rx={2} />
             <Bar x={rail} y={0} w={side} h={h} fill={colors.navBg} stroke={colors.navBorder} strokeWidth={scale} />
             <Bar x={rail + 6 * scale} y={8 * scale} w={side - 12 * scale} h={4 * scale} fill={colors.primary} rx={1} />

@@ -156,6 +156,10 @@ class ConfigGroupScreen extends Screen
             }
 
             if ($item instanceof ConfigItem) {
+                if ($item->getType() === 'secret' && (! is_string($value) || trim($value) === '')) {
+                    continue;
+                }
+
                 $value = $this->transformSubmittedValue($item, $value);
             }
 
@@ -202,6 +206,10 @@ class ConfigGroupScreen extends Screen
 
     protected function resolveDisplayValue(ConfigItem $item, mixed $resolvedValue): mixed
     {
+        if ($item->getType() === 'secret') {
+            return '';
+        }
+
         $callback = $item->getAttribute('display');
 
         if (! $callback instanceof \Closure) {

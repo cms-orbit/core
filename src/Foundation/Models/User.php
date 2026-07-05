@@ -6,6 +6,7 @@ namespace CmsOrbit\Core\Foundation\Models;
 
 use App\CmsOrbit\Core\Presenters\UserPresenter;
 use CmsOrbit\Core\Access\UserAccess;
+use CmsOrbit\Core\Auth\Concerns\HasOrbitUserAccounts;
 use CmsOrbit\Core\Filters\Filterable;
 use CmsOrbit\Core\Filters\Types\Like;
 use CmsOrbit\Core\Filters\Types\Where;
@@ -37,7 +38,7 @@ use Illuminate\Support\Facades\Hash;
 #[UsePresenter(UserPresenter::class)]
 class User extends Authenticatable
 {
-    use AsSource, Chartable, Filterable, HasFactory, Notifiable, Presentable, UserAccess;
+    use AsSource, Chartable, Filterable, HasFactory, HasOrbitUserAccounts, Notifiable, Presentable, UserAccess;
 
     /**
      * The database table used by the model.

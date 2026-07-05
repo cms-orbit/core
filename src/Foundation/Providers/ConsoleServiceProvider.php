@@ -12,6 +12,7 @@ use CmsOrbit\Core\Foundation\Commands\EntityMakeCommand;
 use CmsOrbit\Core\Foundation\Commands\FieldCommand;
 use CmsOrbit\Core\Foundation\Commands\FilterCommand;
 use CmsOrbit\Core\Foundation\Commands\FreshSuperAdminRoleCommand;
+use CmsOrbit\Core\Foundation\Commands\FrontendSyncCommand;
 use CmsOrbit\Core\Foundation\Commands\InstallCommand;
 use CmsOrbit\Core\Foundation\Commands\ListenerCommand;
 use CmsOrbit\Core\Foundation\Commands\PresenterCommand;
@@ -21,8 +22,10 @@ use CmsOrbit\Core\Foundation\Commands\ScreenCommand;
 use CmsOrbit\Core\Foundation\Commands\SelectionCommand;
 use CmsOrbit\Core\Foundation\Commands\SitemapRefreshCommand;
 use CmsOrbit\Core\Foundation\Commands\StubPublishCommand;
+use CmsOrbit\Core\Foundation\Commands\SyncCommand;
 use CmsOrbit\Core\Foundation\Commands\TableCommand;
 use CmsOrbit\Core\Foundation\Commands\TabMenuCommand;
+use CmsOrbit\Core\Foundation\Commands\UpgradeCommand;
 use CmsOrbit\Core\Support\Facades\Orbit;
 use Illuminate\Foundation\Console\AboutCommand;
 use Illuminate\Support\ServiceProvider;
@@ -36,6 +39,9 @@ class ConsoleServiceProvider extends ServiceProvider
      */
     protected $commands = [
         InstallCommand::class,
+        SyncCommand::class,
+        FrontendSyncCommand::class,
+        UpgradeCommand::class,
         PublishCommand::class,
         AdminCommand::class,
         AiCommand::class,
@@ -59,9 +65,9 @@ class ConsoleServiceProvider extends ServiceProvider
     public function boot(): void
     {
         AboutCommand::add('Orbit', fn () => [
-            'Version' => Orbit::version(),
+            'Version'     => Orbit::version(),
             'Access Mode' => config('orbit.access.mode'),
-            'Prefix' => Orbit::prefix(),
+            'Prefix'      => Orbit::prefix(),
         ]);
 
         $this

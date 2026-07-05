@@ -54,6 +54,7 @@ class ConfigFieldFactory
             'multiselect' => Select::make($name)->options(self::options($item))->multiple(),
             'switcher'    => Switcher::make($name)->sendTrueOrFalse(),
             'number'      => Input::make($name)->type('number'),
+            'secret'      => Input::make($name)->type('password')->autocomplete('new-password'),
             'color'       => Color::make($name),
             'attach'      => self::makeAttachField($name),
             default       => Input::make($name),
@@ -62,6 +63,14 @@ class ConfigFieldFactory
         $field = $field
             ->title($title)
             ->help($help);
+
+        $visibleWhen = $item->getAttribute('visibleWhen');
+
+        if (is_array($visibleWhen) && $visibleWhen !== []) {
+            $field->set('visibleWhen', collect($visibleWhen)
+                ->mapWithKeys(fn ($value, string $key): array => [self::encodeKey($key) => $value])
+                ->all());
+        }
 
         $customizer = $item->getAttribute('field');
 

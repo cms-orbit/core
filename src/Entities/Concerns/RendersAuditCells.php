@@ -4,28 +4,13 @@ declare(strict_types=1);
 
 namespace CmsOrbit\Core\Entities\Concerns;
 
-use Illuminate\Support\Carbon;
-use Illuminate\Support\CarbonInterface;
+use CmsOrbit\Core\Support\Formats;
 
 trait RendersAuditCells
 {
     protected function renderTimestamp(mixed $value): string
     {
-        if ($value === null) {
-            return '—';
-        }
-
-        $date = $value instanceof CarbonInterface ? $value : Carbon::parse($value);
-        $absolute = e($date->translatedFormat('Y.m.d H:i'));
-        $relative = e($date->diffForHumans());
-        $iso = e($date->toIso8601String());
-
-        return <<<HTML
-<time datetime="{$iso}" class="inline-flex flex-col leading-tight">
-    <span>{$absolute}</span>
-    <span class="text-xs text-gray-500">{$relative}</span>
-</time>
-HTML;
+        return Formats::formatDateTimeForTable($value);
     }
 
     protected function renderBadge(string $label, string $tone = 'slate'): string

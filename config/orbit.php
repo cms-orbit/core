@@ -198,6 +198,37 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Analytics
+    |--------------------------------------------------------------------------
+    |
+    | Country codes are resolved from trusted edge headers by default. When no
+    | edge header is present, enable MaxMind GeoIP with ORBIT_ANALYTICS_GEOIP_*.
+    | On local development (Valet, localhost) set ORBIT_ANALYTICS_DEV_COUNTRY
+    | to simulate a country for new pageviews.
+    |
+    | In production, place the app behind Cloudflare, CloudFront, App Engine,
+    | Fly.io, or Vercel so the corresponding country header is present, or use
+    | a GeoLite2-Country.mmdb database for self-hosted deployments.
+    |
+    */
+
+    'analytics' => [
+        'country_headers' => array_values(array_filter(array_map(
+            static fn (string $header): string => trim($header),
+            explode(',', (string) env('ORBIT_ANALYTICS_COUNTRY_HEADERS', '')),
+        ))),
+        'dev_country_code' => env('ORBIT_ANALYTICS_DEV_COUNTRY'),
+        'geoip'            => [
+            'enabled'       => (bool) env('ORBIT_ANALYTICS_GEOIP_ENABLED', false),
+            'database_path' => env(
+                'ORBIT_ANALYTICS_GEOIP_DATABASE_PATH',
+                storage_path('app/geoip/GeoLite2-Country.mmdb'),
+            ),
+        ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Service Provider
     |--------------------------------------------------------------------------
     |

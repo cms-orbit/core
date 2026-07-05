@@ -1,6 +1,8 @@
-import { useState } from 'react';
+import { router, usePage } from '@inertiajs/react';
+import { useCallback, useEffect, useState } from 'react';
 import type { ColumnNode, FieldNode, LayoutComponentProps } from './contract';
 import { ChartLayout } from './layouts/chart';
+import { EntityTableToolbar, TableFilterTabs, TablePagination, defaultHiddenColumnSlugs, tableFilterFields } from './layouts/entity-table-toolbar';
 import { ListenerLayout } from './layouts/listener';
 import { LocaleTabsLayout } from './layouts/locale-tabs';
 import { ModalLayout } from './layouts/modal';
@@ -14,6 +16,7 @@ import { useT } from './lib/i18n';
 import type { LayoutComponent } from './registry';
 import {
     ActionBar,
+    ActionRenderer,
     FieldRenderer,
     LayoutChildren,
     LayoutNodeRenderer,
@@ -105,23 +108,63 @@ function cellPayload(row: Record<string, unknown>, column: ColumnNode): {
         : null;
 }
 
+function TableRowActions({
+    actions,
+    data,
+    screen,
+}: {
+    actions: FieldNode[];
+    data: Record<string, unknown>;
+    screen?: LayoutComponentProps['screen'];
+}) {
+    if (actions.length === 0) {
+        return null;
+    }
+
+    return (
+        <div className="flex items-center justify-end gap-0.5">
+            {actions.map((action, index) => (
+                <ActionRenderer key={action.name ?? `${action.component}-${index}`} node={action} data={data} screen={screen} />
+            ))}
+        </div>
+    );
+}
+
 export function RowsLayout({ node, data, screen }: LayoutComponentProps) {
     const fields = asFields(node.data.fields);
     const title = node.data.title as string | null;
+    const wrapped = node.data.wrapped !== false;
+
+    const body = (
+        <>
+            {fields.map((field, index) => (
+                <FieldRenderer
+                    key={field.name ?? `${field.component}-${index}`}
+                    node={field}
+                    data={data}
+                    screen={screen}
+                />
+            ))}
+        </>
+    );
+
+    if (!wrapped) {
+        return (
+            <div className="space-y-4">
+                {title ? (
+                    <h4 className="border-b border-gray-100 pb-2 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:border-gray-800 dark:text-gray-400">
+                        {title}
+                    </h4>
+                ) : null}
+                {body}
+            </div>
+        );
+    }
 
     return (
         <Card>
             <CardHeader title={title} />
-            <CardBody>
-                {fields.map((field, index) => (
-                    <FieldRenderer
-                        key={field.name ?? `${field.component}-${index}`}
-                        node={field}
-                        data={data}
-                        screen={screen}
-                    />
-                ))}
-            </CardBody>
+            <CardBody>{body}</CardBody>
         </Card>
     );
 }
@@ -137,14 +180,51 @@ export function ColumnsLayout({ node, data, screen }: LayoutComponentProps) {
     );
 }
 
+function splitColumnFractions(node: LayoutNode): [number, number] {
+    const classes = (node.data.columnClass as string[] | undefined) ?? [];
+
+    if (classes.length >= 2) {
+        const spans = classes.map((className) => {
+            const match = className.match(/col-md-(\d+)/);
+
+            return match ? Number(match[1]) : 6;
+        });
+
+        return [spans[0] ?? 6, spans[1] ?? 6];
+    }
+
+    return [5, 7];
+}
+
+function splitRatioClass(left: number, right: number): string {
+    if (left === 8 && right === 4) {
+        return 'lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]';
+    }
+
+    if (left === 4 && right === 8) {
+        return 'lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]';
+    }
+
+    if (left === 3 && right === 9) {
+        return 'lg:grid-cols-[minmax(0,1fr)_minmax(0,3fr)]';
+    }
+
+    if (left === 5 && right === 7) {
+        return 'lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]';
+    }
+
+    return 'lg:grid-cols-2';
+}
+
 export function SplitLayout({ node, data, screen }: LayoutComponentProps) {
+    const [left, right] = splitColumnFractions(node);
+
     return (
-        <LayoutChildren
-            nodes={node.children}
-            data={data}
-            screen={screen}
-            className="grid grid-cols-1 gap-4 lg:grid-cols-3"
-        />
+        <div className={cn('grid grid-cols-1 items-start gap-6', splitRatioClass(left, right))}>
+            {node.children.map((child) => (
+                <LayoutNodeRenderer key={child.key} node={child} data={data} screen={screen} />
+            ))}
+        </div>
     );
 }
 
@@ -203,52 +283,166 @@ export function TableLayout({ node, data, screen }: LayoutComponentProps) {
     const hasSerializedRows = Array.isArray(node.data.rows);
     const isDeferred = hasTarget && raw === undefined && !hasSerializedRows;
     const rows = asRows(node.data.rows ?? raw);
+    const withToolbar = Boolean(node.data.withToolbar);
+    const withSearch = Boolean(node.data.withSearch);
+    const searchColumn = (node.data.searchColumn as string | null | undefined) ?? null;
+    const filterFields = tableFilterFields(node.data.filterFields);
+    const inlineFilterFields = tableFilterFields(node.data.inlineFilterFields);
+    const storageKey = `orbit.table.columns.${target ?? node.key}`;
+    const [hiddenSlugs, setHiddenSlugs] = useState<string[]>(() => defaultHiddenColumnSlugs(columns));
+    const visibleColumns = columns.filter((column) => !hiddenSlugs.includes(column.slug));
+    const tabFilterColumn = columns.find((column) => column.filterTabs && column.filter) ?? null;
+    const { url } = usePage();
+
+    useEffect(() => {
+        const stored = window.localStorage.getItem(storageKey);
+
+        if (! stored) {
+            return;
+        }
+
+        try {
+            setHiddenSlugs(JSON.parse(stored) as string[]);
+        } catch {
+            // Ignore invalid stored preferences.
+        }
+    }, [storageKey]);
+
+    const paginator =
+        (node.data.pagination as Record<string, unknown> | null | undefined) ??
+        (raw && typeof raw === 'object' && !Array.isArray(raw) && 'current_page' in (raw as Record<string, unknown>)
+            ? (raw as Record<string, unknown>)
+            : null);
+    const perPageOptions = (node.data.perPageOptions as number[] | undefined) ?? [10, 25, 50, 100];
+    const paginationStyle = (node.data.paginationStyle as 'full' | 'simple' | undefined) ?? 'full';
+    const tableTitle = withToolbar ? null : ((node.data.title as string | null | undefined) ?? null);
+    const toolbarTitle = withToolbar ? ((node.data.title as string | null | undefined) ?? null) : null;
+
+    const sortDirection = useCallback((column: ColumnNode): 'asc' | 'desc' | null => {
+        if (! column.sort) {
+            return null;
+        }
+
+        const search = url.includes('?') ? url.split('?')[1] : '';
+        const sort = new URLSearchParams(search).get('sort');
+
+        if (sort === column.column) {
+            return 'asc';
+        }
+
+        if (sort === `-${column.column}`) {
+            return 'desc';
+        }
+
+        return null;
+    }, [url]);
+
+    const toggleColumn = (slug: string) => {
+        setHiddenSlugs((current) => {
+            const next = current.includes(slug)
+                ? current.filter((value) => value !== slug)
+                : [...current, slug];
+
+            window.localStorage.setItem(storageKey, JSON.stringify(next));
+
+            return next;
+        });
+    };
 
     return (
-        <Card>
-            <CardHeader title={node.data.title as string | null} />
-            {isDeferred ? (
-                <CardBody>
-                    <SkeletonRows rows={5} />
-                </CardBody>
-            ) : rows.length === 0 ? (
-                <EmptyState
-                    heading={(node.data.textNotFound as string) ?? t('No records found')}
-                    description={node.data.textNotFoundSubtitle as string | undefined}
+        <div className="space-y-3">
+            {withToolbar && tabFilterColumn ? (
+                <div className="flex justify-center">
+                    <TableFilterTabs
+                        column={tabFilterColumn}
+                        total={paginator ? Number(paginator.total ?? 0) : undefined}
+                    />
+                </div>
+            ) : null}
+            {withToolbar ? (
+                <EntityTableToolbar
+                    title={toolbarTitle}
+                    columns={columns}
+                    filterFields={filterFields}
+                    inlineFilterFields={inlineFilterFields}
+                    searchColumn={withSearch ? searchColumn : null}
+                    hiddenSlugs={hiddenSlugs}
+                    onToggleColumn={toggleColumn}
                 />
+            ) : null}
+            {isDeferred ? (
+                <Card className="overflow-hidden">
+                    <CardBody>
+                        <SkeletonRows rows={5} />
+                    </CardBody>
+                </Card>
+            ) : rows.length === 0 ? (
+                <Card className="overflow-hidden">
+                    {!withToolbar && tableTitle ? <CardHeader title={tableTitle} /> : null}
+                    <EmptyState
+                        heading={(node.data.textNotFound as string) ?? t('No records found')}
+                        description={node.data.textNotFoundSubtitle as string | undefined}
+                    />
+                </Card>
             ) : (
-                <Table>
-                    <TableHead>
-                        <TableRow>
-                            {columns.map((column) => (
-                                <TableHeaderCell key={column.slug} align={columnAlign(column.align)}>
-                                    {column.title}
-                                </TableHeaderCell>
-                            ))}
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {rows.map((row, rowIndex) => (
-                            <TableRow key={String(row.id ?? row.key ?? rowIndex)}>
-                                {columns.map((column) => (
-                                    <TableCell key={column.slug} align={columnAlign(column.align)}>
-                                        {actionCell(row, column).length > 0 ? (
-                                            <ActionBar actions={actionCell(row, column)} data={row} screen={screen} />
-                                        ) : fieldCell(row, column) != null ? (
-                                            <FieldRenderer node={fieldCell(row, column)!} data={row} screen={screen} />
-                                        ) : renderedCell(row, column) != null ? (
-                                            <span dangerouslySetInnerHTML={{ __html: renderedCell(row, column) ?? '' }} />
-                                        ) : (
-                                            String(cellValue(row, column) ?? '')
-                                        )}
-                                    </TableCell>
+                <>
+                    <Card className="overflow-hidden">
+                        {!withToolbar && tableTitle ? <CardHeader title={tableTitle} /> : null}
+                        <Table>
+                            <TableHead>
+                                <TableRow interactive={false}>
+                                    {visibleColumns.map((column) => (
+                                        <TableHeaderCell
+                                            key={column.slug}
+                                            align={columnAlign(column.align)}
+                                            sortable={Boolean(column.sort && column.sortUrl)}
+                                            sortDirection={sortDirection(column)}
+                                            onSort={
+                                                column.sortUrl
+                                                    ? () =>
+                                                          router.get(column.sortUrl!, {}, {
+                                                              preserveScroll: true,
+                                                              preserveState: true,
+                                                          })
+                                                    : undefined
+                                            }
+                                        >
+                                            {column.title}
+                                        </TableHeaderCell>
+                                    ))}
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {rows.map((row, rowIndex) => (
+                                    <TableRow key={String(row.id ?? row.key ?? rowIndex)}>
+                                        {visibleColumns.map((column) => (
+                                            <TableCell key={column.slug} align={columnAlign(column.align)}>
+                                                {actionCell(row, column).length > 0 ? (
+                                                    <TableRowActions actions={actionCell(row, column)} data={row} screen={screen} />
+                                                ) : fieldCell(row, column) != null ? (
+                                                    <FieldRenderer node={fieldCell(row, column)!} data={row} screen={screen} />
+                                                ) : renderedCell(row, column) != null ? (
+                                                    <span dangerouslySetInnerHTML={{ __html: renderedCell(row, column) ?? '' }} />
+                                                ) : (
+                                                    String(cellValue(row, column) ?? '')
+                                                )}
+                                            </TableCell>
+                                        ))}
+                                    </TableRow>
                                 ))}
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
+                            </TableBody>
+                        </Table>
+                    </Card>
+                    {paginator ? (
+                        <TablePagination
+                            paginator={paginator}
+                            perPageOptions={perPageOptions}
+                            paginationStyle={paginationStyle}
+                        />
+                    ) : null}
+                </>
             )}
-        </Card>
+        </div>
     );
 }
 
@@ -286,7 +480,16 @@ interface MetricEntry {
     label?: string;
     value?: string | number;
     diff?: number;
+    detail?: string;
+    detailTone?: 'amber' | 'blue' | 'green' | 'slate';
 }
+
+const metricDetailToneClass: Record<NonNullable<MetricEntry['detailTone']>, string> = {
+    amber: 'text-amber-600 dark:text-amber-400',
+    blue: 'text-blue-600 dark:text-blue-400',
+    green: 'text-green-600 dark:text-green-400',
+    slate: 'text-gray-500 dark:text-gray-400',
+};
 
 export function MetricLayout({ node }: LayoutComponentProps) {
     const metrics = (node.data.metrics as MetricEntry[] | undefined) ?? [];
@@ -299,14 +502,25 @@ export function MetricLayout({ node }: LayoutComponentProps) {
     return (
         <div className="space-y-2">
             {title ? <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200">{title}</h3> : null}
-            <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
                 {metrics.map((metric, index) => (
-                    <Card key={metric.label ?? index}>
-                        <CardBody>
-                            <p className="text-xs uppercase tracking-wide text-gray-400">{metric.label}</p>
-                            <p className="mt-1 text-2xl font-semibold">{metric.value ?? '—'}</p>
-                            {typeof metric.diff === 'number' ? (
-                                <p className={cn('mt-1 text-xs', metric.diff >= 0 ? 'text-green-600' : 'text-red-600')}>
+                    <Card key={metric.label ?? index} className="border-gray-200/80 dark:border-white/10">
+                        <CardBody className="py-4">
+                            <p className="text-xs font-medium text-gray-500 dark:text-gray-400">{metric.label}</p>
+                            <p className="mt-1 truncate text-2xl font-semibold tracking-tight text-gray-900 dark:text-gray-50">
+                                {metric.value ?? '—'}
+                            </p>
+                            {metric.detail ? (
+                                <p
+                                    className={cn(
+                                        'mt-1.5 text-xs font-medium',
+                                        metric.detailTone ? metricDetailToneClass[metric.detailTone] : 'text-gray-500 dark:text-gray-400',
+                                    )}
+                                >
+                                    {metric.detail}
+                                </p>
+                            ) : typeof metric.diff === 'number' ? (
+                                <p className={cn('mt-1.5 text-xs font-medium', metric.diff >= 0 ? 'text-green-600' : 'text-red-600')}>
                                     {metric.diff >= 0 ? '▲' : '▼'} {Math.abs(metric.diff)}%
                                 </p>
                             ) : null}

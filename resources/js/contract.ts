@@ -35,6 +35,7 @@ export interface ColumnNode {
     sortUrl?: string;
     filter?: FieldNode | null;
     filterString?: string | null;
+    filterTabs?: boolean;
     popover?: string | null;
     defaultHidden?: boolean;
     allowUserHidden?: boolean;

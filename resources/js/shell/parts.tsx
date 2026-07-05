@@ -129,6 +129,8 @@ export function ContentContainer({
 /** Section name → rail/nav glyph. Falls back to the first item's icon. */
 export const SECTION_ICONS: Record<string, string> = {
     'Access Control': 'bs.shield-lock',
+    'Users & Roles': 'bs.people-fill',
+    '사용자 및 역할': 'bs.people-fill',
     System: 'bs.gear',
     Settings: 'bs.gear',
     Entities: 'bs.grid',
@@ -413,7 +415,7 @@ export function IconRail({
                 href={homeUrl}
                 className="mb-2 flex h-11 w-11 items-center justify-center rounded-2xl transition hover:rounded-xl"
                 title={brand?.name ?? 'Orbit'}
-                style={{ backgroundColor: toneVar('rail-active-bg', '#d1fae5') }}
+                style={{ backgroundColor: toneVar('rail-symbol-bg', '#17ce91') }}
             >
                 {symbolUrl ? (
                     <img src={symbolUrl} alt={brand?.name ?? 'Orbit'} className="h-6 w-6 object-contain" />

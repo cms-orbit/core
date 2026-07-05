@@ -48,6 +48,7 @@ export function DateTimerField(props: FieldComponentProps) {
     const { name, value, errors, onChange } = props;
     const type = resolveInputType(props);
     const quickDates = (attr(props, 'quickDates') as string[] | undefined) ?? [];
+    const compact = bool(attr(props, 'compact'));
 
     return (
         <FieldShell
@@ -55,6 +56,7 @@ export function DateTimerField(props: FieldComponentProps) {
             help={attr<string>(props, 'help')}
             required={attr<boolean>(props, 'required')}
             error={errors[0]}
+            compact={compact}
         >
             <input
                 type={type}
@@ -106,6 +108,7 @@ export function DateRangeField(props: FieldComponentProps) {
     const enableTime = bool(attr(props, 'data-datetime-enable-time'));
     const type = enableTime ? 'datetime-local' : 'date';
     const current = readRange(value);
+    const compact = bool(attr(props, 'compact'));
 
     const update = (key: 'start' | 'end', next: string) => {
         onChange?.({ ...current, [key]: next });
@@ -117,8 +120,9 @@ export function DateRangeField(props: FieldComponentProps) {
             help={attr<string>(props, 'help')}
             required={attr<boolean>(props, 'required')}
             error={errors[0]}
+            compact={compact}
         >
-            <div className={cn('flex items-center gap-2')}>
+            <div className={cn('flex items-center gap-2', str(attr(props, 'layout')) === 'stack' && 'flex-col items-stretch')}>
                 <input
                     type={type}
                     name={name ? `${name}[start]` : undefined}

@@ -25,14 +25,14 @@ abstract class Split extends Layout
      * @var string[]
      */
     protected $variables = [
-        'columnClass' => ['col-md-6', 'col-md-6'],
+        'columnClass'    => ['col-md-6', 'col-md-6'],
         'reverseOnPhone' => false,
     ];
 
     /**
      * Split constructor.
      *
-     * @param  Layout[]  $layouts  The layouts that will be contained in this split layout.
+     * @param Layout[] $layouts The layouts that will be contained in this split layout.
      */
     public function __construct(array $layouts = [])
     {
@@ -42,7 +42,8 @@ abstract class Split extends Layout
     /**
      * Builds the HTML representation of this layout.
      *
-     * @param  Repository  $repository  The repository instance.
+     * @param Repository $repository The repository instance.
+     *
      * @return mixed The HTML representation of this layout.
      */
     public function build(Repository $repository)
@@ -53,19 +54,22 @@ abstract class Split extends Layout
     /**
      * Sets the width ratio of the columns in this split layout.
      *
-     * @param  string  $ratio  The width ratio in the format 'X/Y'.
-     * @return $this This instance of the Split class.
+     * @param string $ratio The width ratio in the format 'X/Y'.
      *
      * @throws \InvalidArgumentException if the specified ratio is not valid.
+     *
+     * @return $this This instance of the Split class.
      */
     public function ratio(string $ratio): self
     {
         $allowedRatios = collect([
             '20/80' => ['col-md-2', 'col-md-10'],
             '30/70' => ['col-md-3', 'col-md-9'],
+            '33/66' => ['col-md-4', 'col-md-8'],
             '40/60' => ['col-md-4', 'col-md-8'],
             '50/50' => ['col-md-6', 'col-md-6'],
             '60/40' => ['col-md-8', 'col-md-4'],
+            '66/33' => ['col-md-8', 'col-md-4'],
             '70/30' => ['col-md-9', 'col-md-3'],
             '80/20' => ['col-md-10', 'col-md-2'],
         ]);

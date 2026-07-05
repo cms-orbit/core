@@ -2,6 +2,19 @@
 
 이 문서는 `cms-orbit/core`의 릴리스 노트를 기록합니다.
 
+## 4.0.0 - 2026-07-05
+
+### 추가
+
+- `php artisan orbit:frontend-sync` 명령으로 설치된 `cms-orbit/*` 패키지의 Inertia 페이지 브리지와 Vite alias를 자동 생성합니다. `orbit:install`·`orbit:sync` 흐름에 통합했습니다.
+- Laravel Boost v2 자동 감지 형식(`resources/boost/guidelines/`, `resources/boost/skills/`)으로 Orbit 가이드라인·스킬(Entity, i18n, 패키지 기여)을 배포합니다.
+- 각 패키지가 선언하는 `resources/orbit/frontend.json` manifest 기반 프런트엔드 연결 규약을 도입했습니다.
+
+### 개선
+
+- README에 **호스트 설정** 표를 추가해 필수/선택 수동 작업을 구분했습니다. 순정 Laravel + Composer 설치만으로 동작하도록 Vite alias·브리지 수동 편집을 줄였습니다.
+- Boost 가이드라인에 **패키지 독립성**·**다국어 필수**·호스트 코드 포함 금지 규칙을 명시했습니다.
+
 ## 4.0.0-beta4 - 2026-07-04
 
 ### 추가

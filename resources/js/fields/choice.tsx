@@ -119,6 +119,8 @@ export function SelectField(props: FieldComponentProps) {
     const allowCreate = bool(attr(props, 'allowCreate')) || bool(attr(props, 'allowCreateValue'));
     const allowEmpty = bool(attr(props, 'allowEmpty')) || bool(attr(props, 'allowEmptyValue'));
     const placeholder = attr<string>(props, 'placeholder');
+    const title = attr<string>(props, 'title');
+    const compact = bool(attr(props, 'compact'));
 
     const [open, setOpen] = useState(false);
     const [search, setSearch] = useState('');
@@ -136,6 +138,9 @@ export function SelectField(props: FieldComponentProps) {
 
         return [...merged, ...synthetic];
     }, [baseOptions, extraOptions, selectedValues]);
+
+    const searchable = bool(attr(props, 'searchable'));
+    const showSearch = searchable || isMultiple || (!compact && (options.length > 8 || allowCreate));
 
     useEffect(() => {
         if (!open) {
@@ -189,10 +194,11 @@ export function SelectField(props: FieldComponentProps) {
 
     return (
         <FieldShell
-            title={attr<string>(props, 'title')}
+            title={title}
             help={attr<string>(props, 'help')}
             required={attr<boolean>(props, 'required')}
             error={errors[0]}
+            compact={compact}
         >
             <div ref={containerRef} className="relative">
                 <div
@@ -220,32 +226,34 @@ export function SelectField(props: FieldComponentProps) {
                     ) : !isMultiple && selectedValues[0] ? (
                         <span className="text-sm text-gray-900 dark:text-gray-100">{labelFor(selectedValues[0])}</span>
                     ) : (
-                        <span className="text-sm text-gray-400">{placeholder ?? t('Select…')}</span>
+                        <span className="text-sm text-gray-400">{placeholder ?? title ?? t('Select…')}</span>
                     )}
                 </div>
 
                 {open ? (
                     <div className="absolute z-20 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-gray-800">
-                        <input
-                            autoFocus
-                            value={search}
-                            onChange={(event) => setSearch(event.target.value)}
-                            onKeyDown={(event) => {
-                                if (event.key === 'Enter' && allowCreate) {
-                                    event.preventDefault();
-                                    createTag();
-                                }
-                            }}
-                            placeholder={t('Search…')}
-                            className="mb-1 w-full border-b border-gray-100 px-3 py-1.5 text-sm outline-none dark:border-gray-700 dark:bg-gray-800"
-                        />
+                        {showSearch ? (
+                            <input
+                                autoFocus
+                                value={search}
+                                onChange={(event) => setSearch(event.target.value)}
+                                onKeyDown={(event) => {
+                                    if (event.key === 'Enter' && allowCreate) {
+                                        event.preventDefault();
+                                        createTag();
+                                    }
+                                }}
+                                placeholder={title ? t('Search :label…', { label: title }) : t('Search…')}
+                                className="mb-1 w-full border-b border-gray-100 px-3 py-1.5 text-sm outline-none dark:border-gray-700 dark:bg-gray-800"
+                            />
+                        ) : null}
                         {allowEmpty && !isMultiple ? (
                             <button
                                 type="button"
                                 className="block w-full px-3 py-1.5 text-left text-sm text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700"
                                 onClick={() => select('')}
                             >
-                                —
+                                {placeholder ?? title ?? '—'}
                             </button>
                         ) : null}
                         {filtered.map((option) => (

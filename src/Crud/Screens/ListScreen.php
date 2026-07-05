@@ -80,8 +80,10 @@ class ListScreen extends CrudScreen
         );
 
         return [
-            Layout::selection($entity->filters()),
-            Layout::table('model', $grid->toArray()),
+            Layout::table('model', $grid->toArray())
+                ->toolbar()
+                ->searchable($entity->searchColumns() !== [])
+                ->toolbarFilters($entity->filters()),
         ];
     }
 

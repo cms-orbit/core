@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { isTransparentColor, resolveOpaqueColor } from '../lib/color-value';
 
 export interface BrandColors {
     primary?: string;
@@ -14,6 +15,9 @@ export type ContentWidthOption = 'full' | 'default' | 'wide' | 'xwide' | 'contai
 export type ResolvedContentWidthOption = 'full' | 'default' | 'wide' | 'xwide';
 export const ORBIT_THEME_MODE_EVENT = 'orbit:theme-mode-changed';
 export const ORBIT_THEME_MODE_STORAGE_KEY = 'orbit.theme-mode';
+export const ORBIT_THEME_MODE_COOKIE_KEY = 'orbit_theme_mode';
+export const ORBIT_THEME_RESOLVED_COOKIE_KEY = 'orbit_theme_resolved';
+export type ThemeTone = 'light' | 'dark';
 
 export type LayoutMode = 'palette-split' | 'sidebar-single' | 'topbar' | 'hybrid';
 
@@ -62,6 +66,8 @@ export interface OrbitBrand {
         light?: Record<string, string> | null;
         dark?: Record<string, string> | null;
     };
+    /** Effective light/dark tone resolved server-side for SSR hydration. */
+    activeTone?: ThemeTone | null;
 }
 
 /** Built-in palette presets. Backend exposes the same names in branding config. */
@@ -259,17 +265,37 @@ export function resolveBrandColors(brand: OrbitBrand | undefined): Required<Bran
     };
 }
 
-function resolveActiveThemeTokens(brand: OrbitBrand | undefined): Record<string, string> {
-    if (brand?.tokenSchemes && typeof document !== 'undefined') {
-        const isDark = document.documentElement.classList.contains('dark');
-        const scheme = isDark ? brand.tokenSchemes.dark : brand.tokenSchemes.light;
+export function resolveThemeTokensForTone(
+    brand: OrbitBrand | undefined,
+    tone: ThemeTone,
+): Record<string, string> {
+    const scheme = brand?.tokenSchemes?.[tone];
 
-        if (scheme) {
-            return scheme;
-        }
+    if (scheme) {
+        return scheme;
     }
 
     return brand?.tokens ?? {};
+}
+
+function readDocumentThemeTone(): ThemeTone {
+    if (typeof document === 'undefined') {
+        return 'light';
+    }
+
+    return document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+}
+
+function syncThemeModeCookies(mode: ThemeModeOption, resolvedTone: ThemeTone): void {
+    if (typeof document === 'undefined') {
+        return;
+    }
+
+    const maxAge = '31536000';
+    const base = `path=/; max-age=${maxAge}; SameSite=Lax`;
+
+    document.cookie = `${ORBIT_THEME_MODE_COOKIE_KEY}=${mode}; ${base}`;
+    document.cookie = `${ORBIT_THEME_RESOLVED_COOKIE_KEY}=${resolvedTone}; ${base}`;
 }
 
 function isDarkDocument(): boolean {
@@ -329,12 +355,14 @@ export function storeThemeMode(mode: ThemeModeOption): void {
 
     window.localStorage.setItem(ORBIT_THEME_MODE_STORAGE_KEY, mode);
     applyDarkMode(mode, true);
+    syncThemeModeCookies(mode, readDocumentThemeTone());
     window.dispatchEvent(new CustomEvent(ORBIT_THEME_MODE_EVENT, { detail: mode }));
 }
 
 export function applyDarkMode(
     setting: DarkModeSetting | null | undefined,
     allowUserToggle = true,
+    syncCookies = false,
 ) {
     if (typeof document === 'undefined') {
         return;
@@ -347,10 +375,18 @@ export function applyDarkMode(
         const prefersDark = window.matchMedia?.('(prefers-color-scheme: dark)').matches;
         root.classList.toggle('dark', Boolean(prefersDark));
 
+        if (syncCookies) {
+            syncThemeModeCookies(mode, prefersDark ? 'dark' : 'light');
+        }
+
         return;
     }
 
     root.classList.toggle('dark', mode === 'dark');
+
+    if (syncCookies) {
+        syncThemeModeCookies(mode, mode === 'dark' ? 'dark' : 'light');
+    }
 }
 
 function upsertHeadLink(selector: string, attrs: Record<string, string>) {
@@ -412,53 +448,45 @@ function applyFavicon(
  * style object to apply on the shell root so descendants inherit tokens.
  */
 export function useBrandTheme(brand: OrbitBrand | undefined): React.CSSProperties {
-    const [, setThemeModeRevision] = useState(0);
-    const [, setToneRevision] = useState(0);
+    const serverTone: ThemeTone = brand?.activeTone === 'dark' ? 'dark' : 'light';
+    const [activeTone, setActiveTone] = useState<ThemeTone>(serverTone);
+    const [hasHydrated, setHasHydrated] = useState(false);
     const colors = useMemo(() => resolveBrandColors(brand), [brand]);
-    const tokens = resolveActiveThemeTokens(brand);
     const themeToggleEnabled = brand?.themeToggleEnabled ?? true;
     const themeModeSetting = brand?.themeMode ?? brand?.darkMode;
-    const themeMode = resolveThemeMode(themeModeSetting, themeToggleEnabled);
+    const effectiveTone = hasHydrated ? activeTone : serverTone;
+    const tokens = useMemo(
+        () => resolveThemeTokensForTone(brand, effectiveTone),
+        [brand, effectiveTone],
+    );
 
     useEffect(() => {
-        applyDarkMode(themeModeSetting, themeToggleEnabled);
-    }, [themeModeSetting, themeToggleEnabled, themeMode]);
-
-    useEffect(() => {
-        if (!brand?.tokenSchemes || typeof document === 'undefined') {
-            return;
-        }
-
-        const root = document.documentElement;
-        const observer = new MutationObserver(() => {
-            setToneRevision((value) => value + 1);
-        });
-
-        observer.observe(root, { attributes: true, attributeFilter: ['class'] });
-
-        return () => observer.disconnect();
-    }, [brand?.tokenSchemes]);
+        applyDarkMode(themeModeSetting, themeToggleEnabled, true);
+        setActiveTone(readDocumentThemeTone());
+        setHasHydrated(true);
+    }, [themeModeSetting, themeToggleEnabled]);
 
     useEffect(() => {
         if (typeof window === 'undefined') {
             return;
         }
 
-        const handleThemeModeChange = () => {
-            setThemeModeRevision((value) => value + 1);
+        const syncActiveTone = () => {
+            setActiveTone(readDocumentThemeTone());
         };
         const media = window.matchMedia?.('(prefers-color-scheme: dark)');
         const handleMediaChange = () => {
             if (resolveThemeMode(themeModeSetting, themeToggleEnabled) === 'system') {
-                setThemeModeRevision((value) => value + 1);
+                applyDarkMode(themeModeSetting, themeToggleEnabled, true);
+                syncActiveTone();
             }
         };
 
-        window.addEventListener(ORBIT_THEME_MODE_EVENT, handleThemeModeChange);
+        window.addEventListener(ORBIT_THEME_MODE_EVENT, syncActiveTone);
         media?.addEventListener?.('change', handleMediaChange);
 
         return () => {
-            window.removeEventListener(ORBIT_THEME_MODE_EVENT, handleThemeModeChange);
+            window.removeEventListener(ORBIT_THEME_MODE_EVENT, syncActiveTone);
             media?.removeEventListener?.('change', handleMediaChange);
         };
     }, [themeModeSetting, themeToggleEnabled]);
@@ -469,20 +497,26 @@ export function useBrandTheme(brand: OrbitBrand | undefined): React.CSSPropertie
 
     return useMemo(() => {
         const shadeColors = {
-            primary: tokens.color_primary ?? colors.primary,
-            secondary: tokens.color_secondary ?? colors.secondary,
-            accent: tokens.color_accent ?? colors.accent,
+            primary: resolveOpaqueColor(tokens.color_primary, colors.primary),
+            secondary: resolveOpaqueColor(tokens.color_secondary, colors.secondary),
+            accent: resolveOpaqueColor(tokens.color_accent, colors.accent),
         };
         const style: Record<string, string> = {
-            '--color-orbit-primary': shadeColors.primary,
-            '--color-orbit-secondary': shadeColors.secondary,
-            '--color-orbit-accent': shadeColors.accent,
+            '--color-orbit-primary': tokens.color_primary ?? colors.primary,
+            '--color-orbit-secondary': tokens.color_secondary ?? colors.secondary,
+            '--color-orbit-accent': tokens.color_accent ?? colors.accent,
             '--color-orbit-surface': colors.surface ?? '#ffffff',
             '--color-orbit-muted': colors.muted ?? '#f1f5f9',
         };
 
         Object.entries(tokens).forEach(([key, value]) => {
-            style[`--color-orbit-${key.replace(/^color_/, '').replace(/_/g, '-')}`] = value;
+            if (value === undefined || value === null || value === '') {
+                return;
+            }
+
+            style[`--color-orbit-${key.replace(/^color_/, '').replace(/_/g, '-')}`] = isTransparentColor(value)
+                ? 'transparent'
+                : value;
         });
 
         style['--color-orbit-nav-section-fg'] =
@@ -493,6 +527,8 @@ export function useBrandTheme(brand: OrbitBrand | undefined): React.CSSPropertie
             tokens.color_nav_section_bg ?? tokens.color_nav_muted ?? colors.muted;
         style['--color-orbit-nav-section-border'] =
             tokens.color_nav_section_border ?? tokens.color_nav_border ?? '#e2e8f0';
+        style['--color-orbit-table-row-border'] =
+            tokens.color_table_row_border ?? tokens.color_nav_muted ?? colors.muted ?? '#f1f5f9';
 
         (['primary', 'secondary', 'accent'] as const).forEach((token) => {
             const shades = generateShades(shadeColors[token]);

@@ -85,7 +85,29 @@ class EntityRequest extends FormRequest
             $query = $query->filters()->filtersApply($entity->filters());
         }
 
-        return $query->paginate($entity->perPage());
+        $search = $this->input('filter.search');
+
+        if (is_string($search) && $search !== '') {
+            $columns = $entity->searchColumns();
+
+            if ($columns !== []) {
+                $term = addcslashes($search, '%_\\');
+                $query->where(function ($builder) use ($columns, $term) {
+                    foreach ($columns as $column) {
+                        $builder->orWhere($column, 'like', '%'.$term.'%');
+                    }
+                });
+            }
+        }
+
+        $perPage = (int) $this->input('per_page', $entity->perPage());
+        $allowedPerPage = $entity->perPageOptions();
+
+        if (! in_array($perPage, $allowedPerPage, true)) {
+            $perPage = $entity->perPage();
+        }
+
+        return $query->paginate($perPage)->withQueryString();
     }
 
     /**
@@ -137,6 +159,10 @@ class EntityRequest extends FormRequest
      */
     public function withValidator($validator): void
     {
+        if (! $this->has(ResourceFields::PREFIX)) {
+            return;
+        }
+
         $data = Arr::wrap($this->input(ResourceFields::PREFIX, []));
 
         collect($this->query->all())

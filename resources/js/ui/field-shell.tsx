@@ -14,6 +14,7 @@ export function FieldShell({
     className,
     collapsible = false,
     defaultCollapsed = false,
+    compact = false,
     children,
 }: {
     title?: string | null;
@@ -26,6 +27,7 @@ export function FieldShell({
     className?: string;
     collapsible?: boolean;
     defaultCollapsed?: boolean;
+    compact?: boolean;
     children: ReactNode;
 }) {
     const hasError = Boolean(error);
@@ -38,7 +40,7 @@ export function FieldShell({
     }, [hasError]);
 
     return (
-        <div className={cn('mb-4', className)}>
+        <div className={cn(compact ? 'mb-0' : 'mb-4', className)}>
             {title || hint ? (
                 <div className="mb-1.5 flex items-center justify-between gap-2">
                     {collapsible ? (

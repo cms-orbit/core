@@ -11,9 +11,8 @@ use CmsOrbit\Core\Screen\Layout;
 use CmsOrbit\Core\Screen\Screen;
 use CmsOrbit\Core\Screen\TD;
 use CmsOrbit\Core\Support\Facades\Layout as LayoutFactory;
+use CmsOrbit\Core\Support\Formats;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
-use Illuminate\Support\CarbonInterface;
 use Illuminate\Support\Facades\Schema;
 
 /**
@@ -91,7 +90,7 @@ class MainScreen extends Screen
             LayoutFactory::table('recentActivity', [
                 TD::make('created_at', __('Occurred'))
                     ->cantHide()
-                    ->render(fn (Model $model) => $this->renderTimestamp($model->getAttribute('created_at'))),
+                    ->render(fn (Model $model) => Formats::formatDateTimeForTable($model->getAttribute('created_at'))),
                 TD::make('description', __('Activity'))
                     ->cantHide()
                     ->render(fn (Model $model) => e((string) ($model->getAttribute('description') ?? '—'))),
@@ -166,24 +165,5 @@ class MainScreen extends Screen
         }
 
         return (int) round((($current - $previous) / $previous) * 100);
-    }
-
-    protected function renderTimestamp(mixed $value): string
-    {
-        if ($value === null) {
-            return '—';
-        }
-
-        $date = $value instanceof CarbonInterface ? $value : Carbon::parse($value);
-        $absolute = e($date->translatedFormat('Y.m.d H:i'));
-        $relative = e($date->diffForHumans());
-        $iso = e($date->toIso8601String());
-
-        return <<<HTML
-<time datetime="{$iso}" class="inline-flex flex-col leading-tight">
-    <span>{$absolute}</span>
-    <span class="text-xs text-gray-500">{$relative}</span>
-</time>
-HTML;
     }
 }
