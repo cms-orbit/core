@@ -42,6 +42,7 @@ class AuthServiceProvider extends ServiceProvider
         });
 
         $this->registerAuthConfigGroup();
+        $this->registerSocialLoginConfigGroup();
     }
 
     protected function registerSocialiteProviders(): void
@@ -66,7 +67,8 @@ class AuthServiceProvider extends ServiceProvider
         OrbitConfig::registerGroup('Authentication & Security', 860, [
             'icon'        => 'bs.shield-lock',
             'title'       => '인증 및 보안',
-            'description' => '로그인 수단, 소셜 인증, 휴대폰 인증 정책을 설정합니다.',
+            'description' => '로컬 로그인 수단과 휴대폰 인증 정책을 설정합니다.',
+            'hubSection'  => 'user',
         ]);
 
         OrbitConfig::registerSection('Authentication & Security', 'methods', [
@@ -85,10 +87,6 @@ class AuthServiceProvider extends ServiceProvider
             'title'    => '휴대폰 로그인',
             'priority' => 23,
         ]);
-        OrbitConfig::registerSection('Authentication & Security', 'social', [
-            'title'    => '소셜 로그인',
-            'priority' => 22,
-        ]);
 
         OrbitConfig::registerItem('Authentication & Security', 'auth_methods.email.enabled', 'switcher', true, 'methods', [
             'title' => '이메일 로그인 사용',
@@ -98,15 +96,6 @@ class AuthServiceProvider extends ServiceProvider
         ]);
         OrbitConfig::registerItem('Authentication & Security', 'auth_methods.phone.enabled', 'switcher', false, 'methods', [
             'title' => '휴대폰 로그인 사용',
-        ]);
-        OrbitConfig::registerItem('Authentication & Security', 'auth_methods.google.enabled', 'switcher', false, 'methods', [
-            'title' => 'Google 로그인 사용',
-        ]);
-        OrbitConfig::registerItem('Authentication & Security', 'auth_methods.kakao.enabled', 'switcher', false, 'methods', [
-            'title' => 'Kakao 로그인 사용',
-        ]);
-        OrbitConfig::registerItem('Authentication & Security', 'auth_methods.apple.enabled', 'switcher', false, 'methods', [
-            'title' => 'Apple 로그인 사용',
         ]);
 
         OrbitConfig::registerItem('Authentication & Security', 'auth_methods.email.require_verification', 'switcher', false, 'email', [
@@ -155,64 +144,46 @@ class AuthServiceProvider extends ServiceProvider
                 'auth_methods.phone.enabled' => true,
             ],
         ]);
-        OrbitConfig::registerItem('Authentication & Security', 'auth_sendgo.access_key', 'secret', null, 'phone', [
-            'title'       => 'SendGo Access Key',
-            'encrypted'   => true,
-            'visibleWhen' => [
-                'auth_methods.phone.enabled' => true,
-            ],
+    }
+
+    protected function registerSocialLoginConfigGroup(): void
+    {
+        OrbitConfig::registerGroup('Social Login', 855, [
+            'icon'        => 'bs.people',
+            'title'       => '소셜로그인',
+            'description' => 'Google, Kakao, Apple 소셜 로그인 연동을 설정합니다.',
+            'hubSection'  => 'api',
         ]);
-        OrbitConfig::registerItem('Authentication & Security', 'auth_sendgo.endpoint', 'input', null, 'phone', [
-            'title'       => 'SendGo Endpoint',
-            'visibleWhen' => [
-                'auth_methods.phone.enabled' => true,
-            ],
+
+        OrbitConfig::registerSection('Social Login', 'providers', [
+            'title'    => '로그인 제공자',
+            'priority' => 10,
         ]);
-        OrbitConfig::registerItem('Authentication & Security', 'auth_sendgo.secret_key', 'secret', null, 'phone', [
-            'title'       => 'SendGo Secret Key',
-            'encrypted'   => true,
-            'visibleWhen' => [
-                'auth_methods.phone.enabled' => true,
-            ],
-        ]);
-        OrbitConfig::registerItem('Authentication & Security', 'auth_sendgo.sender_key', 'input', null, 'phone', [
-            'title'       => 'SendGo SMS 발신키',
-            'visibleWhen' => [
-                'auth_methods.phone.enabled' => true,
-            ],
-        ]);
-        OrbitConfig::registerItem('Authentication & Security', 'auth_sendgo.kakao_sender_key', 'input', null, 'phone', [
-            'title'       => 'SendGo 카카오 발신키',
-            'visibleWhen' => [
-                'auth_methods.phone.enabled' => true,
-            ],
-        ]);
-        OrbitConfig::registerItem('Authentication & Security', 'auth_sendgo.api_version', 'select', 'v1', 'phone', [
-            'title'   => 'SendGo API 버전',
-            'options' => [
-                'v1' => 'v1',
-                'v2' => 'v2',
-            ],
-            'visibleWhen' => [
-                'auth_methods.phone.enabled' => true,
-            ],
+
+        OrbitConfig::registerSection('Social Login', 'credentials', [
+            'title'    => '연동 정보',
+            'priority' => 20,
         ]);
 
         foreach (['google' => 'Google', 'kakao' => 'Kakao', 'apple' => 'Apple'] as $provider => $label) {
-            OrbitConfig::registerItem('Authentication & Security', "auth_social.{$provider}.client_id", 'input', null, 'social', [
+            OrbitConfig::registerItem('Social Login', "auth_methods.{$provider}.enabled", 'switcher', false, 'providers', [
+                'title' => "{$label} 로그인 사용",
+            ]);
+
+            OrbitConfig::registerItem('Social Login', "auth_social.{$provider}.client_id", 'input', null, 'credentials', [
                 'title'       => "{$label} Client ID",
                 'visibleWhen' => [
                     "auth_methods.{$provider}.enabled" => true,
                 ],
             ]);
-            OrbitConfig::registerItem('Authentication & Security', "auth_social.{$provider}.client_secret", 'secret', null, 'social', [
+            OrbitConfig::registerItem('Social Login', "auth_social.{$provider}.client_secret", 'secret', null, 'credentials', [
                 'title'       => "{$label} Client Secret",
                 'encrypted'   => true,
                 'visibleWhen' => [
                     "auth_methods.{$provider}.enabled" => true,
                 ],
             ]);
-            OrbitConfig::registerItem('Authentication & Security', "auth_social.{$provider}.redirect", 'input', null, 'social', [
+            OrbitConfig::registerItem('Social Login', "auth_social.{$provider}.redirect", 'input', null, 'credentials', [
                 'title'       => "{$label} Redirect URL",
                 'visibleWhen' => [
                     "auth_methods.{$provider}.enabled" => true,
@@ -220,19 +191,19 @@ class AuthServiceProvider extends ServiceProvider
             ]);
         }
 
-        OrbitConfig::registerItem('Authentication & Security', 'auth_social.apple.team_id', 'input', null, 'social', [
+        OrbitConfig::registerItem('Social Login', 'auth_social.apple.team_id', 'input', null, 'credentials', [
             'title'       => 'Apple Team ID',
             'visibleWhen' => [
                 'auth_methods.apple.enabled' => true,
             ],
         ]);
-        OrbitConfig::registerItem('Authentication & Security', 'auth_social.apple.key_id', 'input', null, 'social', [
+        OrbitConfig::registerItem('Social Login', 'auth_social.apple.key_id', 'input', null, 'credentials', [
             'title'       => 'Apple Key ID',
             'visibleWhen' => [
                 'auth_methods.apple.enabled' => true,
             ],
         ]);
-        OrbitConfig::registerItem('Authentication & Security', 'auth_social.apple.private_key', 'secret', null, 'social', [
+        OrbitConfig::registerItem('Social Login', 'auth_social.apple.private_key', 'secret', null, 'credentials', [
             'title'       => 'Apple Private Key',
             'encrypted'   => true,
             'visibleWhen' => [

@@ -6,6 +6,10 @@
 
 ### 추가
 
+- 설정 허브를 **기본설정·컨텐츠·사용자·API 연동·SaaS** 아코디언 섹션으로 그룹화하고, 접힘 상태를 쿠키로 유지합니다.
+- 설정 그룹에 `hubSection` 속성을 도입해 허브 섹션 배치를 선언할 수 있습니다.
+- Google·Kakao·Apple 소셜 로그인을 **소셜로그인** 전용 설정 그룹으로 분리했습니다.
+- 메뉴 `active` URL 패턴 매칭을 서버 직렬화와 React 셸 양쪽에서 지원합니다.
 - `php artisan orbit:frontend-sync` 명령으로 설치된 `cms-orbit/*` 패키지의 Inertia 페이지 브리지와 Vite alias를 자동 생성합니다. `orbit:install`·`orbit:sync` 흐름에 통합했습니다.
 - Laravel Boost v2 자동 감지 형식(`resources/boost/guidelines/`, `resources/boost/skills/`)으로 Orbit 가이드라인·스킬(Entity, i18n, 패키지 기여)을 배포합니다.
 - 각 패키지가 선언하는 `resources/orbit/frontend.json` manifest 기반 프런트엔드 연결 규약을 도입했습니다.
@@ -14,6 +18,8 @@
 
 - 4.0.0 정식 릴리스에 맞춰 패키지 마이그레이션을 테이블당 단일 `create` 파일로 통합했습니다. 증분 alter/backfill 마이그레이션을 제거하고, 신규 설치(`migrate:fresh`) 기준 최종 스키마만 유지합니다.
 - 호스트 `database/migrations`는 Laravel 기본(users, cache, jobs)만 두고, Orbit 전용 users/roles 확장은 패키지 auto-load 마이그레이션으로 이전했습니다.
+- SendGo API 자격 증명 설정을 `cms-orbit/sendgo` 패키지로 이전했습니다(인증·보안 그룹에서 제거).
+- 활성화된 로컬 로그인 수단이 없을 때 이메일 로그인을 강제로 표시하지 않습니다.
 
 ### 개선
 
@@ -23,6 +29,9 @@
 - Boost 가이드라인에 **패키지 독립성**·**다국어 필수**·호스트 코드 포함 금지 규칙을 명시했습니다.
 - `orbit:install` / `orbit:sync`가 Laravel Boost가 이미 설정된 호스트에서 cms-orbit 패키지를 Boost에 등록하고 `boost:update`를 자동 실행합니다.
 - README에 Laravel Boost 흐름, `orbit:admin`, `npm run dev` 안내를 보강했습니다.
+- 소셜 로그인만 활성화된 호스트에서 로그인 화면이 소셜 버튼만 표시되도록 정리했습니다.
+- 로그인 수단이 전혀 구성되지 않았을 때 안내 메시지를 표시합니다.
+- `cms-orbit/sendgo` suggest 설명을 SendGo 관리자 GUI·템플릿 동기화·캠페인 기록 기준으로 갱신했습니다.
 
 ## 4.0.0-beta4 - 2026-07-04
 

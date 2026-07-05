@@ -17,6 +17,19 @@ use Illuminate\Support\Facades\Auth;
  */
 class SettingsScreen extends Screen
 {
+    /**
+     * Ordered settings hub accordion sections.
+     *
+     * @var array<int, array{id: string, title: string}>
+     */
+    public const HUB_SECTIONS = [
+        ['id' => 'basic', 'title' => '기본설정'],
+        ['id' => 'content', 'title' => '컨텐츠'],
+        ['id' => 'user', 'title' => '사용자'],
+        ['id' => 'api', 'title' => 'API 연동'],
+        ['id' => 'saas', 'title' => 'SaaS'],
+    ];
+
     public function name(): ?string
     {
         return __('Settings');
@@ -56,12 +69,20 @@ class SettingsScreen extends Screen
                 'icon'        => $group->getIcon(),
                 'uriKey'      => $group->getUriKey(),
                 'url'         => route('orbit.configs.group', ['group' => $group->getUriKey()]),
+                'section'     => $group->getHubSection(),
             ])
             ->values()
             ->all();
 
         return [
-            'groups' => $groups,
+            'groups'   => $groups,
+            'sections' => collect(self::HUB_SECTIONS)
+                ->map(fn (array $section) => [
+                    'id'    => $section['id'],
+                    'title' => __($section['title']),
+                ])
+                ->values()
+                ->all(),
         ];
     }
 

@@ -4,7 +4,9 @@ namespace CmsOrbit\Core\Foundation\Configuration;
 
 use CmsOrbit\Core\Screen\Actions\Menu;
 use CmsOrbit\Core\Support\Attributes\FlushOctaneState;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 
 trait ManagesMenu
 {
@@ -214,6 +216,8 @@ trait ManagesMenu
      */
     protected function serializeMenuItem(Menu $menu): array
     {
+        $menu->runBeforeRender();
+
         $children = collect($menu->get('list', []))
             ->filter(fn ($item) => $item instanceof Menu && $this->menuItemVisible($item))
             ->map(fn (Menu $item) => $this->serializeMenuItem($item))
@@ -229,9 +233,30 @@ trait ManagesMenu
             'sectionKey' => $menu->get('sectionKey'),
             'sort'       => $menu->get('sort', 0),
             'divider'    => (bool) $menu->get('divider', false),
-            'active'     => $menu->get('active'),
+            'active'     => $this->isMenuActive($menu->get('active')),
             'children'   => $children,
         ];
+    }
+
+    /**
+     * Resolve whether any of the menu's active patterns matches the current URL.
+     *
+     * @param array<int, string>|string|null $patterns
+     */
+    protected function isMenuActive(array|string|null $patterns): bool
+    {
+        if (empty($patterns)) {
+            return false;
+        }
+
+        $current = request()->fullUrl();
+        $path = request()->path();
+
+        return collect(Arr::wrap($patterns))->contains(function ($pattern) use ($current, $path) {
+            $pattern = (string) $pattern;
+
+            return Str::is($pattern, $current) || Str::is(ltrim($pattern, '/'), $path);
+        });
     }
 
     /**

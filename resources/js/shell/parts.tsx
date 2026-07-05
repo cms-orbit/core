@@ -161,8 +161,16 @@ export function pathMatches(itemPath: string | null, currentPath: string): boole
     return currentPath === itemPath || currentPath.startsWith(`${itemPath}/`);
 }
 
+export function menuItemActive(item: OrbitMenuItem, currentPath: string): boolean {
+    if (typeof item.active === 'boolean') {
+        return item.active;
+    }
+
+    return pathMatches(toPath(item.url), currentPath);
+}
+
 export function itemTreeActive(item: OrbitMenuItem, currentPath: string): boolean {
-    if (pathMatches(toPath(item.url), currentPath)) {
+    if (menuItemActive(item, currentPath)) {
         return true;
     }
 
@@ -766,7 +774,7 @@ export function SidebarItem({ item, currentPath }: { item: OrbitMenuItem; curren
 
 export function SidebarLink({ item, currentPath }: { item: OrbitMenuItem; currentPath: string }) {
     const t = useT();
-    const active = pathMatches(toPath(item.url), currentPath);
+    const active = menuItemActive(item, currentPath);
 
     const content = (
         <>

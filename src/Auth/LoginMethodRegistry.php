@@ -15,15 +15,9 @@ class LoginMethodRegistry
      */
     public function enabledLocalProviders(): Collection
     {
-        $providers = collect(LoginProvider::local())
+        return collect(LoginProvider::local())
             ->filter(fn (LoginProvider $provider): bool => $this->isEnabled($provider))
             ->values();
-
-        if ($providers->isNotEmpty()) {
-            return $providers;
-        }
-
-        return collect([LoginProvider::Email]);
     }
 
     /**

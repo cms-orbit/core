@@ -32,7 +32,7 @@
         "laravel/pint": "^1.14"
     },
     "suggest": {
-        "cms-orbit/sendgo": "Install for SendGo-backed SMS or Kakao AlimTalk phone verification delivery."
+        "cms-orbit/sendgo": "Install for SendGo admin GUI, template sync, campaign records, and phone verification delivery."
     },
     "autoload": {
         "psr-4": {

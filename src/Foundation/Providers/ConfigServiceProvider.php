@@ -583,6 +583,7 @@ class ConfigServiceProvider extends ServiceProvider
         Config::registerGroup('Localization', 950, [
             'icon'        => 'bs.translate',
             'description' => 'Admin interface language and translatable content locales.',
+            'hubSection'  => 'basic',
         ]);
         Config::registerItem('Localization', 'locale.default', 'select', config('orbit.locale.default', 'ko'), 'default', [
             'title'   => 'Default admin language',
@@ -605,6 +606,7 @@ class ConfigServiceProvider extends ServiceProvider
         Config::registerGroup('SEO', 900, [
             'icon'        => 'bs.search',
             'description' => 'Search engine optimisation defaults applied to all content.',
+            'hubSection'  => 'basic',
         ]);
         Config::registerItem('SEO', 'seo.site_title', 'input', config('app.name'), 'default', ['title' => 'Site title']);
         Config::registerItem('SEO', 'seo.title_separator', 'input', '|', 'default', ['title' => 'Title separator']);
@@ -621,6 +623,7 @@ class ConfigServiceProvider extends ServiceProvider
             'icon'        => 'bs.palette',
             'title'       => '관리자 디자인설정',
             'description' => 'Admin panel branding, layout mode and per-layout colours.',
+            'hubSection'  => 'basic',
         ]);
         Config::registerSection('Admin Design', 'identity', ['title' => 'Identity', 'priority' => 40]);
         Config::registerItem('Admin Design', 'branding.name', 'input', config('app.name'), 'identity', ['title' => '관리자 페이지 이름']);
@@ -674,6 +677,7 @@ class ConfigServiceProvider extends ServiceProvider
         Config::registerGroup('Document', 700, [
             'icon'        => 'bs.file-earmark-text',
             'description' => 'Default behaviour for document-based content types.',
+            'hubSection'  => 'content',
         ]);
         Config::registerItem('Document', 'document.default_approved', 'select', 30, 'default', [
             'title'   => 'Default approval state',
@@ -687,6 +691,7 @@ class ConfigServiceProvider extends ServiceProvider
         Config::registerGroup('Media', 600, [
             'icon'        => 'bs.images',
             'description' => 'Image and video processing for the media library.',
+            'hubSection'  => 'content',
         ]);
         Config::registerSection('Media', 'image', ['title' => 'Images', 'priority' => 20]);
         Config::registerSection('Media', 'video', ['title' => 'Video', 'priority' => 10]);

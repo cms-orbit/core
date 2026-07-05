@@ -35,6 +35,7 @@ class ConfigRegistry
                 $attributes['icon'] ?? null,
                 $attributes['title'] ?? null,
                 $attributes['description'] ?? null,
+                $attributes['hubSection'] ?? null,
             );
             $this->sortGroups();
         }

@@ -25,6 +25,7 @@ class ConfigGroup
         private readonly ?string $icon = null,
         private readonly ?string $title = null,
         private readonly ?string $description = null,
+        private readonly ?string $hubSection = null,
     ) {
         $this->uriKey = Str::slug($name);
         $this->addSection('default');
@@ -58,6 +59,14 @@ class ConfigGroup
     public function getPriority(): int
     {
         return $this->priority;
+    }
+
+    /**
+     * Settings hub accordion section id (basic, content, user, saas).
+     */
+    public function getHubSection(): string
+    {
+        return $this->hubSection ?? 'basic';
     }
 
     public function setPriority(int $priority): self

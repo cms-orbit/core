@@ -42,6 +42,7 @@ class AnalyticsServiceProvider extends ServiceProvider
             'icon'        => 'bs.bar-chart',
             'title'       => '방문 통계',
             'description' => 'Orbit에 기본 내장된 가벼운 방문 분석을 설정합니다.',
+            'hubSection'  => 'user',
         ]);
 
         OrbitConfig::registerSection('Analytics', 'collection', [
