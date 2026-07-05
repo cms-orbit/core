@@ -10,6 +10,11 @@
 - Laravel Boost v2 자동 감지 형식(`resources/boost/guidelines/`, `resources/boost/skills/`)으로 Orbit 가이드라인·스킬(Entity, i18n, 패키지 기여)을 배포합니다.
 - 각 패키지가 선언하는 `resources/orbit/frontend.json` manifest 기반 프런트엔드 연결 규약을 도입했습니다.
 
+### 변경
+
+- 4.0.0 정식 릴리스에 맞춰 패키지 마이그레이션을 테이블당 단일 `create` 파일로 통합했습니다. 증분 alter/backfill 마이그레이션을 제거하고, 신규 설치(`migrate:fresh`) 기준 최종 스키마만 유지합니다.
+- 호스트 `database/migrations`는 Laravel 기본(users, cache, jobs)만 두고, Orbit 전용 users/roles 확장은 패키지 auto-load 마이그레이션으로 이전했습니다.
+
 ### 개선
 
 - 연결 계정·로그인 이력·방문 기록·활동 로그 등 접근 제어/분석 화면의 남은 영문 UI를 한글팩으로 보강했습니다. 로그인 이력 탭 필터, 기기 유형, 유입 경로 등 서버·클라이언트 양쪽 번역을 맞췄습니다.
