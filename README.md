@@ -1,5 +1,21 @@
 # CMS Orbit Core
 
+## 어디서 영감을 받았나요?
+
+Orbit Core는 처음부터 새로 짠 코드이지만, `ref/` 디렉터리에 모아 둔 선행 프로젝트들의 좋은 아이디어를 골라 이어 받았습니다. 각 프로젝트가 무엇을 남겼는지 짧게 소개합니다.
+
+| 참고 프로젝트 (`ref/`) | Orbit Core에 담긴 것 |
+| --- | --- |
+| [**Laravel Orchid**](https://orchid.software) (`platform-master`) | **Screen / Layout / Field** 선언형 관리자 UI, 권한·메뉴·필터·전역 검색 같은 “백오피스를 PHP로 설명한다”는 철학. Hotwire/Turbo 기반이었던 흐름은 **Inertia + React**로 다시 매핑했습니다. |
+| [**Orchid CRUD**](https://github.com/orchidsoftware/crud) (`crud-master`) | 한 파일로 CRUD를 설명하던 **Resource** 패턴. Orbit에서는 Eloquent 모델을 건드리지 않도록 **`Entity`** 로 분리해 발전시켰습니다. |
+| [**Filament**](https://filamentphp.com) (`filament-5.7-beta`) | 관리자 UI의 시각적 언어 — `fi-*` 스타일 섹션·배지·빈 상태, OKLCH 기반 색상 팔레트, 테이블 툴바·탭 필터 등. PHP 계약은 Orchid 쪽, **보기와 토큰**은 Filament 쪽에서 많이 빌려왔습니다. |
+| **CMS Orbit v3** (`cms-orbit`) | 이 저장소의 **직전 세대** 제품입니다. Orchid + Vue 3 + `stancl/tenancy` 조합으로 쌓았던 CMS 경험·패키지 구조·문서형 콘텐츠 아이디어가 v4 Core의 출발점이 됐습니다. |
+| [**XpressEngine 3**](https://www.xpressengine.com) (`xpressengine-master`) | **설정 레지스트리**와 번들형 확장 모델. `orbit_config()`의 계층적 값 해석(인스턴스 → 전역 → 타입 기본값)은 XE3식 chain-of-responsibility 폴백에서 영감을 받았습니다. |
+
+> `ref/` 는 런타임 의존성이 아니라 **설계 참고용 아카이브**입니다. Orbit Core는 위 프로젝트들을 Composer로 끌어오지 않으며, Laravel + Inertia v3 위에서 독립 패키지로 동작합니다.
+
+---
+
 `cms-orbit/core`는 Laravel용 Orbit 관리자 엔진의 중심 패키지입니다.  
 PHP에서 정의한 `Screen / Layout / Field / Entity` 계약을 Inertia + React로 렌더링해, CRUD 관리자 화면과 문서형 콘텐츠, 설정 화면, 메뉴, 권한 구성을 한 흐름으로 묶어줍니다.
 
