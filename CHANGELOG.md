@@ -2,6 +2,16 @@
 
 이 문서는 `cms-orbit/core`의 릴리스 노트를 기록합니다.
 
+## 4.0.4 - 2026-07-06
+
+### 추가
+
+- `CmsOrbit\Core\Analytics\Support\AnalyticsSchemaConnection` — analytics 추적기가 읽고 쓸 DB 연결을 결정하는 확장 지점. 기본값은 앱 기본 연결이며, 선택적 패키지가 `resolveUsing()`으로 호스트 애플리케이션 요청의 연결을 재지정할 수 있습니다.
+
+### 수정
+
+- `AnalyticsTracker`가 `cms-orbit/saas`의 `HostApplicationDomains`·`HostConnection`을 직접 참조하던 결합을 제거했습니다. 이제 core는 saas를 몰라도 동작하므로, saas 미설치 호스트에서 호환용 shim(`app/CmsOrbit/Saas/...`)과 수동 `CmsOrbit\Saas\` autoload 등록이 더 이상 필요하지 않습니다.
+
 ## 4.0.2 - 2026-07-06
 
 ### 변경
