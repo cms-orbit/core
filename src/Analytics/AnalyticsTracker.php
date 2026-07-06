@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace CmsOrbit\Core\Analytics;
 
 use CmsOrbit\Core\Analytics\Models\AnalyticsPageview;
+use CmsOrbit\Saas\Support\HostApplicationDomains;
+use CmsOrbit\Saas\Support\HostConnection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -318,12 +320,23 @@ class AnalyticsTracker
 
     protected function analyticsTableExists(): bool
     {
-        return Schema::hasTable('orbit_analytics_pageviews');
+        return Schema::connection($this->schemaConnection())->hasTable('orbit_analytics_pageviews');
     }
 
     protected function configTableExists(): bool
     {
-        return Schema::hasTable('orbit_configs');
+        return Schema::connection($this->schemaConnection())->hasTable('orbit_configs');
+    }
+
+    protected function schemaConnection(): string
+    {
+        $request = $this->currentRequest();
+
+        if ($request !== null && HostApplicationDomains::isHostApplication($request)) {
+            return HostConnection::name();
+        }
+
+        return (string) config('database.default');
     }
 
     protected function currentRequest(): ?Request

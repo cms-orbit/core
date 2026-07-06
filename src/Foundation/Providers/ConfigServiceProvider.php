@@ -22,7 +22,7 @@ class ConfigServiceProvider extends ServiceProvider
 {
     /**
      * Available admin layout modes (value => label). The colour settings below
-     * are maintained per mode while branding (name/logo/favicon) stays common.
+     * are maintained per mode while branding (name/logo/symbol/favicon) stays common.
      *
      * @var array<string, string>
      */
@@ -103,10 +103,6 @@ class ConfigServiceProvider extends ServiceProvider
             'branding.favicon',
             'branding.theme_toggle_enabled',
             'branding.theme_mode',
-            'branding.palette',
-            'branding.color_primary',
-            'branding.color_secondary',
-            'branding.color_accent',
         ];
     }
 
@@ -637,7 +633,7 @@ class ConfigServiceProvider extends ServiceProvider
         Config::registerGroup('Branding', 820, [
             'icon'        => 'bs.bookmark-star',
             'title'       => '브랜딩설정',
-            'description' => 'Admin panel name, logos, icons and brand colours.',
+            'description' => 'Admin panel name, logos, icons and default theme mode.',
             'hubSection'  => 'basic',
         ]);
         Config::registerSection('Branding', 'identity', ['title' => 'Identity', 'priority' => 40]);
@@ -656,24 +652,6 @@ class ConfigServiceProvider extends ServiceProvider
                 'system' => '시스템',
             ],
         ]);
-        Config::registerSection('Branding', 'colors', ['title' => 'Default colours', 'priority' => 35]);
-        Config::registerItem('Branding', 'branding.palette', 'select', 'orbit', 'colors', [
-            'title'   => 'Palette preset',
-            'options' => [
-                'orbit'       => 'Orbit',
-                'apple-light' => 'Apple light',
-                'simple'      => 'Simple',
-                'amuz'        => 'Amuz',
-                'slate'       => 'Slate',
-                'studio-rose' => 'Studio rose',
-                'clover-mint' => 'Clover mint',
-                'violet-pop'  => 'Violet pop',
-                'custom'      => 'Custom',
-            ],
-        ]);
-        Config::registerItem('Branding', 'branding.color_primary', 'color', '#17ce91', 'colors', ['title' => 'Primary']);
-        Config::registerItem('Branding', 'branding.color_secondary', 'color', '#64748b', 'colors', ['title' => 'Secondary']);
-        Config::registerItem('Branding', 'branding.color_accent', 'color', '#fc8024', 'colors', ['title' => 'Accent']);
 
         // Admin design (layout + per-layout theme) -------------------------
         Config::registerGroup('Admin Design', 810, [
@@ -685,7 +663,9 @@ class ConfigServiceProvider extends ServiceProvider
         Config::registerSection('Admin Design', 'layout', ['title' => 'Layout', 'priority' => 30]);
         Config::registerItem('Admin Design', 'layout.mode', 'select', 'palette-split', 'layout', [
             'title'   => 'Active layout',
-            'options' => self::LAYOUT_MODES,
+            'options' => collect(self::LAYOUT_MODES)
+                ->mapWithKeys(fn (string $label, string $key) => [$key => __($label)])
+                ->all(),
         ]);
         Config::registerItem('Admin Design', 'layout.content_width', 'select', 'default', 'layout', [
             'title'   => '컨텐츠 폭',

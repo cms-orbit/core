@@ -23,13 +23,6 @@ const SYMBOL_KEYS = [
     'branding.favicon',
 ] as const;
 
-const COLOR_KEYS = [
-    'branding.palette',
-    'branding.color_primary',
-    'branding.color_secondary',
-    'branding.color_accent',
-] as const;
-
 type Tone = 'light' | 'dark';
 
 function asFields(value: unknown): FieldNode[] {
@@ -80,7 +73,7 @@ function resolveMediaUrl(value: unknown): string | null {
     return null;
 }
 
-/** Branding settings: admin identity, logos and brand colours. */
+/** Branding settings: admin identity, logos, symbols and theme defaults. */
 export function BrandingSettingsLayout({ node }: LayoutComponentProps) {
     const layoutData = readLayoutData(node);
     const fields = asFields(layoutData.fields);
@@ -89,16 +82,12 @@ export function BrandingSettingsLayout({ node }: LayoutComponentProps) {
     const generalFields = fieldsByKeys(fields, GENERAL_KEYS);
     const logoFields = fieldsByKeys(fields, LOGO_KEYS);
     const symbolFields = fieldsByKeys(fields, SYMBOL_KEYS);
-    const colorFields = fieldsByKeys(fields, COLOR_KEYS);
 
     const defaultThemeMode = String(config[configKey('branding.theme_mode')] ?? 'light');
     const initialPreviewTone: Tone = defaultThemeMode === 'dark' ? 'dark' : 'light';
     const [previewTone, setPreviewTone] = useState<Tone>(initialPreviewTone);
 
     const brandName = String(config[configKey('branding.name')] ?? 'Orbit');
-    const primaryColor = String(config[configKey('branding.color_primary')] ?? '#17ce91');
-    const secondaryColor = String(config[configKey('branding.color_secondary')] ?? '#64748b');
-    const accentColor = String(config[configKey('branding.color_accent')] ?? '#fc8024');
     const logoUrl = resolveMediaUrl(config[configKey('branding.logo')] ?? findFieldByKey(fields, 'branding.logo')?.value);
     const logoUrlDark = resolveMediaUrl(
         config[configKey('branding.logo_dark')] ?? findFieldByKey(fields, 'branding.logo_dark')?.value,
@@ -113,7 +102,6 @@ export function BrandingSettingsLayout({ node }: LayoutComponentProps) {
     const activeSymbolUrl = previewTone === 'dark' ? symbolUrlDark ?? symbolUrl : symbolUrl ?? symbolUrlDark;
     const previewBackground = previewTone === 'dark' ? '#0f172a' : '#ffffff';
     const previewBorder = previewTone === 'dark' ? '#1e293b' : '#e2e8f0';
-    const previewMuted = previewTone === 'dark' ? '#334155' : '#ecfdf5';
 
     return (
         <div className="space-y-6">
@@ -121,12 +109,12 @@ export function BrandingSettingsLayout({ node }: LayoutComponentProps) {
                 <div>
                     <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">브랜딩</h2>
                     <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                        관리자 이름, 로고, 심볼, 파비콘과 브랜드 컬러를 설정합니다.
+                        관리자 이름, 로고, 심볼, 파비콘과 기본 테마 모드를 설정합니다.
                     </p>
                 </div>
                 <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
                     <Card className="xl:col-span-1">
-                        <CardHeader title="브랜드 미리보기" description="현재 로고와 브랜드 컬러가 반영됩니다." />
+                        <CardHeader title="브랜드 미리보기" description="로고와 이름이 라이트/다크 배경에서 어떻게 보이는지 확인합니다." />
                         <CardBody className="space-y-4">
                             <div
                                 className="rounded-2xl border p-4"
@@ -143,10 +131,7 @@ export function BrandingSettingsLayout({ node }: LayoutComponentProps) {
                                             className="h-12 max-w-[120px] object-contain"
                                         />
                                     ) : (
-                                        <span
-                                            className="flex h-12 w-12 items-center justify-center rounded-2xl text-base font-bold text-white"
-                                            style={{ backgroundColor: primaryColor }}
-                                        >
+                                        <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gray-500 text-base font-bold text-white">
                                             {brandName.slice(0, 1).toUpperCase()}
                                         </span>
                                     )}
@@ -155,46 +140,15 @@ export function BrandingSettingsLayout({ node }: LayoutComponentProps) {
                                             {brandName}
                                         </p>
                                         <p className="truncate text-xs text-gray-500 dark:text-gray-400">
-                                            {previewTone === 'dark' ? 'Dark' : 'Light'}
+                                            {previewTone === 'dark' ? '다크' : '라이트'}
                                         </p>
-                                    </div>
-                                </div>
-                                <div
-                                    className="mt-4 rounded-xl border p-3"
-                                    style={{
-                                        backgroundColor: previewBackground,
-                                        borderColor: previewBorder,
-                                    }}
-                                >
-                                    <div className="mb-3 flex gap-2">
-                                        {[primaryColor, secondaryColor, accentColor].map((color, index) => (
-                                            <span
-                                                key={`brand-swatch-${index}`}
-                                                className="h-3 flex-1 rounded-full"
-                                                style={{ backgroundColor: color }}
-                                            />
-                                        ))}
-                                    </div>
-                                    <div className="space-y-2">
-                                        <div
-                                            className="h-3 rounded-full"
-                                            style={{ backgroundColor: primaryColor, width: '44%' }}
-                                        />
-                                        <div
-                                            className="h-2 rounded-full"
-                                            style={{ backgroundColor: previewMuted, width: '70%' }}
-                                        />
-                                        <div
-                                            className="h-2 rounded-full"
-                                            style={{ backgroundColor: previewMuted, width: '58%' }}
-                                        />
                                     </div>
                                 </div>
                             </div>
                             <div className="inline-flex rounded-full border border-gray-200 bg-gray-50 p-1 dark:border-white/10 dark:bg-white/5">
                                 {([
-                                    ['light', 'Light'],
-                                    ['dark', 'Dark'],
+                                    ['light', '라이트'],
+                                    ['dark', '다크'],
                                 ] as const).map(([tone, label]) => {
                                     const active = previewTone === tone;
 
@@ -260,22 +214,6 @@ export function BrandingSettingsLayout({ node }: LayoutComponentProps) {
                                             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
                                                 {symbolFields.map((field, index) => (
                                                     <FieldRenderer key={field.name ?? `symbol-${index}`} node={field} data={{}} />
-                                                ))}
-                                            </div>
-                                        </div>
-                                    ) : null}
-
-                                    {colorFields.length > 0 ? (
-                                        <div className="space-y-3">
-                                            <div>
-                                                <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">브랜드 컬러</h3>
-                                                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                                                    프리셋을 선택하거나 Primary, Secondary, Accent 컬러를 직접 지정합니다.
-                                                </p>
-                                            </div>
-                                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                                                {colorFields.map((field, index) => (
-                                                    <FieldRenderer key={field.name ?? `color-${index}`} node={field} data={{}} />
                                                 ))}
                                             </div>
                                         </div>

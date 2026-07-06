@@ -119,7 +119,7 @@ class LayoutThemeRegistry
         $label = $this->modes[$mode] ?? $mode;
         $sectionPriority = $priority ?? 5;
 
-        Config::registerSection('Admin Design', $section, ['title' => $label, 'priority' => $sectionPriority]);
+        Config::registerSection('Admin Design', $section, ['title' => __($label), 'priority' => $sectionPriority]);
 
         $presets = $definition['presets'] ?? [];
         $presetOptions = collect($presets)
@@ -131,7 +131,9 @@ class LayoutThemeRegistry
 
         Config::registerItem('Admin Design', "theme.{$mode}.palette", 'select', $defaultPreset, $section, [
             'title'   => 'Colour preset',
-            'options' => $presetOptions,
+            'options' => collect($presetOptions)
+                ->mapWithKeys(fn (string $label, string $key) => [$key => __($label)])
+                ->all(),
         ]);
 
         $tokens = $definition['tokens'] ?? [];
@@ -150,7 +152,7 @@ class LayoutThemeRegistry
                         'color',
                         $default,
                         $section,
-                        ['title' => ucfirst($tone).' '.$token['label']],
+                        ['title' => __(ucfirst($tone)).' '.__($token['label'])],
                     );
                 }
             }
@@ -162,7 +164,7 @@ class LayoutThemeRegistry
             $default = $presets[$defaultPreset]['colors'][$token['key']] ?? $this->fallbackTokenDefault($token['key'], 'light');
 
             Config::registerItem('Admin Design', "theme.{$mode}.{$token['key']}", 'color', $default, $section, [
-                'title' => $token['label'],
+                'title' => __($token['label']),
             ]);
         }
     }
@@ -174,7 +176,9 @@ class LayoutThemeRegistry
     {
         Config::registerItem('Admin Design', 'layout.mode', 'select', array_key_first($this->modes) ?? 'palette-split', 'layout', [
             'title'   => 'Active layout',
-            'options' => $this->modes,
+            'options' => collect($this->modes)
+                ->mapWithKeys(fn (string $label, string $key) => [$key => __($label)])
+                ->all(),
         ]);
     }
 

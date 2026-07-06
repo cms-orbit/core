@@ -83,7 +83,7 @@ package's `resources/orbit/frontend.json`.
 
 ## Theming
 
-- **Branding is common** (name/logo/symbol/favicon); **colours are per layout mode**. Layout
+- **Branding is common** (name/logo/symbol/favicon/theme mode); **colours are per layout mode** in Admin Design. Layout
   modes: `sidebar-split` (default), `sidebar-single`, `topbar`, `hybrid`.
 - Colour tokens are exposed as CSS variables (`--color-orbit-primary`, plus an 11-step OKLCH
   shade scale `--color-orbit-primary-50 … -950`, and the same for `secondary`/`accent`).

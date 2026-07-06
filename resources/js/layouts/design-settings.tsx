@@ -313,7 +313,7 @@ export function DesignSettingsLayout({ node }: LayoutComponentProps) {
                     </div>
 
                     <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
-                        <Card className="xl:col-span-1">
+                        <Card className="xl:col-span-1 xl:sticky xl:top-6 xl:z-10 xl:self-start">
                             <CardHeader
                                 title="레이아웃 미리보기"
                                 description={`${t(layoutModes[selectedMode] ?? selectedMode)}의 ${t(activeTheme.dualTone && activePreviewTone === 'dark' ? 'Dark' : 'Light')} 톤입니다.`}
