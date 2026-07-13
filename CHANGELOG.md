@@ -2,6 +2,43 @@
 
 이 문서는 `cms-orbit/core`의 릴리스 노트를 기록합니다.
 
+## 4.0.8 - 2026-07-13
+
+### 추가
+
+- 각 `cms-orbit/*` 패키지의 `resources/orbit/frontend.json`에 `dependencies`·`devDependencies`를 선언할 수 있습니다. `orbit:frontend-sync`가 이를 호스트 `package.json`에 **누락된 항목만** 병합합니다(기존 버전은 절대 덮어쓰지 않음). core는 관리자 프런트엔드가 사용하는 모든 npm 패키지(`react-bootstrap-icons`, `@blocknote/*`, `@codemirror/*`, `@uiw/react-codemirror`, `recharts`, `cropperjs`, `leaflet`, `react-leaflet`, `marked`, `clsx`, `tailwind-merge` 등)를 선언합니다.
+- `orbit:install`이 프런트 스캐폴딩 동기화 직후 `npm install` → `npm run build`를 실행해 Vite manifest까지 생성합니다. `--skip-npm` 옵션으로 건너뛸 수 있으며, npm이 없으면 수동 실행 안내를 출력합니다.
+
+### 수정
+
+- 순정 라라벨 호스트에서 `npm run build`가 `Rolldown failed to resolve import "react-bootstrap-icons"`로 실패하고, 이로 인해 Vite manifest가 생성되지 않아 관리자 페이지가 `ViteException`으로 500이 나던 문제를 해결했습니다. 이제 core 설치만으로 빌드가 통과합니다.
+
+## 4.0.7 - 2026-07-13
+
+### 개선
+
+- `orbit:admin`이 계정 생성 후 로그인 식별자와 비밀번호(기본값 사용 시)를 명시적으로 출력합니다. 기본 비밀번호(`orbit1234`)를 몰라 로그인에 실패하던 혼선을 줄였습니다.
+
+## 4.0.6 - 2026-07-13
+
+### 수정
+
+- `orbit:frontend-sync`가 Vite alias를 주입할 때 `import { fileURLToPath } from 'node:url';`를 `vite.config.ts` 상단에 보장합니다. 순정 스타터킷에서 `npm run dev` 시 `ReferenceError: fileURLToPath is not defined`가 발생하던 문제를 해결했습니다.
+
+## 4.0.5 - 2026-07-12
+
+### 추가
+
+- `CmsOrbit\Core\Foundation\Http\Middleware\ShareOrbitInertia` — 메뉴·섹션·권한·브랜딩·알림·미디어·i18n 등 관리자 Inertia 공유 props와 루트 뷰(`orbit::orbit.app`)를 패키지 안에서 제공합니다. 호스트 `HandleInertiaRequests` 수정 없이 관리자 패널이 동작합니다.
+- `CmsOrbit\Core\Foundation\Presenters\UserPresenter` — 기본 User 모델의 글로벌 검색 presenter를 패키지에 내장했습니다.
+- 강제 비밀번호 변경 스택(`RequirePasswordChange` 미들웨어, `ForcePasswordController`, 폼 요청, `force-password` 페이지)을 core 패키지로 이관했습니다.
+
+### 수정
+
+- `config/orbit.php`·`routes/auth.php`가 호스트 클래스(`App\Http\Middleware\RequirePasswordChange` 등) 대신 패키지 클래스를 참조합니다. 순정 호스트에서 `Target class [App\Http\Middleware\RequirePasswordChange] does not exist` 500 오류를 해결했습니다.
+- `orbit:frontend-sync`가 `resolve.alias` 블록이 없는 `vite.config.*`에도 alias 블록을 안전하게 주입하도록 개선했습니다.
+- 관리자 CSS를 패키지가 자체 생성(`resources/css/orbit.css`)하도록 전환해, 호스트 `app.css` 수정 없이 Tailwind 소스 스캔·디자인 토큰이 적용됩니다.
+
 ## 4.0.4 - 2026-07-06
 
 ### 추가

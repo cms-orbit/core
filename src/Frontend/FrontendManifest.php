@@ -9,6 +9,8 @@ namespace CmsOrbit\Core\Frontend;
  * @phpstan-type FrontendManifest array{
  *     alias: string,
  *     jsPath?: string,
+ *     dependencies?: array<string, string>,
+ *     devDependencies?: array<string, string>,
  *     pages?: list<FrontendPage>
  * }
  */
@@ -39,6 +41,27 @@ final class FrontendManifest
     public function pages(): array
     {
         return $this->config['pages'] ?? [];
+    }
+
+    /**
+     * NPM runtime dependencies this package's frontend requires so a plain host
+     * can `npm install && npm run build` without hand-editing `package.json`.
+     *
+     * @return array<string, string>
+     */
+    public function npmDependencies(): array
+    {
+        return $this->config['dependencies'] ?? [];
+    }
+
+    /**
+     * NPM development dependencies this package's frontend requires.
+     *
+     * @return array<string, string>
+     */
+    public function npmDevDependencies(): array
+    {
+        return $this->config['devDependencies'] ?? [];
     }
 
     /**

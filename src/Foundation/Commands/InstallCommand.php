@@ -13,9 +13,11 @@ use CmsOrbit\Core\Foundation\Providers\ConsoleServiceProvider;
 use CmsOrbit\Core\Support\Facades\Orbit;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Process;
 use Illuminate\Support\Traits\Conditionable;
 use Laravel\Boost\BoostServiceProvider;
 use Symfony\Component\Console\Attribute\AsCommand;
+use Symfony\Component\Process\ExecutableFinder;
 
 #[AsCommand(name: 'orbit:install')]
 class InstallCommand extends Command
@@ -25,7 +27,7 @@ class InstallCommand extends Command
     /**
      * @var string
      */
-    protected $signature = 'orbit:install';
+    protected $signature = 'orbit:install {--skip-npm : Skip installing and building frontend assets}';
 
     /**
      * @var string
@@ -57,6 +59,7 @@ class InstallCommand extends Command
             ->prepareEntitiesDirectory()
             ->prepareOrbitProvider()
             ->syncFrontendScaffolding()
+            ->buildFrontendAssets()
             ->publishAiSkills()
             ->syncBoostGuidelines()
             ->promptForStargazer($locale)
@@ -264,6 +267,59 @@ class InstallCommand extends Command
         $this->info($this->messages->get('step_frontend_sync'));
 
         return $this->executeCommand('orbit:frontend-sync');
+    }
+
+    /**
+     * Install the newly merged NPM dependencies and build the Vite manifest so
+     * a plain host can serve the Orbit admin panel immediately after install.
+     *
+     * @return $this
+     */
+    private function buildFrontendAssets(): self
+    {
+        if (App::runningUnitTests() || $this->option('skip-npm')) {
+            return $this;
+        }
+
+        if (! is_file(base_path('package.json'))) {
+            return $this;
+        }
+
+        $npm = (new ExecutableFinder)->find('npm');
+
+        if ($npm === null) {
+            $this->warn($this->messages->get('frontend_npm_missing'));
+
+            return $this;
+        }
+
+        $this->info($this->messages->get('step_frontend_build'));
+
+        $stream = function (string $type, string $buffer): void {
+            $this->output->write($buffer);
+        };
+
+        $this->line($this->messages->get('frontend_install_running'));
+        $install = Process::path(base_path())->timeout(600)->run([$npm, 'install'], $stream);
+
+        if (! $install->successful()) {
+            $this->warn($this->messages->get('frontend_build_failed'));
+
+            return $this;
+        }
+
+        $this->line($this->messages->get('frontend_build_running'));
+        $build = Process::path(base_path())->timeout(600)->run([$npm, 'run', 'build'], $stream);
+
+        if (! $build->successful()) {
+            $this->warn($this->messages->get('frontend_build_failed'));
+
+            return $this;
+        }
+
+        $this->info($this->messages->get('frontend_build_done'));
+
+        return $this;
     }
 
     /**

@@ -19,7 +19,7 @@ class FrontendSyncCommand extends Command
     {
         $result = (new FrontendSync(base_path()))->sync((bool) $this->option('force'));
 
-        if ($result['bridges'] === [] && ! $result['vite'] && ! $result['css']) {
+        if ($result['bridges'] === [] && ! $result['vite'] && ! $result['css'] && $result['npm'] === []) {
             $this->components->info('No frontend scaffolding changes were required.');
 
             return self::SUCCESS;
@@ -40,6 +40,11 @@ class FrontendSyncCommand extends Command
             $this->components->info('Updated Vite aliases for: '.implode(', ', $result['aliases']));
         } elseif ($result['aliases'] !== []) {
             $this->components->warn('Vite config was not updated automatically. Add aliases manually or ensure `vite.config.*` contains an `alias` block.');
+        }
+
+        if ($result['npm'] !== []) {
+            $this->components->info('Added NPM dependencies to package.json: '.implode(', ', $result['npm']));
+            $this->components->warn('Run `npm install` (and `npm run build`) to pull in the new dependencies.');
         }
 
         return self::SUCCESS;

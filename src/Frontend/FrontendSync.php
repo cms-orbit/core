@@ -21,7 +21,7 @@ final class FrontendSync
     public function __construct(private readonly string $basePath) {}
 
     /**
-     * @return array{bridges: list<string>, vite: bool, aliases: list<string>, css: bool}
+     * @return array{bridges: list<string>, vite: bool, aliases: list<string>, css: bool, npm: list<string>}
      */
     public function sync(bool $force = false): array
     {
@@ -47,13 +47,97 @@ final class FrontendSync
         $viteUpdated = $this->syncViteAliases($manifests);
         $cssUpdated = $this->syncStyleEntry($manifests);
         $viteInputUpdated = $this->syncViteInput();
+        $addedNpm = $this->syncNpmDependencies($manifests);
 
         return [
             'bridges' => $createdBridges,
             'vite' => $viteUpdated || $viteInputUpdated,
             'aliases' => $aliases,
             'css' => $cssUpdated,
+            'npm' => $addedNpm,
         ];
+    }
+
+    /**
+     * Merge each package's declared NPM dependencies into the host `package.json`
+     * so `npm install && npm run build` resolves every import used by the Orbit
+     * admin frontend. Existing host versions are never overwritten; only missing
+     * packages are added.
+     *
+     * @param  list<FrontendManifest>  $manifests
+     * @return list<string> Names of packages newly added to the host manifest.
+     */
+    private function syncNpmDependencies(array $manifests): array
+    {
+        $packageJsonPath = $this->basePath.DIRECTORY_SEPARATOR.'package.json';
+
+        if (! is_file($packageJsonPath)) {
+            return [];
+        }
+
+        $decoded = json_decode((string) file_get_contents($packageJsonPath), true);
+
+        if (! is_array($decoded)) {
+            return [];
+        }
+
+        /** @var array<string, string> $dependencies */
+        $dependencies = is_array($decoded['dependencies'] ?? null) ? $decoded['dependencies'] : [];
+        /** @var array<string, string> $devDependencies */
+        $devDependencies = is_array($decoded['devDependencies'] ?? null) ? $decoded['devDependencies'] : [];
+
+        $existing = $dependencies + $devDependencies;
+        $added = [];
+
+        foreach ($manifests as $manifest) {
+            foreach ($manifest->npmDependencies() as $name => $version) {
+                if (isset($existing[$name])) {
+                    continue;
+                }
+
+                $dependencies[$name] = $version;
+                $existing[$name] = $version;
+                $added[] = $name;
+            }
+
+            foreach ($manifest->npmDevDependencies() as $name => $version) {
+                if (isset($existing[$name])) {
+                    continue;
+                }
+
+                $devDependencies[$name] = $version;
+                $existing[$name] = $version;
+                $added[] = $name;
+            }
+        }
+
+        if ($added === []) {
+            return [];
+        }
+
+        ksort($dependencies);
+        ksort($devDependencies);
+
+        $decoded['dependencies'] = $dependencies;
+
+        if ($devDependencies !== []) {
+            $decoded['devDependencies'] = $devDependencies;
+        }
+
+        $encoded = json_encode(
+            $decoded,
+            JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE,
+        );
+
+        if ($encoded === false) {
+            return [];
+        }
+
+        file_put_contents($packageJsonPath, $encoded."\n");
+
+        sort($added);
+
+        return array_values(array_unique($added));
     }
 
     /**
