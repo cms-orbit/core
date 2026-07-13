@@ -43,7 +43,9 @@ composer require cms-orbit/core:^4.0
 php artisan orbit:install
 ```
 
-`orbit:install`은 설정/마이그레이션/스텁 게시, `entities/`·`OrbitProvider` 준비, Inertia/Vite 연결(`orbit:frontend-sync`), AI 가이드(`orbit:ai`), **Laravel Boost 자동 갱신**(아래 참고)까지 처리합니다.
+`orbit:install`은 설정/마이그레이션/스텁 게시, `entities/`·`OrbitProvider` 준비, Inertia/Vite 연결(`orbit:frontend-sync`), **프런트 npm 의존성 병합 + `npm install` + `npm run build`**, AI 가이드(`orbit:ai`), **Laravel Boost 자동 갱신**(아래 참고)까지 처리합니다. 즉 순정 라라벨 호스트에서 `composer require` → `orbit:install`만으로 관리자 자산 빌드까지 끝납니다.
+
+> npm 빌드를 건너뛰려면 `php artisan orbit:install --skip-npm`. npm이 설치돼 있지 않으면 자동 빌드를 건너뛰고 수동 실행을 안내합니다.
 
 설치 직후 관리자 계정을 만들려면:
 
@@ -51,7 +53,7 @@ php artisan orbit:install
 php artisan orbit:admin
 ```
 
-프런트 자산을 개발/빌드하려면:
+프런트 자산을 직접 개발/빌드하려면(선택):
 
 ```bash
 npm install
@@ -73,7 +75,9 @@ npm run dev   # 또는 npm run build
 | 작업 | 필수 여부 | 설명 |
 | --- | --- | --- |
 | `php artisan orbit:install` | **필수** (최초 1회) | 설정, 마이그레이션, User/OrbitProvider 스텁, 프런트 브리지 |
-| `php artisan orbit:frontend-sync` | 패키지 추가/제거 시 | `resources/orbit/frontend.json` 기준 Vite alias·Inertia 브리지 자동 생성 |
+| `php artisan orbit:frontend-sync` | 패키지 추가/제거 시 | `resources/orbit/frontend.json` 기준 Vite alias·Inertia 브리지·`orbit.css` 생성 및 **필요한 npm 의존성을 `package.json`에 병합** |
+| `package.json` 수동 의존성 추가 | **불필요** | `frontend.json`의 `dependencies`를 sync가 누락분만 병합(기존 버전 보존) |
+| `npm install && npm run build` 수동 실행 | **불필요** (install이 자동 수행) | `--skip-npm` 또는 npm 미설치 시에만 수동 실행 |
 | `php artisan orbit:sync` | 선택 | 설정/스텁만 안전하게 재동기화 (User 모델은 기본적으로 덮어쓰지 않음) |
 | `vite.config.*` 수동 alias | **불필요** | `orbit:frontend-sync`가 `// ORBIT:ALIASES:START` 블록을 관리 |
 | `resources/js/pages/*` 수동 re-export | **불필요** | 위 sync 명령이 패키지 페이지 브리지를 생성 |
