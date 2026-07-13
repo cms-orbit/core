@@ -321,6 +321,11 @@ composer validate --no-check-publish
 
 ## 업데이트 노트
 
+### 4.0.6
+
+- **`npm run dev` 즉시 실행 가능**: `orbit:frontend-sync`가 `vite.config.*`에 alias 블록을 주입할 때 `import { fileURLToPath } from 'node:url';`도 자동으로 추가합니다. 순정 스타터킷 `vite.config.ts`에는 해당 import가 없어 `ReferenceError: fileURLToPath is not defined`로 dev 서버가 뜨지 않던 문제를 해결했습니다. (이미 import가 있으면 중복 추가하지 않습니다.)
+- **참고 (4.0.5 미만에서 올라오는 경우)**: 로그인 화면의 `Target class [App\Http\Middleware\RequirePasswordChange] does not exist` 오류는 4.0.5부터 미들웨어가 패키지로 이관되어 해결됩니다. 이미 `config/orbit.php`가 게시된 프로젝트라면 `php artisan vendor:publish --tag=orbit-config --force`로 설정을 갱신하세요.
+
 ### 4.0.5
 
 - **순정 Laravel + Core만으로 관리자 구동**: Inertia 공유 데이터(메뉴·섹션·브랜딩·flash·알림·미디어·i18n)와 루트 뷰(`orbit::orbit.app`)를 패키지 내부로 이관했습니다. 이제 호스트의 `app/Http/Middleware/HandleInertiaRequests.php`나 `resources/views/app.blade.php`에 Orbit 전용 코드를 넣지 않아도, 새 `ShareOrbitInertia` 미들웨어가 Orbit 라우트 그룹에서 관리자 셸 props를 주입합니다. (기존에는 이 로직이 호스트에 있어야 해서 순정 설치 시 메뉴·엔티티·스타일이 비어 보이는 문제가 있었습니다.)

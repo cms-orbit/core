@@ -50,9 +50,9 @@ final class FrontendSync
 
         return [
             'bridges' => $createdBridges,
-            'vite'    => $viteUpdated || $viteInputUpdated,
+            'vite' => $viteUpdated || $viteInputUpdated,
             'aliases' => $aliases,
-            'css'     => $cssUpdated,
+            'css' => $cssUpdated,
         ];
     }
 
@@ -61,7 +61,7 @@ final class FrontendSync
      * Orbit design tokens, and every installed package's class sources. This
      * keeps a plain Laravel host from having to hand-author any Orbit CSS.
      *
-     * @param list<FrontendManifest> $manifests
+     * @param  list<FrontendManifest>  $manifests
      */
     private function syncStyleEntry(array $manifests): bool
     {
@@ -192,7 +192,7 @@ final class FrontendSync
     }
 
     /**
-     * @param list<FrontendManifest> $manifests
+     * @param  list<FrontendManifest>  $manifests
      */
     private function syncViteAliases(array $manifests): bool
     {
@@ -242,6 +242,11 @@ final class FrontendSync
             return false;
         }
 
+        // The generated alias block resolves paths with `fileURLToPath(new URL(...))`,
+        // so a plain host `vite.config.ts` (which does not import it) would otherwise
+        // throw `ReferenceError: fileURLToPath is not defined` when Vite loads.
+        $updated = $this->ensureFileUrlToPathImport($updated);
+
         if ($updated === '' || $updated === $contents) {
             return false;
         }
@@ -252,7 +257,25 @@ final class FrontendSync
     }
 
     /**
-     * @param list<FrontendManifest> $manifests
+     * Ensure `fileURLToPath` is imported from `node:url` so the generated alias
+     * block can resolve. No-op when the host already imports it.
+     */
+    private function ensureFileUrlToPathImport(string $contents): string
+    {
+        $alreadyImported = preg_match(
+            '/import\s*\{[^}]*\bfileURLToPath\b[^}]*\}\s*from\s*[\'"](?:node:)?url[\'"]/',
+            $contents,
+        ) === 1;
+
+        if ($alreadyImported) {
+            return $contents;
+        }
+
+        return "import { fileURLToPath } from 'node:url';\n".$contents;
+    }
+
+    /**
+     * @param  list<FrontendManifest>  $manifests
      */
     private function buildViteAliasBlock(array $manifests): string
     {
