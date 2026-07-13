@@ -2,7 +2,15 @@
 
 이 문서는 `cms-orbit/core`의 릴리스 노트를 기록합니다.
 
+## 4.0.9 - 2026-07-13
+
+### 수정
+
+- `4.0.8` 태그 커밋의 `composer.json` `version`이 `4.0.7`로 남아 Packagist가 해당 태그를 건너뛰던 문제를 수정했습니다. npm 의존성 자동 병합(`frontend.json` → `orbit:frontend-sync`)과 `orbit:install`의 `npm install`/`npm run build`는 이 버전부터 Packagist로 제공됩니다.
+
 ## 4.0.8 - 2026-07-13
+
+> Packagist에 게시되지 않음 (`composer.json` version 불일치). 기능은 `4.0.9`를 사용하세요.
 
 ### 추가
 
