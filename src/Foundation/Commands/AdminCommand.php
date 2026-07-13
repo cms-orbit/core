@@ -84,7 +84,7 @@ class AdminCommand extends Command
         /** @var Model|null $existingUser */
         $existingUser = match ($provider) {
             LoginProvider::Email => $userModelClass::query()->where('email', $identifier)->first(),
-            default              => UserAccount::query()
+            default => UserAccount::query()
                 ->where('provider', $provider->value)
                 ->where('normalized_identifier', LoginIdentifierNormalizer::normalize($provider, $identifier))
                 ->first()?->user,
@@ -97,19 +97,21 @@ class AdminCommand extends Command
             return;
         }
 
+        $password = $this->resolvePassword();
+
         /** @var Model $user */
         $user = $userModelClass::query()->create([
-            'name'                 => $name,
-            'email'                => $provider === LoginProvider::Email ? $identifier : null,
-            'password'             => Hash::make($this->resolvePassword()),
+            'name' => $name,
+            'email' => $provider === LoginProvider::Email ? $identifier : null,
+            'password' => Hash::make($password),
             'must_change_password' => true,
-            'permissions'          => [],
+            'permissions' => [],
         ]);
 
         $this->accounts->syncManagedAccounts($user, [
-            'primary_email'  => $provider === LoginProvider::Email ? $identifier : null,
-            'login_id'       => $provider === LoginProvider::Id ? $identifier : null,
-            'phone'          => $provider === LoginProvider::Phone ? $identifier : null,
+            'primary_email' => $provider === LoginProvider::Email ? $identifier : null,
+            'login_id' => $provider === LoginProvider::Id ? $identifier : null,
+            'phone' => $provider === LoginProvider::Phone ? $identifier : null,
             'email_verified' => $provider === LoginProvider::Email,
             'phone_verified' => $provider === LoginProvider::Phone,
         ]);
@@ -117,6 +119,27 @@ class AdminCommand extends Command
         $this->attachRole($user, $role);
 
         $this->info(sprintf('Admin user "%s" created successfully.', $identifier));
+        $this->reportLoginCredentials($provider, $identifier, $password);
+    }
+
+    /**
+     * Print the exact credentials to sign in with, so the operator does not have
+     * to guess the (possibly defaulted) password on the login screen.
+     */
+    protected function reportLoginCredentials(LoginProvider $provider, string $identifier, string $password): void
+    {
+        $this->newLine();
+        $this->line('  <options=bold>로그인 정보 / Sign-in credentials</>');
+        $this->line(sprintf('    %-16s <info>%s</info>', $provider->label().':', $identifier));
+
+        if ($password === self::DEFAULT_PASSWORD) {
+            $this->line(sprintf('    %-16s <info>%s</info>  <comment>(기본값 / default)</comment>', 'Password:', self::DEFAULT_PASSWORD));
+        } else {
+            $this->line(sprintf('    %-16s %s', 'Password:', '입력하신 비밀번호를 사용하세요 / use the password you entered'));
+        }
+
+        $this->line('    <comment>최초 로그인 후 비밀번호를 변경해야 합니다. / You must change the password after first sign-in.</comment>');
+        $this->newLine();
     }
 
     /**
@@ -230,21 +253,21 @@ class AdminCommand extends Command
         if ($role === null) {
             /** @var Role $role */
             $role = $roleModelClass::query()->create([
-                'name'         => Role::DisplayNameSuperAdmin,
-                'slug'         => Role::SystemKeySuperAdmin,
-                'system_key'   => Role::SystemKeySuperAdmin,
+                'name' => Role::DisplayNameSuperAdmin,
+                'slug' => Role::SystemKeySuperAdmin,
+                'system_key' => Role::SystemKeySuperAdmin,
                 'is_deletable' => false,
-                'permissions'  => $permissions,
+                'permissions' => $permissions,
             ]);
 
             return $role;
         }
 
         $role->forceFill([
-            'slug'         => Role::SystemKeySuperAdmin,
-            'system_key'   => Role::SystemKeySuperAdmin,
+            'slug' => Role::SystemKeySuperAdmin,
+            'system_key' => Role::SystemKeySuperAdmin,
             'is_deletable' => false,
-            'permissions'  => $permissions,
+            'permissions' => $permissions,
         ])->save();
 
         return $role;

@@ -321,6 +321,10 @@ composer validate --no-check-publish
 
 ## 업데이트 노트
 
+### 4.0.7
+
+- **`orbit:admin` 로그인 정보 안내**: 관리자 생성 후 로그인에 사용할 아이디와 비밀번호를 출력합니다. 비밀번호를 공란으로 두면 기본값 `orbit1234`가 사용되는데, 이를 명시적으로 보여주어 "입력한 정보와 일치하는 사용자를 찾을 수 없습니다"로 오인하는 문제를 방지합니다. (보안상 로그인 실패 메시지는 계정 없음/비밀번호 불일치를 구분하지 않습니다. 공란으로 만들었다면 `orbit1234`로 로그인하세요.)
+
 ### 4.0.6
 
 - **`npm run dev` 즉시 실행 가능**: `orbit:frontend-sync`가 `vite.config.*`에 alias 블록을 주입할 때 `import { fileURLToPath } from 'node:url';`도 자동으로 추가합니다. 순정 스타터킷 `vite.config.ts`에는 해당 import가 없어 `ReferenceError: fileURLToPath is not defined`로 dev 서버가 뜨지 않던 문제를 해결했습니다. (이미 import가 있으면 중복 추가하지 않습니다.)
