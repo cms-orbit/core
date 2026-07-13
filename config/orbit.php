@@ -1,7 +1,7 @@
 <?php
 
-use App\Http\Middleware\RequirePasswordChange;
 use CmsOrbit\Core\Attachment\Engines\Generator;
+use CmsOrbit\Core\Foundation\Http\Middleware\RequirePasswordChange;
 
 return [
 

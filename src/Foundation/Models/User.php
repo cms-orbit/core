@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace CmsOrbit\Core\Foundation\Models;
 
-use App\CmsOrbit\Core\Presenters\UserPresenter;
 use CmsOrbit\Core\Access\UserAccess;
 use CmsOrbit\Core\Auth\Concerns\HasOrbitUserAccounts;
 use CmsOrbit\Core\Filters\Filterable;
 use CmsOrbit\Core\Filters\Types\Like;
 use CmsOrbit\Core\Filters\Types\Where;
 use CmsOrbit\Core\Filters\Types\WhereDateStartEnd;
+use CmsOrbit\Core\Foundation\Presenters\UserPresenter;
 use CmsOrbit\Core\Metrics\Chartable;
 use CmsOrbit\Core\Presenter\Presentable;
 use CmsOrbit\Core\Presenter\UsePresenter;
@@ -80,8 +80,8 @@ class User extends Authenticatable
      * @var array
      */
     protected $casts = [
-        'permissions'          => 'array',
-        'email_verified_at'    => 'datetime',
+        'permissions' => 'array',
+        'email_verified_at' => 'datetime',
         'must_change_password' => 'bool',
     ];
 
@@ -91,9 +91,9 @@ class User extends Authenticatable
      * @var array
      */
     protected $allowedFilters = [
-        'id'         => Where::class,
-        'name'       => Like::class,
-        'email'      => Like::class,
+        'id' => Where::class,
+        'name' => Like::class,
+        'email' => Like::class,
         'updated_at' => WhereDateStartEnd::class,
         'created_at' => WhereDateStartEnd::class,
     ];
@@ -121,9 +121,9 @@ class User extends Authenticatable
         throw_if(static::where('email', $email)->exists(), 'User exists');
 
         static::create([
-            'name'        => $name,
-            'email'       => $email,
-            'password'    => Hash::make($password),
+            'name' => $name,
+            'email' => $email,
+            'password' => Hash::make($password),
             'permissions' => Orbit::getAllowAllPermission(),
         ]);
     }

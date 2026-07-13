@@ -19,7 +19,7 @@ class FrontendSyncCommand extends Command
     {
         $result = (new FrontendSync(base_path()))->sync((bool) $this->option('force'));
 
-        if ($result['bridges'] === [] && ! $result['vite']) {
+        if ($result['bridges'] === [] && ! $result['vite'] && ! $result['css']) {
             $this->components->info('No frontend scaffolding changes were required.');
 
             return self::SUCCESS;
@@ -30,6 +30,10 @@ class FrontendSyncCommand extends Command
             foreach ($result['bridges'] as $bridge) {
                 $this->line('  - '.$bridge);
             }
+        }
+
+        if ($result['css']) {
+            $this->components->info('Generated the Orbit CSS entry: resources/css/orbit.css');
         }
 
         if ($result['vite']) {

@@ -9,6 +9,10 @@
         {
             "component": "orbit/auth/login",
             "export": "pages/orbit/auth/login"
+        },
+        {
+            "component": "orbit/auth/force-password",
+            "export": "pages/orbit/auth/force-password"
         }
     ]
 }

@@ -1,0 +1,79 @@
+/**
+ * Orbit admin design tokens and shell styles (package-owned).
+ *
+ * Imported by the host `resources/css/orbit.css` entry that
+ * `php artisan orbit:frontend-sync` generates. Keeping the tokens here means a
+ * plain Laravel host does not need to hand-author any Orbit CSS — installing
+ * `cms-orbit/core` is enough for the admin panel to render with the correct
+ * palette, shell background, and editor styles.
+ *
+ * The font stack intentionally lists optional families ('Pretendard Variable',
+ * 'Instrument Sans') first and falls back to system fonts, so nothing here
+ * depends on a host-provided font file.
+ */
+
+@theme {
+    --font-sans:
+        'Pretendard Variable', 'Instrument Sans', ui-sans-serif, system-ui, sans-serif,
+        'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+
+    /* Orbit admin design tokens (overridable at runtime by branding settings).
+       The 11-step shade scales mirror Filament's OKLCH palette; branding.tsx
+       recomputes and overrides these variables at runtime per configured colour. */
+    --color-orbit-primary: #17ce91;
+    --color-orbit-primary-50: oklch(0.977 0.014 162.74);
+    --color-orbit-primary-100: oklch(0.95 0.033 162.74);
+    --color-orbit-primary-200: oklch(0.905 0.063 162.74);
+    --color-orbit-primary-300: oklch(0.84 0.106 162.74);
+    --color-orbit-primary-400: oklch(0.754 0.15 162.74);
+    --color-orbit-primary-500: oklch(0.683 0.17 162.74);
+    --color-orbit-primary-600: oklch(0.598 0.169 162.74);
+    --color-orbit-primary-700: oklch(0.515 0.149 162.74);
+    --color-orbit-primary-800: oklch(0.446 0.123 162.74);
+    --color-orbit-primary-900: oklch(0.395 0.1 162.74);
+    --color-orbit-primary-950: oklch(0.278 0.071 162.74);
+
+    --color-orbit-secondary: #64748b;
+    --color-orbit-secondary-50: oklch(0.977 0.014 257);
+    --color-orbit-secondary-100: oklch(0.95 0.033 257);
+    --color-orbit-secondary-200: oklch(0.905 0.063 257);
+    --color-orbit-secondary-300: oklch(0.84 0.106 257);
+    --color-orbit-secondary-400: oklch(0.754 0.15 257);
+    --color-orbit-secondary-500: oklch(0.683 0.17 257);
+    --color-orbit-secondary-600: oklch(0.598 0.169 257);
+    --color-orbit-secondary-700: oklch(0.515 0.149 257);
+    --color-orbit-secondary-800: oklch(0.446 0.123 257);
+    --color-orbit-secondary-900: oklch(0.395 0.1 257);
+    --color-orbit-secondary-950: oklch(0.278 0.071 257);
+
+    --color-orbit-accent: #fc8024;
+    --color-orbit-accent-50: oklch(0.977 0.014 55);
+    --color-orbit-accent-100: oklch(0.95 0.033 55);
+    --color-orbit-accent-200: oklch(0.905 0.063 55);
+    --color-orbit-accent-300: oklch(0.84 0.106 55);
+    --color-orbit-accent-400: oklch(0.754 0.15 55);
+    --color-orbit-accent-500: oklch(0.683 0.17 55);
+    --color-orbit-accent-600: oklch(0.598 0.169 55);
+    --color-orbit-accent-700: oklch(0.515 0.149 55);
+    --color-orbit-accent-800: oklch(0.446 0.123 55);
+    --color-orbit-accent-900: oklch(0.395 0.1 55);
+    --color-orbit-accent-950: oklch(0.278 0.071 55);
+}
+
+html.orbit-admin {
+    background-color: var(--color-orbit-page-bg, #f8fafc);
+}
+
+.orbit-rich-text-editor .bn-container {
+    font-family: var(--font-sans);
+}
+
+.orbit-rich-text-editor .bn-editor {
+    min-height: inherit;
+}
+
+.orbit-rich-text-editor .bn-container[data-color-scheme='dark'] {
+    --bn-colors-editor-background: rgb(17 24 39);
+    --bn-colors-menu-background: rgb(31 41 55);
+    --bn-colors-border: rgb(55 65 81);
+}

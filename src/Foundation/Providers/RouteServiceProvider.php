@@ -7,6 +7,7 @@ namespace CmsOrbit\Core\Foundation\Providers;
 use CmsOrbit\Core\Filters\Http\Middleware\NormalizeTableFilterQuery;
 use CmsOrbit\Core\Foundation\Http\Middleware\Access;
 use CmsOrbit\Core\Foundation\Http\Middleware\SetOrbitLocale;
+use CmsOrbit\Core\Foundation\Http\Middleware\ShareOrbitInertia;
 use CmsOrbit\Core\Support\Facades\Orbit;
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Route;
@@ -23,6 +24,7 @@ class RouteServiceProvider extends ServiceProvider
             SetOrbitLocale::class,
             NormalizeTableFilterQuery::class,
             Access::class,
+            ShareOrbitInertia::class,
         ]);
 
         parent::boot();
@@ -52,7 +54,7 @@ class RouteServiceProvider extends ServiceProvider
         Route::domain($domain)
             ->prefix($prefix)
             ->as('orbit.')
-            ->middleware([...config('orbit.middleware.public'), SetOrbitLocale::class])
+            ->middleware([...config('orbit.middleware.public'), SetOrbitLocale::class, ShareOrbitInertia::class])
             ->group(Orbit::path('routes/auth.php'));
 
         // Optional host-application routes file.
@@ -71,8 +73,8 @@ class RouteServiceProvider extends ServiceProvider
     {
         return match (config('orbit.access.mode', 'subdomain')) {
             'subdomain' => $this->subdomainHost(),
-            'domain'    => config('orbit.access.domain'),
-            default     => null,
+            'domain' => config('orbit.access.domain'),
+            default => null,
         };
     }
 

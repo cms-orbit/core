@@ -42,6 +42,36 @@ final class FrontendManifest
     }
 
     /**
+     * Absolute directories Tailwind should scan for this package's class usage.
+     *
+     * @return list<string>
+     */
+    public function sourceDirectories(): array
+    {
+        $base = rtrim($this->packagePath, DIRECTORY_SEPARATOR);
+
+        $candidates = [
+            $this->jsRoot(),
+            $base.DIRECTORY_SEPARATOR.'resources'.DIRECTORY_SEPARATOR.'views',
+            $base.DIRECTORY_SEPARATOR.'src',
+        ];
+
+        return array_values(array_filter($candidates, static fn (string $path): bool => is_dir($path)));
+    }
+
+    /**
+     * Absolute path to the package-owned theme stylesheet, when present.
+     */
+    public function themeCssPath(): ?string
+    {
+        $path = $this->jsRoot()
+            .DIRECTORY_SEPARATOR.'theme'
+            .DIRECTORY_SEPARATOR.'orbit-theme.css';
+
+        return is_file($path) ? $path : null;
+    }
+
+    /**
      * @return list<self>
      */
     public static function discover(string $basePath): array

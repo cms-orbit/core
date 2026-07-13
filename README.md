@@ -319,6 +319,16 @@ composer validate --no-check-publish
 
 호스트 앱 전체 동작까지 함께 확인하려면 루트 애플리케이션에서 타입 체크와 Laravel 테스트를 같이 돌리는 것을 권장합니다.
 
+## 업데이트 노트
+
+### 4.0.5
+
+- **순정 Laravel + Core만으로 관리자 구동**: Inertia 공유 데이터(메뉴·섹션·브랜딩·flash·알림·미디어·i18n)와 루트 뷰(`orbit::orbit.app`)를 패키지 내부로 이관했습니다. 이제 호스트의 `app/Http/Middleware/HandleInertiaRequests.php`나 `resources/views/app.blade.php`에 Orbit 전용 코드를 넣지 않아도, 새 `ShareOrbitInertia` 미들웨어가 Orbit 라우트 그룹에서 관리자 셸 props를 주입합니다. (기존에는 이 로직이 호스트에 있어야 해서 순정 설치 시 메뉴·엔티티·스타일이 비어 보이는 문제가 있었습니다.)
+- **User 프레젠터 패키지화**: 베이스 `User` 모델이 참조하던 호스트 클래스 `App\CmsOrbit\Core\Presenters\UserPresenter` 의존을 제거하고, 패키지 내 `CmsOrbit\Core\Foundation\Presenters\UserPresenter`(글로벌 검색 `Searchable` 구현)로 대체했습니다.
+- **강제 비밀번호 변경 스택 패키지화**: `RequirePasswordChange` 미들웨어, `ForcePasswordController`, `UpdateForcedPasswordRequest`, `orbit/auth/force-password` 페이지를 코어로 이관했습니다.
+- **자체 완결형 스타일**: `orbit:frontend-sync`가 호스트에 `resources/css/orbit.css`를 생성하고 패키지 소유의 디자인 토큰(`orbit-theme.css`)을 import 합니다. 호스트 `app.css` 수정이 필요 없습니다.
+- **`orbit:frontend-sync` 견고화**: `vite.config.*`에 `resolve.alias` 블록이 없어도 자동 생성하며, `orbit.css`를 Vite 입력에 등록합니다.
+
 ## License
 
 MIT

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Http\Controllers\Orbit\ForcePasswordController;
+use CmsOrbit\Core\Foundation\Http\Controllers\ForcePasswordController;
 use CmsOrbit\Core\Foundation\Http\Controllers\LocaleController;
 use CmsOrbit\Core\Foundation\Http\Controllers\LoginController;
 use CmsOrbit\Core\Foundation\Http\Controllers\SocialLoginController;
