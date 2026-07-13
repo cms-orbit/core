@@ -37,12 +37,18 @@ without copying host-project code into the package repository.
 - Define admin behaviour by extending the base `Entity` class: `fields()`, `columns()`,
   `filters()`, `label()`, `section()`, `permission()`, `menu()`.
 - Register entities via `Orbit::registerEntities(base_path('entities'))` inside
-  `App\Orbit\OrbitProvider`, or register from a package service provider with
-  `EntityRegistry::registerClass()`.
+  `App\Orbit\OrbitProvider` (do **not** scatter registrations in `AppServiceProvider`),
+  or register from a package service provider with `EntityRegistry::registerClass()`.
+- Host `entities/` needs **no** `"Entities\\": "entities/"` entry in the host
+  `composer.json` — Core registers a runtime PSR-4 prefix.
+- Choose `Entity` for dedicated model tables; choose `DocumentEntity` for shared
+  `documents` table content (announcements, popups, banners).
 - Prefer entity CRUD screens over bespoke screens unless you need custom flows.
 - Permissions are grouped per entity through `ItemPermission`. The role/user editors render
   them as a grouped checkbox matrix (`permission-matrix` field) — keep permission groups
   intact; do not flatten them into a single list.
+- Super-admin role permissions auto-sync when the registered permission fingerprint
+  changes (`orbit.permissions.auto_sync_super_admin`). Manual: `orbit:fresh-super-admin-role`.
 
 ## Internationalization (required from day one)
 
@@ -73,13 +79,16 @@ After `composer require cms-orbit/core`, run:
 
 ```bash
 php artisan orbit:install
+# optional satellites: --with=announcement,popup,sendgo
+# CI: --no-interaction --skip-npm  (then npm ci && npm run build separately)
 php artisan orbit:frontend-sync   # when adding/removing cms-orbit/* packages later
 php artisan boost:install           # optional; merges resources/boost guidelines & skills
 ```
 
 `orbit:install` publishes config/migrations/stubs, prepares `entities/` and `OrbitProvider`,
-and runs `orbit:frontend-sync` to generate Inertia page bridges plus Vite aliases from each
-package's `resources/orbit/frontend.json`.
+runs `orbit:frontend-sync` to generate Inertia page bridges plus Vite aliases from each
+package's `resources/orbit/frontend.json`, and can optionally `composer require`
+announcement / popup / sendgo (saas/blog are excluded — they need tenancy setup).
 
 ## Theming
 

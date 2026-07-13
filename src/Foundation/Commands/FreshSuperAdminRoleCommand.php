@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CmsOrbit\Core\Foundation\Commands;
 
 use CmsOrbit\Core\Foundation\Models\Role;
-use CmsOrbit\Core\Support\Facades\Orbit;
+use CmsOrbit\Core\Foundation\Permissions\SuperAdminPermissionSync;
 use Illuminate\Console\Command;
 use Symfony\Component\Console\Attribute\AsCommand;
 
@@ -20,25 +20,31 @@ class FreshSuperAdminRoleCommand extends Command
 
     protected $description = 'Create or refresh a role granting every registered permission';
 
-    public function handle(): int
+    public function handle(SuperAdminPermissionSync $sync): int
     {
         $name = (string) $this->argument('name');
-        $roleModelClass = Orbit::modelClass(Role::class);
 
-        $role = $roleModelClass::query()
-            ->firstOrNew([
-                'system_key' => Role::SystemKeySuperAdmin,
-            ]);
+        if ($name === '') {
+            $name = Role::DisplayNameSuperAdmin;
+        }
 
-        $role->forceFill([
-            'name'         => $name,
-            'slug'         => Role::SystemKeySuperAdmin,
-            'system_key'   => Role::SystemKeySuperAdmin,
-            'is_deletable' => false,
-            'permissions'  => Orbit::getAllowAllPermission()->toArray(),
-        ])->save();
+        $updated = $sync->sync($name, force: true);
 
-        $this->info(sprintf('Role "%s" now grants %d permission(s).', $role->name, count($role->permissions ?? [])));
+        if (! $updated) {
+            $this->warn('Unable to refresh the super-admin role (roles table missing or sync failed).');
+
+            return self::FAILURE;
+        }
+
+        $role = Role::query()
+            ->where('system_key', Role::SystemKeySuperAdmin)
+            ->first();
+
+        $this->info(sprintf(
+            'Role "%s" now grants %d permission(s).',
+            $role?->name ?? $name,
+            count($role?->permissions ?? []),
+        ));
 
         return self::SUCCESS;
     }

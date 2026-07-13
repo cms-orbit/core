@@ -171,6 +171,14 @@ class EntityRegistry
             foreach ($finder as $file) {
                 $class = $this->resolveClass($path, $namespace, $file);
 
+                if (! class_exists($class, false)) {
+                    $pathname = $file->getPathname();
+
+                    if (is_file($pathname)) {
+                        require_once $pathname;
+                    }
+                }
+
                 if (class_exists($class)) {
                     $found[] = $class;
                 }

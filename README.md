@@ -43,9 +43,18 @@ composer require cms-orbit/core:^4.0
 php artisan orbit:install
 ```
 
-`orbit:install`은 설정/마이그레이션/스텁 게시, `entities/`·`OrbitProvider` 준비, Inertia/Vite 연결(`orbit:frontend-sync`), **프런트 npm 의존성 병합 + `npm install` + `npm run build`**, AI 가이드(`orbit:ai`), **Laravel Boost 자동 갱신**(아래 참고)까지 처리합니다. 즉 순정 라라벨 호스트에서 `composer require` → `orbit:install`만으로 관리자 자산 빌드까지 끝납니다.
+`orbit:install`은 설정/마이그레이션/스텁 게시, `entities/`·`OrbitProvider` 준비, Inertia/Vite 연결(`orbit:frontend-sync`), **프런트 npm 의존성 병합 + `npm install` + `npm run build`**, AI 가이드(`orbit:ai`), **Laravel Boost 자동 갱신**(아래 참고)까지 처리합니다. 대화형 설치에서는 announcement / popup / sendgo 같은 **가벼운 위성 패키지**를 추가로 고를 수 있습니다(`--with=announcement,popup`로 비대화형 지정, saas/blog는 제외).
 
 > npm 빌드를 건너뛰려면 `php artisan orbit:install --skip-npm`. npm이 설치돼 있지 않으면 자동 빌드를 건너뛰고 수동 실행을 안내합니다.
+
+### 설치 / CI 체크리스트
+
+| 항목 | 권장 |
+| --- | --- |
+| 기존 `User` 모델 | 덮어쓰기 확인에서 **아니오**를 선택하거나, CI는 `--no-interaction`(덮어쓰지 않음) |
+| CI 빌드 | `php artisan orbit:install --no-interaction --skip-npm` 후 별도 `npm ci && npm run build` |
+| 위성 패키지 | `php artisan orbit:install --with=announcement,popup` 또는 설치 중 multiselect |
+| 의존성 감사 | CI에 `composer audit` 포함 |
 
 설치 직후 관리자 계정을 만들려면:
 
@@ -81,7 +90,7 @@ npm run dev   # 또는 npm run build
 | `php artisan orbit:sync` | 선택 | 설정/스텁만 안전하게 재동기화 (User 모델은 기본적으로 덮어쓰지 않음) |
 | `vite.config.*` 수동 alias | **불필요** | `orbit:frontend-sync`가 `// ORBIT:ALIASES:START` 블록을 관리 |
 | `resources/js/pages/*` 수동 re-export | **불필요** | 위 sync 명령이 패키지 페이지 브리지를 생성 |
-| Entity를 `app/Orbit/OrbitProvider`에 등록 | 호스트 전용 Entity 사용 시 | 패키지 Entity는 Service Provider가 자동 등록 |
+| Entity를 `app/Orbit/OrbitProvider`에 등록 | 호스트 전용 Entity 사용 시 | 패키지 Entity는 Service Provider가 자동 등록. `entities/` 스캔은 코어가 런타임 PSR-4로 연결하므로 호스트 `composer.json`에 `"Entities\\": "entities/"`를 **넣을 필요 없음** |
 
 기존 Laravel `User` 모델을 유지하려면 설치 중 덮어쓰기 확인에서 **아니오**를 선택하고, 안내되는 trait/extends 호환 가이드를 따르세요.
 
@@ -95,16 +104,30 @@ php artisan vendor:publish --tag=orbit-config
 
 ### 1. Entity 등록
 
-Orbit는 `EntityRegistry`에 등록된 엔티티를 기준으로 관리자 메뉴, 권한, CRUD 라우트와 화면을 구성합니다.
+Orbit는 `EntityRegistry`에 등록된 엔티티를 기준으로 관리자 메뉴, 권한, CRUD 라우트와 화면을 구성합니다. **호스트 전용 Entity는 `App\Orbit\OrbitProvider`에 등록**하세요. `AppServiceProvider`에 흩어 두지 않는 것이 좋습니다.
+
+`orbit:install`이 만들어 주는 기본 형태:
+
+```php
+// app/Orbit/OrbitProvider.php
+public function boot(): void
+{
+    Orbit::registerEntities(base_path('entities'));
+}
+```
+
+개별 클래스를 명시할 때:
 
 ```php
 use App\Orbit\Entities\PostEntity;
-use CmsOrbit\Core\Foundation\Entity\EntityRegistry;
+use CmsOrbit\Core\Support\Facades\Orbit;
 
-$this->app->afterResolving(EntityRegistry::class, function (EntityRegistry $registry): void {
-    $registry->registerClass([PostEntity::class]);
-});
+Orbit::registerEntities([PostEntity::class]);
 ```
+
+패키지가 제공하는 Entity(announcement, popup 등)는 해당 패키지 Service Provider가 자동 등록합니다.
+
+슈퍼 관리자 역할의 권한 맵은 등록된 권한 fingerprint가 바뀌면 기본적으로 자동 동기화됩니다(`orbit.permissions.auto_sync_super_admin`, 수동: `php artisan orbit:fresh-super-admin-role`).
 
 ### 2. Entity 정의
 
@@ -140,11 +163,18 @@ class PostEntity extends Entity
 }
 ```
 
-### 3. 문서형 콘텐츠 만들기
+### 3. Entity vs DocumentEntity
+
+| 상황 | 사용할 클래스 |
+| --- | --- |
+| `posts`, `members`처럼 **전용 Eloquent 모델·테이블**이 있는 경우 | `Entity` |
+| 공지·팝업·배너처럼 에디터 기반이고 공용 `documents` 테이블을 쓰는 경우 | `DocumentEntity` |
+
+### 4. 문서형 콘텐츠 만들기
 
 공지사항, 팝업처럼 공용 문서 테이블을 활용하는 콘텐츠는 `DocumentEntity`를 상속하면 됩니다. Orbit가 다국어 문서 레이어, CRUD 흐름, 공개 URL 연결에 필요한 기반을 제공합니다.
 
-### 4. 설정 화면과 Demo 확인
+### 5. 설정 화면과 Demo 확인
 
 설치 후 개발 환경에서는 Demo 섹션이 자동으로 등록되어 필드/레이아웃/차트/설정 예제를 바로 둘러볼 수 있습니다. 필요하면 `ORBIT_DEMO=false` 또는 `orbit.demo.enabled` 설정으로 끌 수 있습니다.
 
@@ -188,7 +218,9 @@ Orbit Core는 `CaptureAnalytics` 미들웨어와 `orbit_analytics_pageviews` 테
 | 네트워크 | `ip_address`(IPv4 마지막 옥텟·IPv6 접두사 익명화), `country_code`(ISO 3166-1 alpha-2) |
 | 범위 | `instance_id`(멀티 인스턴스 앱), `visited_on` |
 
-원본 방문자 UUID는 DB에 저장하지 않습니다. `visitor_hash`만 보관합니다.
+원본 방문자 UUID는 DB에 저장하지 않습니다. `visitor_hash`만 보관합니다. HMAC 키는 기본적으로 `APP_KEY`(`config('app.key')`)입니다. **APP_KEY를 로테이션하면 기존 `visitor_hash`와의 연속성이 끊깁니다.**
+
+고트래픽 환경에서는 `ORBIT_ANALYTICS_QUEUE=true`(`orbit.analytics.queue`)로 페이지뷰 INSERT를 큐에 오프로드할 수 있습니다. 쿠키 발급은 여전히 동기입니다.
 
 #### 수집하지 않는 요청
 
@@ -296,16 +328,20 @@ Orbit 설정 화면에서 인스턴스별로 덮어쓸 수 있습니다.
 | `analytics.respect_do_not_track` | `true` | DNT 헤더 존중 |
 | `analytics.retention_days` | `90` | 보존 기간(일). 만료분은 하루 1회 자동 삭제 |
 
-**Authentication & Security (인증 및 보안)** — 방문 통계 전용 스위치는 없지만, 로그인·로그아웃 시 방문 귀속과 쿠키 교체·삭제, 로그인 잠금(`auth_security.*`) 등 인증 이벤트가 방문 기록과 함께 동작합니다.
-
 환경 변수(`config/orbit.php`):
 
 ```env
+ORBIT_ANALYTICS_QUEUE=false
+ORBIT_AUTO_SYNC_SUPER_ADMIN=true
 ORBIT_ANALYTICS_DEV_COUNTRY=KR
 ORBIT_ANALYTICS_COUNTRY_HEADERS=X-Custom-Country
 ORBIT_ANALYTICS_GEOIP_ENABLED=true
 ORBIT_ANALYTICS_GEOIP_DATABASE_PATH=/absolute/path/to/GeoLite2-Country.mmdb
 ```
+
+`orbit.analytics.queue`가 `true`이면 `RecordPageview` 잡으로 INSERT를 오프로드합니다(기본 `false`, 동기).
+
+**Authentication & Security (인증 및 보안)** — 방문 통계 전용 스위치는 없지만, 로그인·로그아웃 시 방문 귀속과 쿠키 교체·삭제, 로그인 잠금(`auth_security.*`) 등 인증 이벤트가 방문 기록과 함께 동작합니다.
 
 #### 호스트 vs 인스턴스
 

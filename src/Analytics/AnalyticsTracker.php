@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CmsOrbit\Core\Analytics;
 
+use CmsOrbit\Core\Analytics\Jobs\RecordPageview;
 use CmsOrbit\Core\Analytics\Models\AnalyticsPageview;
 use CmsOrbit\Core\Analytics\Support\AnalyticsSchemaConnection;
 use Illuminate\Database\Eloquent\Model;
@@ -61,7 +62,7 @@ class AnalyticsTracker
         $user = $this->requestUser($request);
         $network = $this->networkPayload($request);
 
-        AnalyticsPageview::query()->create([
+        $attributes = [
             'instance_id' => $instanceId,
             ...$this->userPayload($user),
             'visitor_hash' => hash_hmac('sha256', $visitorId, $this->hashKey()),
@@ -78,7 +79,9 @@ class AnalyticsTracker
             'user_agent' => $request->userAgent(),
             'is_bot' => $details['is_bot'],
             'visited_on' => today()->toDateString(),
-        ]);
+        ];
+
+        $this->persistPageview($attributes);
 
         if ($this->cookieValue($request, self::VISITOR_COOKIE) === null) {
             $this->attachCookie($request, $response, self::VISITOR_COOKIE, $visitorId, self::VISITOR_LIFETIME_MINUTES);
@@ -87,6 +90,20 @@ class AnalyticsTracker
         if ($this->cookieValue($request, self::VISIT_COOKIE) === null) {
             $this->attachCookie($request, $response, self::VISIT_COOKIE, $visitToken, self::VISIT_LIFETIME_MINUTES);
         }
+    }
+
+    /**
+     * @param  array<string, mixed>  $attributes
+     */
+    protected function persistPageview(array $attributes): void
+    {
+        if ((bool) config('orbit.analytics.queue', false)) {
+            RecordPageview::dispatch($attributes);
+
+            return;
+        }
+
+        AnalyticsPageview::query()->create($attributes);
     }
 
     public function attributeCurrentVisitToAuthenticatedUser(?Request $request = null, ?Model $user = null): void

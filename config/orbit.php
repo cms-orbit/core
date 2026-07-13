@@ -198,6 +198,22 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Permissions
+    |--------------------------------------------------------------------------
+    |
+    | When auto_sync_super_admin is true, Orbit refreshes the system
+    | "super-admin" role whenever the registered permission fingerprint
+    | changes (e.g. after installing announcement/popup/sendgo). Disable if
+    | you manage that role exclusively via orbit:fresh-super-admin-role.
+    |
+    */
+
+    'permissions' => [
+        'auto_sync_super_admin' => (bool) env('ORBIT_AUTO_SYNC_SUPER_ADMIN', true),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Analytics
     |--------------------------------------------------------------------------
     |
@@ -210,9 +226,12 @@ return [
     | Fly.io, or Vercel so the corresponding country header is present, or use
     | a GeoLite2-Country.mmdb database for self-hosted deployments.
     |
+    | Set ORBIT_ANALYTICS_QUEUE=true to offload pageview INSERTs to the queue.
+    |
     */
 
     'analytics' => [
+        'queue' => (bool) env('ORBIT_ANALYTICS_QUEUE', false),
         'country_headers' => array_values(array_filter(array_map(
             static fn (string $header): string => trim($header),
             explode(',', (string) env('ORBIT_ANALYTICS_COUNTRY_HEADERS', '')),

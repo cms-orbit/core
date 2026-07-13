@@ -15,6 +15,7 @@ use CmsOrbit\Core\Foundation\Entity\Entity;
 use CmsOrbit\Core\Foundation\Entity\EntityRegistry;
 use CmsOrbit\Core\Screen\Actions\Menu;
 use CmsOrbit\Core\Support\Facades\Orbit;
+use Composer\Autoload\ClassLoader;
 use Illuminate\Support\ServiceProvider;
 
 /**
@@ -43,6 +44,8 @@ class EntityServiceProvider extends ServiceProvider
 
     public function register(): void
     {
+        $this->registerHostEntitiesAutoload();
+
         $this->app->singleton(EntityRegistry::class, function () {
             $registry = new EntityRegistry;
 
@@ -58,6 +61,29 @@ class EntityServiceProvider extends ServiceProvider
 
             return $registry;
         });
+    }
+
+    /**
+     * Register a runtime PSR-4 prefix for host {@see base_path('entities')} so
+     * descriptors work without a host composer.json autoload entry.
+     */
+    protected function registerHostEntitiesAutoload(): void
+    {
+        $path = base_path('entities');
+
+        if (! is_dir($path)) {
+            return;
+        }
+
+        foreach (spl_autoload_functions() ?: [] as $autoload) {
+            if (! is_array($autoload) || ! ($autoload[0] instanceof ClassLoader)) {
+                continue;
+            }
+
+            $autoload[0]->addPsr4('Entities\\', $path.DIRECTORY_SEPARATOR);
+
+            return;
+        }
     }
 
     public function boot(): void

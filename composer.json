@@ -1,6 +1,6 @@
 {
     "name": "cms-orbit/core",
-    "version": "4.0.9",
+    "version": "4.0.10",
     "description": "CMS Orbit core: server-driven Screen/Layout/Field engine rendered via Inertia + React.",
     "keywords": [
         "laravel",
@@ -33,6 +33,8 @@
         "laravel/pint": "^1.14"
     },
     "suggest": {
+        "cms-orbit/announcement": "Document-based announcement content type for the Orbit admin.",
+        "cms-orbit/popup": "Document-based popup content type for the Orbit admin.",
         "cms-orbit/sendgo": "Install for SendGo admin GUI, template sync, campaign records, and phone verification delivery."
     },
     "autoload": {

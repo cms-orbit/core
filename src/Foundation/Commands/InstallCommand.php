@@ -11,6 +11,7 @@ use CmsOrbit\Core\Foundation\Commands\Support\InstallMessages;
 use CmsOrbit\Core\Foundation\Events\InstallEvent;
 use CmsOrbit\Core\Foundation\Providers\ConsoleServiceProvider;
 use CmsOrbit\Core\Support\Facades\Orbit;
+use Composer\InstalledVersions;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Process;
@@ -19,15 +20,42 @@ use Laravel\Boost\BoostServiceProvider;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Process\ExecutableFinder;
 
+use function Laravel\Prompts\multiselect;
+
 #[AsCommand(name: 'orbit:install')]
 class InstallCommand extends Command
 {
     use Conditionable;
 
     /**
+     * Optional satellite packages that orbit:install can offer.
+     *
+     * @var array<string, array{package: string, constraint: string, label: string}>
+     */
+    public const SATELLITE_PACKAGES = [
+        'announcement' => [
+            'package' => 'cms-orbit/announcement',
+            'constraint' => '^4.0',
+            'label' => 'Announcement (document announcements)',
+        ],
+        'popup' => [
+            'package' => 'cms-orbit/popup',
+            'constraint' => '^4.0',
+            'label' => 'Popup (document popups)',
+        ],
+        'sendgo' => [
+            'package' => 'cms-orbit/sendgo',
+            'constraint' => '^4.0',
+            'label' => 'SendGo (messaging admin GUI)',
+        ],
+    ];
+
+    /**
      * @var string
      */
-    protected $signature = 'orbit:install {--skip-npm : Skip installing and building frontend assets}';
+    protected $signature = 'orbit:install
+                            {--skip-npm : Skip installing and building frontend assets}
+                            {--with= : Comma-separated satellite packages (announcement,popup,sendgo)}';
 
     /**
      * @var string
@@ -62,6 +90,7 @@ class InstallCommand extends Command
             ->buildFrontendAssets()
             ->publishAiSkills()
             ->syncBoostGuidelines()
+            ->installOptionalSatellites()
             ->promptForStargazer($locale)
             ->finish();
 
@@ -355,6 +384,178 @@ class InstallCommand extends Command
         $this->info($this->messages->get('step_ai'));
 
         return $this->executeCommand('orbit:ai');
+    }
+
+    /**
+     * Offer or install optional satellite packages (announcement / popup / sendgo).
+     *
+     * @return $this
+     */
+    private function installOptionalSatellites(): self
+    {
+        $keys = $this->resolveSatelliteSelections();
+
+        if ($keys === []) {
+            return $this;
+        }
+
+        $this->info($this->messages->get('step_satellites'));
+
+        $requireArgs = [];
+
+        foreach ($keys as $key) {
+            $meta = self::SATELLITE_PACKAGES[$key];
+            $requireArgs[] = $meta['package'].':'.$meta['constraint'];
+        }
+
+        $composer = (new ExecutableFinder)->find('composer') ?? 'composer';
+        $command = array_merge([$composer, 'require', ...$requireArgs, '--no-interaction']);
+
+        $this->line($this->messages->get('satellites_require_running', [
+            'packages' => implode(' ', $requireArgs),
+        ]));
+
+        $result = Process::path(base_path())->timeout(600)->run($command, function (string $type, string $buffer): void {
+            $this->output->write($buffer);
+        });
+
+        if (! $result->successful()) {
+            $this->warn($this->messages->get('satellites_require_failed', [
+                'command' => implode(' ', $command),
+            ]));
+
+            return $this;
+        }
+
+        $this->resyncAfterSatelliteInstall();
+
+        return $this;
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function resolveSatelliteSelections(): array
+    {
+        $available = $this->availableSatelliteKeys();
+
+        if ($available === []) {
+            return [];
+        }
+
+        $fromOption = $this->parseWithOption();
+
+        if ($fromOption !== []) {
+            $unknown = array_values(array_diff($fromOption, array_keys(self::SATELLITE_PACKAGES)));
+
+            if ($unknown !== []) {
+                $this->warn($this->messages->get('satellites_unknown', [
+                    'packages' => implode(', ', $unknown),
+                ]));
+            }
+
+            return array_values(array_intersect($fromOption, $available));
+        }
+
+        if ($this->shouldSkipPrompts()) {
+            return [];
+        }
+
+        $options = [];
+
+        foreach ($available as $key) {
+            $options[$key] = self::SATELLITE_PACKAGES[$key]['label'];
+        }
+
+        /** @var list<string> $selected */
+        $selected = multiselect(
+            label: $this->messages->get('satellites_prompt'),
+            options: $options,
+            default: [],
+            required: false,
+            hint: $this->messages->get('satellites_hint'),
+        );
+
+        return array_values(array_intersect($selected, $available));
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function parseWithOption(): array
+    {
+        $raw = (string) $this->option('with');
+
+        if (trim($raw) === '') {
+            return [];
+        }
+
+        return array_values(array_filter(array_map(
+            static fn (string $value): string => strtolower(trim($value)),
+            explode(',', $raw),
+        )));
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function availableSatelliteKeys(): array
+    {
+        $keys = [];
+
+        foreach (self::SATELLITE_PACKAGES as $key => $meta) {
+            if ($this->isSatelliteInstalled($meta['package'])) {
+                continue;
+            }
+
+            $keys[] = $key;
+        }
+
+        return $keys;
+    }
+
+    private function isSatelliteInstalled(string $package): bool
+    {
+        try {
+            return InstalledVersions::isInstalled($package);
+        } catch (\Throwable) {
+            return false;
+        }
+    }
+
+    /**
+     * Re-run migrate / frontend-sync / npm in a fresh PHP process so newly
+     * required packages are discovered.
+     */
+    private function resyncAfterSatelliteInstall(): void
+    {
+        $php = PHP_BINARY ?: 'php';
+        $artisan = base_path('artisan');
+
+        $steps = [
+            [$php, $artisan, 'migrate', '--force', '--no-interaction'],
+            [$php, $artisan, 'orbit:frontend-sync', '--no-interaction'],
+        ];
+
+        foreach ($steps as $command) {
+            $this->line($this->messages->get('satellites_step_running', [
+                'command' => implode(' ', array_slice($command, 2)),
+            ]));
+
+            $result = Process::path(base_path())->timeout(600)->run($command, function (string $type, string $buffer): void {
+                $this->output->write($buffer);
+            });
+
+            if (! $result->successful()) {
+                $this->warn($this->messages->get('satellites_step_failed', [
+                    'command' => implode(' ', $command),
+                ]));
+            }
+        }
+
+        if (! $this->option('skip-npm')) {
+            $this->buildFrontendAssets();
+        }
     }
 
     private function finish(): void

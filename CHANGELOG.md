@@ -2,6 +2,20 @@
 
 이 문서는 `cms-orbit/core`의 릴리스 노트를 기록합니다.
 
+## 4.0.10 - 2026-07-13
+
+### 추가
+
+- 호스트 `entities/` 런타임 PSR-4 등록 — 호스트 `composer.json`에 `"Entities\\": "entities/"`가 없어도 스캔됩니다.
+- `SuperAdminPermissionSync` — 등록 권한 fingerprint가 바뀌면 시스템 super-admin 역할을 자동 갱신합니다(`orbit.permissions.auto_sync_super_admin`, `ORBIT_AUTO_SYNC_SUPER_ADMIN`).
+- `orbit:install` 위성 패키지 선택 — 대화형 multiselect 또는 `--with=announcement,popup,sendgo` (saas/blog 제외). 설치 후 migrate/frontend-sync는 새 artisan 서브프로세스로 실행합니다.
+- `orbit.analytics.queue` / `ORBIT_ANALYTICS_QUEUE` — 페이지뷰 INSERT를 `RecordPageview` 잡으로 오프로드(기본 동기).
+
+### 개선
+
+- README·Boost 가이드에 Entity 등록 위치, Entity vs DocumentEntity 선택표, install/CI 체크리스트, `visitor_hash`=APP_KEY HMAC·키 로테이션 영향을 보강했습니다.
+- `composer.json` `suggest`에 announcement / popup을 추가했습니다.
+
 ## 4.0.9 - 2026-07-13
 
 ### 수정

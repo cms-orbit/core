@@ -6,6 +6,7 @@ namespace CmsOrbit\Core\Foundation\Providers;
 
 use CmsOrbit\Core\Foundation\ItemPermission;
 use CmsOrbit\Core\Foundation\Orbit;
+use CmsOrbit\Core\Foundation\Permissions\SuperAdminPermissionSync;
 use Illuminate\Support\ServiceProvider;
 
 class PlatformServiceProvider extends ServiceProvider
@@ -26,6 +27,10 @@ class PlatformServiceProvider extends ServiceProvider
                 ->registerSearch(config('orbit.search', []))
                 ->registerPermissions($this->registerPermissionsMain())
                 ->registerPermissions($this->registerPermissionsSystems());
+
+            // Runs after every provider's booted callbacks so entity, config,
+            // auth, and platform permissions are all present in the registry.
+            app(SuperAdminPermissionSync::class)->sync();
         });
     }
 
