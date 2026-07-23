@@ -6,6 +6,7 @@ import type { OrbitBrand } from '../../../theme/branding';
 import { resolveBrandAsset, useBrandTheme } from '../../../theme/branding';
 import { UiButton } from '../../../ui/button';
 import { inputClass } from '../../../ui/field-shell';
+import { ToastProvider } from '../../../ui/toast';
 
 interface LoginPageProps {
     action: string;
@@ -25,7 +26,20 @@ interface SharedProps {
     [key: string]: unknown;
 }
 
-export default function Login({
+/**
+ * Wraps the login screen in the shared Orbit {@link ToastProvider} so guest
+ * auth flows surface flashed `orbit.flash` messages as toasts, matching the
+ * authenticated admin shell UX. Field-level validation errors stay inline.
+ */
+export default function Login(props: LoginPageProps) {
+    return (
+        <ToastProvider>
+            <LoginForm {...props} />
+        </ToastProvider>
+    );
+}
+
+function LoginForm({
     action,
     resetUrl,
     appName,
