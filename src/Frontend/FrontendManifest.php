@@ -44,6 +44,24 @@ final class FrontendManifest
     }
 
     /**
+     * Module subpaths (relative to the package alias) whose import side-effect
+     * registers custom admin components via `registerComponents`. Loaded before
+     * the Orbit screen renders so packages can contribute fields/screens without
+     * host edits. An empty string or "index" imports the alias root.
+     *
+     * @return list<string>
+     */
+    public function registrations(): array
+    {
+        $registrations = $this->config['registrations'] ?? [];
+
+        return array_values(array_filter(array_map(
+            fn ($value) => is_string($value) ? trim($value) : '',
+            is_array($registrations) ? $registrations : [],
+        ), fn (string $value) => $value !== ''));
+    }
+
+    /**
      * NPM runtime dependencies this package's frontend requires so a plain host
      * can `npm install && npm run build` without hand-editing `package.json`.
      *

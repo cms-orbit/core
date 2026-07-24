@@ -2,6 +2,12 @@
 
 이 문서는 `cms-orbit/core`의 릴리스 노트를 기록합니다.
 
+## 4.0.12 - 2026-07-24
+
+### 추가
+
+- **패키지 커스텀 관리자 컴포넌트 등록**: `frontend.json`에 `registrations`(alias 상대 모듈 경로 목록)를 선언하면, `orbit:frontend-sync`가 호스트 `resources/js/orbit/registrations.ts` 애그리게이터를 생성하고 `orbit/screen` 브리지가 이를 import 하도록 연결합니다. 패키지는 호스트 파일 수정 없이 `registerComponents(...)`로 관리자 화면용 커스텀 필드/스크린을 기여할 수 있습니다. (`FrontendManifest::registrations()`, `FrontendSync::syncRegistrations()`)
+
 ## 4.0.11 - 2026-07-23
 
 ### 수정
