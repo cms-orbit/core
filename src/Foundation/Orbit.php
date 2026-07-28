@@ -29,11 +29,7 @@ class Orbit
      */
     public static function prefix(string $path = ''): string
     {
-        $prefix = config('orbit.access.mode') === 'path'
-            ? '/'.trim((string) config('orbit.access.prefix', 'settings'), '/')
-            : '';
-
-        return Str::start($prefix.$path, '/');
+        return app(\CmsOrbit\Core\Foundation\Routing\OrbitAccess::class)->url($path);
     }
 
     /**

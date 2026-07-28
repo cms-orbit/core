@@ -144,6 +144,14 @@ class FoundationServiceProvider extends ServiceProvider
             static fn (Application $app) => new Orbit
         );
 
+        // Resolves the panel's domain/prefix/middleware. Bound as a singleton so
+        // satellite packages (cms-orbit/saas) can override it to mount the panel
+        // per instance (e.g. {endpoint}/settings) without host changes.
+        $this->app->singleton(
+            \CmsOrbit\Core\Foundation\Routing\OrbitAccess::class,
+            static fn (Application $app) => new \CmsOrbit\Core\Foundation\Routing\OrbitAccess
+        );
+
         $this
             ->registerScreenMacro()
             ->mergeConfigFrom(

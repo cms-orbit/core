@@ -2,6 +2,16 @@
 
 이 문서는 `cms-orbit/core`의 릴리스 노트를 기록합니다.
 
+## 4.0.12 - 2026-07-28
+
+### 추가
+
+- **`OrbitAccess` 라우팅 리졸버** (`CmsOrbit\Core\Foundation\Routing\OrbitAccess`). 관리자 패널의 도메인/프리픽스/미들웨어를 요청별로 해석하며, 싱글톤으로 바인딩되어 위성 패키지(cms-orbit/saas)가 오버라이드해 패널을 인스턴스별로 마운트할 수 있습니다. `RouteServiceProvider::map()`과 `Orbit::prefix()`가 이 리졸버를 사용합니다. 기본 동작은 기존 `config('orbit.access')` 기반과 동일합니다.
+
+### 수정
+
+- `OrbitConfig` 모델을 호스트 연결에 고정(`getConnectionName()` → `config('saas.database.host_connection')`, 미설정 시 기본 연결). SaaS 멀티 DB 격리로 기본 연결이 인스턴스 DB로 전환된 요청에서도 호스트 소유 설정을 올바르게 조회합니다.
+
 ## 4.0.11 - 2026-07-23
 
 ### 수정

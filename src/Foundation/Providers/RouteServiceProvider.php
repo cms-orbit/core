@@ -8,6 +8,7 @@ use CmsOrbit\Core\Filters\Http\Middleware\NormalizeTableFilterQuery;
 use CmsOrbit\Core\Foundation\Http\Middleware\Access;
 use CmsOrbit\Core\Foundation\Http\Middleware\SetOrbitLocale;
 use CmsOrbit\Core\Foundation\Http\Middleware\ShareOrbitInertia;
+use CmsOrbit\Core\Foundation\Routing\OrbitAccess;
 use CmsOrbit\Core\Support\Facades\Orbit;
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Route;
@@ -38,14 +39,19 @@ class RouteServiceProvider extends ServiceProvider
      */
     public function map(): void
     {
-        $domain = $this->resolveDomain();
-        $prefix = $this->resolvePrefix();
+        // Resolved per request so satellite packages can mount the panel on an
+        // instance endpoint (e.g. {endpoint}/settings) while the central panel
+        // keeps the orbit.{host} root.
+        $access = app(OrbitAccess::class);
+        $domain = $access->domain();
+        $prefix = $access->prefix();
+        $privateMiddleware = $access->middleware();
 
         // Authenticated dashboard routes.
         Route::domain($domain)
             ->prefix($prefix)
             ->as('orbit.')
-            ->middleware(config('orbit.middleware.private'))
+            ->middleware($privateMiddleware)
             ->group(Orbit::path('routes/orbit.php'));
 
         // Public authentication routes. The locale middleware is appended so the
@@ -54,14 +60,14 @@ class RouteServiceProvider extends ServiceProvider
         Route::domain($domain)
             ->prefix($prefix)
             ->as('orbit.')
-            ->middleware([...config('orbit.middleware.public'), SetOrbitLocale::class, ShareOrbitInertia::class])
+            ->middleware([...$access->publicMiddleware(), SetOrbitLocale::class, ShareOrbitInertia::class])
             ->group(Orbit::path('routes/auth.php'));
 
         // Optional host-application routes file.
         if (file_exists(base_path('routes/orbit.php'))) {
             Route::domain($domain)
                 ->prefix($prefix)
-                ->middleware(config('orbit.middleware.private'))
+                ->middleware($privateMiddleware)
                 ->group(base_path('routes/orbit.php'));
         }
     }
