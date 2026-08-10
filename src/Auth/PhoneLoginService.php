@@ -23,7 +23,7 @@ class PhoneLoginService
     public function sendChallenge(string $identifier): array
     {
         if (! $this->registry->isEnabled(LoginProvider::Phone)) {
-            throw new AuthenticationException(__('활성화되지 않은 로그인 방식입니다.'));
+            throw new AuthenticationException(__('This login method is not enabled.'));
         }
 
         $account = UserAccount::query()
@@ -31,7 +31,7 @@ class PhoneLoginService
             ->first();
 
         if ($account === null) {
-            throw new AuthenticationException(__('입력한 정보와 일치하는 사용자를 찾을 수 없습니다.'));
+            throw new AuthenticationException(__('No user matches the information you entered.'));
         }
 
         return $this->broker->send($identifier);
@@ -43,11 +43,11 @@ class PhoneLoginService
     public function authenticate(string $identifier, string $code): Authenticatable
     {
         if (! $this->registry->isEnabled(LoginProvider::Phone)) {
-            throw new AuthenticationException(__('활성화되지 않은 로그인 방식입니다.'));
+            throw new AuthenticationException(__('This login method is not enabled.'));
         }
 
         if (! $this->broker->verify($identifier, $code)) {
-            throw new AuthenticationException(__('인증번호가 올바르지 않거나 만료되었습니다.'));
+            throw new AuthenticationException(__('The verification code is incorrect or has expired.'));
         }
 
         /** @var UserAccount|null $account */
@@ -58,7 +58,7 @@ class PhoneLoginService
         $user = $account?->user;
 
         if (! $user instanceof Authenticatable) {
-            throw new AuthenticationException(__('입력한 정보와 일치하는 사용자를 찾을 수 없습니다.'));
+            throw new AuthenticationException(__('No user matches the information you entered.'));
         }
 
         if ($account->verified_at === null) {

@@ -103,8 +103,8 @@ function toArrayValue(value: unknown): string[] {
 }
 
 /**
- * Unified select field (Orchid Select successor). Supports single & multiple
- * selection, search, empty option and tag creation without external deps.
+ * Unified select field. Supports single & multiple selection, search, empty
+ * option and tag creation without external deps.
  */
 export function SelectField(props: FieldComponentProps) {
     const t = useT();

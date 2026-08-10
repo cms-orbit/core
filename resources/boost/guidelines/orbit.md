@@ -1,7 +1,7 @@
 # Orbit CMS Development Guidelines
 
-Orbit is a server-driven admin CMS built on Orchid's design philosophy with a first-class
-**Entity** concept. The backend (PHP) describes screens declaratively; the frontend
+Orbit is a server-driven admin CMS built around declarative Screen/Layout/Field descriptors
+and a first-class **Entity** concept. The backend (PHP) describes screens declaratively; the frontend
 (Inertia v3 + React 19 + Tailwind v4) renders them from a serialized JSON contract. Follow
 these rules when working anywhere in an Orbit-powered application.
 

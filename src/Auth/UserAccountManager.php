@@ -148,7 +148,7 @@ class UserAccountManager
 
         if ($length < $this->registry->idMinLength() || $length > $this->registry->idMaxLength()) {
             throw ValidationException::withMessages([
-                'login_id' => __('아이디는 :min자 이상 :max자 이하여야 합니다.', [
+                'login_id' => __('The login ID must be between :min and :max characters.', [
                     'min' => $this->registry->idMinLength(),
                     'max' => $this->registry->idMaxLength(),
                 ]),
@@ -157,7 +157,7 @@ class UserAccountManager
 
         if (in_array($normalizedIdentifier, $this->registry->blockedIds(), true)) {
             throw ValidationException::withMessages([
-                'login_id' => __('사용할 수 없는 아이디입니다.'),
+                'login_id' => __('This login ID is not available.'),
             ]);
         }
 
@@ -188,7 +188,7 @@ class UserAccountManager
         }
 
         throw ValidationException::withMessages([
-            'accounts' => __('활성화된 로그인 방식 중 최소 하나의 계정 정보를 입력해 주세요.'),
+            'accounts' => __('Provide credentials for at least one enabled login method.'),
         ]);
     }
 

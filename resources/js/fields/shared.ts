@@ -25,7 +25,7 @@ export function objectValue(value: unknown): Record<string, unknown> | null {
     return value && typeof value === 'object' && !Array.isArray(value) ? (value as Record<string, unknown>) : null;
 }
 
-/** Normalize Orchid option attributes (list array or {value: label} map). */
+/** Normalize serialized option attributes (list array or {value: label} map). */
 export function normalizeOptions(raw: unknown): OptionEntry[] {
     if (Array.isArray(raw)) {
         return raw.map((item) => ({ value: str(item), label: str(item) }));

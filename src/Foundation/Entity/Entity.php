@@ -20,8 +20,8 @@ use Illuminate\Validation\ValidationException;
 /**
  * Entity is a model-NOT-inherited admin descriptor.
  *
- * Instead of subclassing the Eloquent model (like Orchid's Resource did with a
- * static $model property, or cms-orbit 3.1 with DynamicModel inheritance), an
+ * Instead of subclassing the Eloquent model (as cms-orbit 3.1 did with
+ * DynamicModel inheritance, or as a static $model property would imply), an
  * Entity points at a vanilla Eloquent model via {@see Model()} and reaches it
  * exclusively through {@see getModel()} / {@see query()}. This keeps the host
  * application's models untouched while the admin layer remains self-describing

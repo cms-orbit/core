@@ -27,8 +27,8 @@ if (config('orbit.auth', true)) {
     Route::get('lock', [LoginController::class, 'resetCookieLockMe'])->name('login.lock');
 }
 
-// Note: Orchid registered both GET + POST `switch-logout` to the same URI. The
-// unnamed GET variant is dropped here because Wayfinder cannot generate a valid
+// Note: only the POST `switch-logout` route is registered. An additional
+// unnamed GET variant on the same URI is omitted because Wayfinder cannot generate a valid
 // (URI-keyed) action dictionary for two routes sharing an identical URI. The
 // React impersonation UI submits via the named POST route below.
 Route::post('switch-logout', [LoginController::class, 'switchLogout'])->name('switch.logout');

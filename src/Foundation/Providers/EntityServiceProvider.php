@@ -88,7 +88,7 @@ class EntityServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        Orbit::registerSection('access-control', 'bs.people-fill', __('Users & Roles'), 1000);
+        Orbit::registerSection('access-control', 'bs.people-fill', fn () => __('Users & Roles'), 1000);
         $this->registerAccessControlGroups();
 
         $this->app->booted(function () {

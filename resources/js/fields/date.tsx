@@ -3,7 +3,7 @@ import { cn } from '../lib/cn';
 import { FieldShell, inputClass } from '../ui/field-shell';
 import { attr, bool, str } from './shared';
 
-/** Map Orchid flatpickr-style attributes to a native input type. */
+/** Map flatpickr-style attributes to a native input type. */
 function resolveInputType(props: FieldComponentProps): 'date' | 'datetime-local' | 'time' {
     const enableTime = bool(attr(props, 'data-datetime-enable-time'));
     const noCalendar = bool(attr(props, 'data-datetime-no-calendar'));

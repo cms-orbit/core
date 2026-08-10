@@ -22,7 +22,7 @@ class LocalLoginService
     public function authenticate(LoginProvider $provider, string $identifier, ?string $password = null): Authenticatable
     {
         if (! $provider->isLocal() || ! $this->registry->isEnabled($provider)) {
-            throw new AuthenticationException(__('활성화되지 않은 로그인 방식입니다.'));
+            throw new AuthenticationException(__('This login method is not enabled.'));
         }
 
         /** @var UserAccount|null $account */
@@ -37,15 +37,15 @@ class LocalLoginService
         $user = $account?->user;
 
         if (! $user instanceof Authenticatable) {
-            throw new AuthenticationException(__('입력한 정보와 일치하는 사용자를 찾을 수 없습니다.'));
+            throw new AuthenticationException(__('No user matches the information you entered.'));
         }
 
         if ($provider === LoginProvider::Email && $this->registry->requiresEmailVerification() && $account->verified_at === null) {
-            throw new AuthenticationException(__('이메일 인증을 완료한 뒤 로그인할 수 있습니다.'));
+            throw new AuthenticationException(__('Verify your email address before signing in.'));
         }
 
         if ($password === null || ! Hash::check($password, (string) $user->getAuthPassword())) {
-            throw new AuthenticationException(__('입력한 정보와 일치하는 사용자를 찾을 수 없습니다.'));
+            throw new AuthenticationException(__('No user matches the information you entered.'));
         }
 
         $account->markAsUsed();

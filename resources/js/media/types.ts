@@ -3,8 +3,8 @@ export type MediaType = 'image' | 'video' | 'audio' | 'file';
 export type EncodingStatus = 'pending' | 'processing' | 'done' | 'failed' | null;
 
 /**
- * A reusable media asset (Orchid Attachment successor). The backend media
- * endpoints serialize attachments into this shape.
+ * A reusable media asset. The backend media endpoints serialize attachments
+ * into this shape.
  */
 export interface MediaItem {
     id: number | string;

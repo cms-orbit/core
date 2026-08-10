@@ -191,7 +191,7 @@ class LoginController extends Controller
 
     private function nameForLock(): string
     {
-        return sprintf('%s_%s', $this->guard->getName(), '_orchid_lock');
+        return sprintf('%s_%s', $this->guard->getName(), '_orbit_lock');
     }
 
     /**
@@ -346,7 +346,7 @@ class LoginController extends Controller
                 $pending = $this->phoneLogin->sendChallenge($identifier);
 
                 session(['orbit_auth.phone_challenge' => $pending]);
-                Toast::info(__('인증번호를 전송했습니다.'));
+                Toast::info(__('A verification code has been sent.'));
 
                 return back()->withInput($request->except(['password', 'challenge_code']));
             }

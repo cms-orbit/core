@@ -42,7 +42,7 @@ function parseJson<T>(value: unknown, fallback: T): T {
 }
 
 /**
- * Recharts-backed chart layout. Consumes the Orchid chart payload
+ * Recharts-backed chart layout. Consumes the serialized chart payload
  * (`{ type, data: ChartDataset[], colors }`). The backend serializes the chart
  * `data`/`labels`/`colors` keys (JSON strings are also accepted).
  */

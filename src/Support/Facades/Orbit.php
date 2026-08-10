@@ -26,7 +26,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static self        setCurrentScreen(Screen $screen, bool $partialRequest = false)
  * @method static Screen|null getCurrentScreen()
  * @method static bool        isPartialRequest()
- * @method static self        registerSection(string $key, string $icon, ?string $label = null, int $sort = 5000, array $placement = [])
+ * @method static self        registerSection(string $key, string $icon, string|\Closure|null $label = null, int $sort = 5000, array $placement = [])
  * @method static array<string, array{
  *     icon: string,
  *     label: ?string,

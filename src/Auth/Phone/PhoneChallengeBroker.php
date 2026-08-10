@@ -24,7 +24,7 @@ class PhoneChallengeBroker
         $normalizedIdentifier = LoginIdentifierNormalizer::normalize('phone', $identifier);
 
         if ($normalizedIdentifier === null) {
-            throw new \InvalidArgumentException(__('유효한 휴대폰 번호를 입력해 주세요.'));
+            throw new \InvalidArgumentException(__('Enter a valid phone number.'));
         }
 
         $code = (string) random_int(100000, 999999);

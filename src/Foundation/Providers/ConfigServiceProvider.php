@@ -730,7 +730,7 @@ class ConfigServiceProvider extends ServiceProvider
 
         $url = Route::has('orbit.configs') ? route('orbit.configs') : '#';
 
-        Orbit::registerSection('system', 'bs.gear', __('Settings'), 9000, [
+        Orbit::registerSection('system', 'bs.gear', fn () => __('Settings'), 9000, [
             'rail'    => 'bottom',
             'sidebar' => 'bottom',
             'topbar'  => 'right',

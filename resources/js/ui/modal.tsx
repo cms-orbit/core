@@ -88,8 +88,8 @@ interface AsyncLayoutResult {
 
 /**
  * Fetches a serialized layout subtree from the `orbit.async` endpoint when a
- * modal opens. Replaces Orchid's Turbo Stream deferred loading with a plain
- * JSON request.
+ * modal opens. Deferred layout loading is a plain JSON request rather than a
+ * streamed HTML fragment.
  */
 export function useAsyncLayout(active: boolean, config: ModalOpenConfig): AsyncLayoutResult {
     const [result, setResult] = useState<AsyncLayoutResult>({

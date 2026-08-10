@@ -21,7 +21,10 @@ class DemoServiceProvider extends ServiceProvider
             return;
         }
 
-        $section = (string) config('orbit.demo.section', __('Demo'));
+        $configured = config('orbit.demo.section');
+        $section = static fn (): string => is_string($configured) && $configured !== ''
+            ? $configured
+            : __('Demo');
 
         Orbit::registerSection('demo', 'bs.book', $section, 100, [
             'rail'    => 'bottom',
@@ -30,12 +33,12 @@ class DemoServiceProvider extends ServiceProvider
         ]);
 
         Orbit::registerPermission(
-            ItemPermission::group($section)
+            ItemPermission::group($section())
                 ->addPermission('orbit.demo', __('Demo screens'))
         );
 
         $this->app->booted(function () use ($section) {
-            $this->registerMenu($section);
+            $this->registerMenu($section());
         });
     }
 

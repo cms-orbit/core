@@ -22,9 +22,14 @@ trait ManagesMenu
      * Menu sections submitted by Core and satellite packages, keyed by a stable
      * section identifier (see {@see Entity::sectionKey()}).
      *
+     * Labels are stored unresolved. A Closure label is only invoked in
+     * {@see getSections()} so that translations follow the locale applied by
+     * {@see SetOrbitLocale} rather than the locale that happened to be active
+     * while service providers booted.
+     *
      * @var array<string, array{
      *     icon: string,
-     *     label: ?string,
+     *     label: string|\Closure|null,
      *     sort: int,
      *     url: ?string,
      *     placement: array{
@@ -81,11 +86,15 @@ trait ManagesMenu
      * Register a menu section for the admin icon rail / section nav. Packages
      * call this from their service provider; entities link items via
      * {@see Entity::sectionKey()}.
+     *
+     * Pass the label as a Closure (`fn () => __('Settings')`) so it resolves
+     * per request. A plain string is stored verbatim and will not follow a
+     * later locale change.
      */
     public function registerSection(
         string $key,
         string $icon,
-        ?string $label = null,
+        string|\Closure|null $label = null,
         int $sort = 5000,
         array $placement = [],
     ): static {
@@ -101,7 +110,8 @@ trait ManagesMenu
     }
 
     /**
-     * All registered menu sections keyed by section identifier.
+     * All registered menu sections keyed by section identifier, with Closure
+     * labels resolved against the locale active for the current request.
      *
      * @return array<string, array{
      *     icon: string,
@@ -117,7 +127,15 @@ trait ManagesMenu
      */
     public function getSections(): array
     {
-        return $this->menuSections;
+        return array_map(static function (array $section): array {
+            $label = $section['label'];
+
+            $section['label'] = $label instanceof \Closure
+                ? (($resolved = $label()) === null ? null : (string) $resolved)
+                : $label;
+
+            return $section;
+        }, $this->menuSections);
     }
 
     /**

@@ -25,8 +25,8 @@ function parseTargets(raw: unknown): string[] {
 
 /**
  * Re-runs the server listener when a watched field changes by issuing an
- * Inertia partial reload scoped to this layout key (replaces Orchid's Turbo
- * listener). The backend serializes `targets` (watched field names).
+ * Inertia partial reload scoped to this layout key. The backend serializes
+ * `targets` (watched field names).
  */
 export function ListenerLayout({ node, data, screen }: LayoutComponentProps) {
     const form = useOptionalOrbitForm();

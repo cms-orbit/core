@@ -73,7 +73,7 @@ class ExampleFieldsScreen extends DemoScreen
                     Input::make('website')
                         ->type('url')
                         ->title(__('Website'))
-                        ->value('https://orchid.software')
+                        ->value('https://github.com/cms-orbit/core')
                         ->placeholder('https://example.com')
                         ->help(__('Enter your website URL.'))
                         ->horizontal(),

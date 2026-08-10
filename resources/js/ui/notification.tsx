@@ -19,7 +19,7 @@ interface NotificationPageProps {
 
 /**
  * Bell + dropdown notification center. Reads the shared `orbit.notifications`
- * Inertia prop (Orchid Notification successor). Backend emits the list shape.
+ * Inertia prop. Backend emits the list shape.
  */
 export function NotificationCenter() {
     const t = useT();

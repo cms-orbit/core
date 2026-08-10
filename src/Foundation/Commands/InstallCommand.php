@@ -28,6 +28,11 @@ class InstallCommand extends Command
     use Conditionable;
 
     /**
+     * Repository opened when the user agrees to star the project.
+     */
+    public const REPOSITORY_URL = 'https://github.com/cms-orbit/core';
+
+    /**
      * Optional satellite packages that orbit:install can offer.
      *
      * @var array<string, array{package: string, constraint: string, label: string}>
@@ -580,12 +585,12 @@ class InstallCommand extends Command
             return $this;
         }
 
-        $repo = 'https://github.com/orchidsoftware/platform';
+        $repo = self::REPOSITORY_URL;
 
         match (PHP_OS_FAMILY) {
-            'Darwin'  => exec('open '.$repo),
-            'Windows' => exec('start '.$repo),
-            'Linux'   => exec('xdg-open '.$repo),
+            'Darwin'  => exec('open '.escapeshellarg($repo)),
+            'Windows' => exec('start '.escapeshellarg($repo)),
+            'Linux'   => exec('xdg-open '.escapeshellarg($repo)),
             default   => $this->line($messages->get('show_love_link', ['url' => $repo])),
         };
 
