@@ -2,6 +2,50 @@
 
 이 문서는 `cms-orbit/core`의 릴리스 노트를 기록합니다.
 
+## 4.3.0 - 2026-08-28
+
+### 변경
+
+- **`intervention/image` `^3.0` → `^4.0`**: v4에서 이미지 API 이름이 바뀌어 `MediaLibrary`의 호출 4곳을 마이그레이션했습니다 — `ImageManager::read()` → `decodeBinary()`, `encodeByPath()` → `encodeUsingPath()`, `encodeByMediaType()` → `encodeUsingMediaType()`(2곳). v4는 `intervention/gif ^5`를 함께 요구합니다.
+- **호스트 영향**: 자기 코드에서 `Intervention\Image` v3 API를 직접 쓰는 호스트는 함께 마이그레이션해야 합니다. intervention/image를 직접 선언하지 않은 호스트는 영향받지 않습니다(전이 의존으로 자동 상향).
+
+### 추가
+
+- **테스트 기반 도입**: core 최초의 자동 테스트입니다. `phpunit.xml`, testbench 하네스(`tests/TestCase.php`, `tests/Pest.php`), 그리고 `MediaLibrary` 이미지 파이프라인 테스트 3개를 추가했습니다 — 최대 폭 초과 이미지의 축소, 한계 이하 이미지의 원본 유지, `branding`/`favicon` 업로드의 파비콘 변형 5종 + webmanifest 생성. 기록된 치수만 보지 않고 **디스크에 저장된 실제 바이트를 다시 디코딩해** 크기를 확인합니다. `processImage()`가 예외를 `report()`로 삼키기 때문에, 저장본을 검증하지 않으면 인코딩 실패가 조용히 지나갑니다.
+- `require-dev`에 `orchestra/testbench ^9.0 || ^10.0 || ^11.0`, `pestphp/pest ^4.0`, `pestphp/pest-plugin-laravel ^4.0`을 추가했습니다.
+
+## 4.2.0 - 2026-08-28
+
+### 변경
+
+- **socialite를 선택 의존으로 전환**: `laravel/socialite`와 `socialiteproviders/*`를 `require`에서 `suggest`로 옮겼습니다.
+
+  새 Laravel 13 프로젝트는 guzzle 8.1을 lock에 고정합니다. 그런데 `laravel/socialite`는 어느 버전도(dev-master 포함) guzzle `^6.0|^7.0`만 허용합니다. 그래서 core가 socialite를 하드 require하는 동안에는 `composer require cms-orbit/core`가 **항상** 실패했고, `-W`로 guzzle을 7로 강제 다운그레이드해야만 설치됐습니다.
+
+  코드는 이미 socialite를 선택적으로 다루고 있었습니다. `AuthServiceProvider::registerSocialiteProviders()`는 `SocialiteWasCalled`가 없으면 조기 반환하고, `SocialLoginController`는 `abort_unless(class_exists(Socialite::class), 500)`으로 런타임에만 막습니다. Socialite 타입을 시그니처에 쓴 곳은 없습니다. 즉 매니페스트만 코드보다 강한 제약을 걸고 있었습니다.
+
+  이제 `-W` 없이 설치되고 guzzle 8.1이 유지됩니다.
+
+### 안내
+
+- **소셜 로그인을 쓰는 호스트는 직접 선언해야 합니다**: `composer require laravel/socialite socialiteproviders/manager socialiteproviders/kakao socialiteproviders/apple -W`. 선언하지 않으면 소셜 로그인 라우트만 500을 반환하고 나머지 기능은 영향받지 않습니다. 여기서 `-W`가 필요한 이유는 그대로입니다 — socialite를 실제로 설치하면 guzzle이 7로 내려갑니다. 상류가 guzzle 8을 지원할 때까지는 피할 수 없고, 다만 그 비용을 소셜 로그인을 쓰는 프로젝트만 부담하게 됐습니다.
+
+## 4.1.0 - 2026-08-28
+
+### 수정
+
+- **php 제약 `^8.2` → `^8.3` 복구**: 게시된 태그는 모두 `^8.3`이었으나 main에서 `^8.2`로 내려가 있었습니다. Laravel 13은 php `^8.3`을 요구하므로 `php ^8.2` + `laravel/framework ^13` 조합은 php 8.2 환경에서 조용히 Laravel 11을 설치합니다.
+- **`tabuna/breadcrumbs` `^4.0 || ^5.0 || ^6.0` → `^5.0`**: `^6.0`은 존재하지 않는 버전이었습니다. 최신 5.0.0이 Laravel 10~13을 지원합니다.
+- **`laravel/pint` `^1.14` → `^1.30`** (1.30이 php `^8.3`을 요구).
+
+### 추가
+
+- **릴리스 파이프라인 도입**: `.githooks/pre-push`가 composer.json의 `version` 필드와 태그명이 어긋난 태그의 푸시를 차단합니다. `cms-orbit/core`의 `4.0.8` 태그가 `version: 4.0.7`로 만들어져 Packagist가 아무 오류 없이 그 태그를 무시했고, 4.0.8이 게시되지 않은 사실을 아무도 알지 못한 사고가 있었습니다. `bin/release <버전>`이 version 갱신·검증·커밋·태그·푸시를 한 동작으로 묶어 드리프트를 원천 차단하고, `cms-orbit/*` 의존이 실제로 Packagist에 게시되어 있는지 Composer 리졸버로 확인합니다. 클론 후 `composer install` 시 `core.hooksPath`가 자동 설정됩니다.
+
+### 안내
+
+- **`intervention/image`는 이 버전에서 `^3.0` 유지**: 4.3.0에서 `^4.0`으로 올렸습니다.
+
 ## 4.0.12 - 2026-07-24
 
 ### 추가

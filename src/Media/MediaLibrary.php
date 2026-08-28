@@ -95,7 +95,7 @@ class MediaLibrary
                 new Driver
             );
 
-            $image = $manager->read($disk->get($path));
+            $image = $manager->decodeBinary($disk->get($path));
 
             $attachment->width = $image->width();
             $attachment->height = $image->height();
@@ -106,7 +106,7 @@ class MediaLibrary
                 $attachment->height = $image->height();
             }
 
-            $disk->put($path, (string) $image->encodeByPath($path, quality: $quality));
+            $disk->put($path, (string) $image->encodeUsingPath($path, quality: $quality));
             $attachment->size = $disk->size($path);
 
             if ($attachment->group === 'branding' && $purpose === 'favicon') {
@@ -142,9 +142,9 @@ class MediaLibrary
 
         foreach ($variants as $key => $variant) {
             $variantPath = $directory.$variant['file'];
-            $copy = $manager->read($image->encodeByMediaType('image/png'));
+            $copy = $manager->decodeBinary((string) $image->encodeUsingMediaType('image/png'));
             $copy->cover($variant['size'], $variant['size']);
-            $disk->put($variantPath, (string) $copy->encodeByMediaType('image/png'));
+            $disk->put($variantPath, (string) $copy->encodeUsingMediaType('image/png'));
             $generatedFiles[] = $variantPath;
             $resolved[$key] = $disk->url($variantPath);
         }

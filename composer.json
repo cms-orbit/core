@@ -1,6 +1,6 @@
 {
     "name": "cms-orbit/core",
-    "version": "4.2.0",
+    "version": "4.3.0",
     "description": "CMS Orbit core: server-driven Screen/Layout/Field engine rendered via Inertia + React.",
     "keywords": [
         "laravel",
@@ -17,7 +17,7 @@
         "composer-runtime-api": "^2.2",
         "composer/semver": "^3.0",
         "inertiajs/inertia-laravel": "^3.0",
-        "intervention/image": "^3.0",
+        "intervention/image": "^4.0",
         "league/html-to-markdown": "^5.1",
         "geoip2/geoip2": "^3.0",
         "laravel/framework": "^11.0 || ^12.0 || ^13.0",
@@ -26,7 +26,10 @@
         "watson/active": "^7.0"
     },
     "require-dev": {
-        "laravel/pint": "^1.30"
+        "laravel/pint": "^1.30",
+        "orchestra/testbench": "^9.0 || ^10.0 || ^11.0",
+        "pestphp/pest": "^4.0",
+        "pestphp/pest-plugin-laravel": "^4.0"
     },
     "suggest": {
         "cms-orbit/announcement": "Document-based announcement content type for the Orbit admin.",
@@ -58,7 +61,10 @@
     },
     "config": {
         "sort-packages": true,
-        "lock": false
+        "lock": false,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
     },
     "minimum-stability": "dev",
     "prefer-stable": true,
@@ -66,5 +72,10 @@
         "post-install-cmd": [
             "git config core.hooksPath .githooks || true"
         ]
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "CmsOrbit\\Core\\Tests\\": "tests/"
+        }
     }
 }

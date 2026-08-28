@@ -361,6 +361,15 @@ composer validate --no-check-publish
 
 ## 업데이트 노트
 
+### 4.3.0
+
+- **`intervention/image` `^3.0` → `^4.0`**: v4 에서 이미지 API 이름이 바뀌어 `MediaLibrary` 의 호출 4곳을 마이그레이션했습니다 — `ImageManager::read()` → `decodeBinary()`, `encodeByPath()` → `encodeUsingPath()`, `encodeByMediaType()` → `encodeUsingMediaType()`(2곳). v4 는 `intervention/gif ^5` 를 함께 요구합니다. 자기 코드에서 `Intervention\Image` v3 API 를 직접 쓰는 호스트는 함께 마이그레이션해야 합니다 — intervention/image 를 직접 선언하지 않은 호스트는 전이 의존으로 자동 상향되어 영향받지 않습니다.
+- **테스트 기반 도입**: core 최초의 자동 테스트입니다. `phpunit.xml`, testbench 하네스, `MediaLibrary` 이미지 파이프라인 테스트 3개(최대 폭 초과 축소 / 한계 이하 원본 유지 / `branding`+`favicon` 파비콘 변형 5종 + webmanifest)를 추가했습니다. 기록된 치수만 보지 않고 **디스크에 저장된 실제 바이트를 다시 디코딩해** 크기를 확인합니다 — `processImage()` 가 예외를 `report()` 로 삼키기 때문에, 저장본을 검증하지 않으면 인코딩 실패가 조용히 지나갑니다. 실제로 v3 API 이름으로 되돌려 테스트가 실패하는 것까지 확인했습니다.
+
+  ```bash
+  composer install && vendor/bin/pest
+  ```
+
 ### 4.2.0
 
 - **socialite 를 선택 의존으로 전환 (BREAKING)**: `laravel/socialite` 와 `socialiteproviders/*` 를 `require` 에서 `suggest` 로 옮겼습니다.
