@@ -13,7 +13,7 @@
     "type": "library",
     "license": "MIT",
     "require": {
-        "php": "^8.2",
+        "php": "^8.3",
         "composer-runtime-api": "^2.2",
         "composer/semver": "^3.0",
         "inertiajs/inertia-laravel": "^3.0",
@@ -26,11 +26,11 @@
         "socialiteproviders/apple": "^5.10",
         "socialiteproviders/kakao": "^4.3",
         "socialiteproviders/manager": "^4.9",
-        "tabuna/breadcrumbs": "^4.0 || ^5.0 || ^6.0",
+        "tabuna/breadcrumbs": "^5.0",
         "watson/active": "^7.0"
     },
     "require-dev": {
-        "laravel/pint": "^1.14"
+        "laravel/pint": "^1.30"
     },
     "suggest": {
         "cms-orbit/announcement": "Document-based announcement content type for the Orbit admin.",
@@ -61,5 +61,10 @@
         "lock": false
     },
     "minimum-stability": "dev",
-    "prefer-stable": true
+    "prefer-stable": true,
+    "scripts": {
+        "post-install-cmd": [
+            "git config core.hooksPath .githooks || true"
+        ]
+    }
 }

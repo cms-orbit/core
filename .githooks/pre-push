@@ -1,0 +1,77 @@
+#!/bin/sh
+#
+# composer.json 의 "version" 필드와 태그명이 어긋난 태그의 푸시를 막는다.
+#
+# 왜 필요한가: 이 저장소들은 호스트 앱이 경로(path) 저장소로 심링크해 쓰기 때문에
+# composer.json 에 "version" 을 명시해야 한다 (없으면 dev-main 으로 잡혀 ^4.0 이
+# 해석되지 않는다). 그런데 Packagist 는 태그의 composer.json 안 "version" 이
+# 태그명과 다르면 그 태그를 조용히 무시한다. 실제로 cms-orbit/core 4.0.8 이
+# version=4.0.7 로 태깅되어 게시되지 않았고, 아무 오류도 나지 않았다.
+#
+# 설치: git config core.hooksPath .githooks
+
+set -e
+
+fail=0
+
+while read -r local_ref local_sha remote_ref remote_sha; do
+    # 태그 푸시만 검사한다
+    case "$remote_ref" in
+        refs/tags/*) ;;
+        *) continue ;;
+    esac
+
+    tag=${remote_ref#refs/tags/}
+
+    # 태그 삭제(로컬 sha 가 전부 0)는 통과
+    case "$local_sha" in
+        *[!0]*) ;;
+        *) continue ;;
+    esac
+
+    # semver 형태가 아닌 태그는 Packagist 가 버전으로 읽지 않는다
+    if ! printf '%s' "$tag" | grep -Eq '^v?[0-9]+\.[0-9]+\.[0-9]+'; then
+        printf 'pre-push: 태그 %s 는 semver 형식이 아니라 Packagist 가 무시합니다.\n' "$tag" >&2
+        fail=1
+        continue
+    fi
+
+    expected=${tag#v}
+
+    if ! composer_json=$(git show "$local_sha:composer.json" 2>/dev/null); then
+        printf 'pre-push: 태그 %s 에 composer.json 이 없습니다.\n' "$tag" >&2
+        fail=1
+        continue
+    fi
+
+    actual=$(printf '%s' "$composer_json" | php -r '
+        $d = json_decode(stream_get_contents(STDIN), true);
+        if (!is_array($d)) { echo "__INVALID_JSON__"; exit; }
+        echo $d["version"] ?? "__ABSENT__";
+    ')
+
+    case "$actual" in
+        __INVALID_JSON__)
+            printf 'pre-push: 태그 %s 의 composer.json 이 유효한 JSON 이 아닙니다.\n' "$tag" >&2
+            fail=1
+            ;;
+        __ABSENT__)
+            # version 이 없으면 Packagist 는 태그명을 쓴다 — 정상.
+            ;;
+        "$expected")
+            ;;
+        *)
+            printf 'pre-push: 태그 %s 의 composer.json version=%s — 불일치.\n' "$tag" "$actual" >&2
+            printf '           Packagist 가 이 태그를 조용히 무시합니다.\n' >&2
+            printf '           bin/release %s 로 만드세요.\n' "$expected" >&2
+            fail=1
+            ;;
+    esac
+done
+
+if [ "$fail" -ne 0 ]; then
+    printf '\npre-push: 푸시를 중단했습니다. 우회하려면 --no-verify 를 쓰세요.\n' >&2
+    exit 1
+fi
+
+exit 0
