@@ -361,6 +361,33 @@ composer validate --no-check-publish
 
 ## 업데이트 노트
 
+### 4.2.0
+
+- **socialite 를 선택 의존으로 전환 (BREAKING)**: `laravel/socialite` 와 `socialiteproviders/*` 를 `require` 에서 `suggest` 로 옮겼습니다.
+
+  새 Laravel 13 프로젝트는 guzzle 8.1 을 lock 에 고정합니다. 그런데 `laravel/socialite` 는 어느 버전도(dev-master 포함) guzzle `^6.0|^7.0` 만 허용합니다. 그래서 core 가 socialite 를 하드 require 하는 동안에는 `composer require cms-orbit/core` 가 **항상** 실패했고, `-W` 로 guzzle 을 7 로 강제 다운그레이드해야만 설치됐습니다.
+
+  코드는 이미 socialite 를 선택적으로 다루고 있었습니다. 참조는 두 곳뿐이고 둘 다 가드됩니다 — `AuthServiceProvider::registerSocialiteProviders()` 는 `SocialiteWasCalled` 가 없으면 조기 반환하고, `SocialLoginController` 는 `abort_unless(class_exists(Socialite::class), 500)` 로 런타임에만 막습니다. Socialite 타입을 시그니처에 쓴 곳은 없습니다. 즉 매니페스트만 코드보다 강한 제약을 걸고 있었습니다.
+
+  이제 `-W` 없이 설치되고 guzzle 8.1 이 그대로 유지됩니다.
+
+- **소셜 로그인을 쓰는 호스트는 직접 선언해야 합니다**:
+
+  ```bash
+  composer require laravel/socialite socialiteproviders/manager \
+    socialiteproviders/kakao socialiteproviders/apple -W
+  ```
+
+  선언하지 않으면 소셜 로그인 라우트만 500 을 반환하고 나머지 기능은 영향받지 않습니다. 여기서 `-W` 가 필요한 이유는 그대로입니다 — socialite 를 실제로 설치하는 순간 guzzle 은 7 로 내려갑니다. 상류가 guzzle 8 을 지원할 때까지는 피할 수 없고, 다만 그 비용을 소셜 로그인을 쓰는 프로젝트만 부담하게 됐습니다.
+
+### 4.1.0
+
+- **php 제약 `^8.3` 복구**: 게시된 태그는 모두 `^8.3` 이었으나 main 에서 `^8.2` 로 내려가 있었습니다. Laravel 13 은 php `^8.3` 을 요구하므로 `php ^8.2` + `laravel/framework ^13` 조합은 php 8.2 환경에서 조용히 Laravel 11 을 설치합니다.
+- **`tabuna/breadcrumbs` `^4.0 || ^5.0 || ^6.0` → `^5.0`**: `^6.0` 은 존재하지 않는 버전이었습니다. 최신 5.0.0 이 Laravel 10~13 을 지원합니다.
+- **`laravel/pint` `^1.14` → `^1.30`** (1.30 이 php `^8.3` 을 요구).
+- **릴리스 파이프라인 도입**: `.githooks/pre-push` 가 composer.json 의 `version` 필드와 태그명이 어긋난 태그의 푸시를 차단합니다. `cms-orbit/core` 의 `4.0.8` 태그가 `version: 4.0.7` 로 만들어져 Packagist 가 아무 오류 없이 그 태그를 무시했고, 4.0.8 이 게시되지 않은 사실을 아무도 알지 못한 사고가 있었습니다. `bin/release <버전>` 이 version 갱신·검증·커밋·태그·푸시를 한 동작으로 묶어 이 드리프트를 원천 차단하고, `cms-orbit/*` 의존이 실제로 Packagist 에 게시되어 있는지 Composer 리졸버로 확인합니다. 저장소를 클론해 `composer install` 하면 `core.hooksPath` 가 자동 설정됩니다.
+- **`intervention/image` 는 `^3.0` 유지**: v4 가 php `^8.3` 을 요구하므로 이제 받을 수는 있지만, core 가 쓰는 API 세 개가 모두 이름이 바뀝니다 (`ImageManager::read()` → `decode()`, `encodeByPath()` → `encodeUsingPath()`, `encodeByMediaType()` → `encodeUsingMediaType()`). 3.11.8 은 지원 중이고 보안 권고도 없어, 테스트가 없는 상태에서 섬네일·이미지 변환 경로를 건드리지 않기로 했습니다.
+
 ### 4.0.7
 
 - **`orbit:admin` 로그인 정보 안내**: 관리자 생성 후 로그인에 사용할 아이디와 비밀번호를 출력합니다. 비밀번호를 공란으로 두면 기본값 `orbit1234`가 사용되는데, 이를 명시적으로 보여주어 "입력한 정보와 일치하는 사용자를 찾을 수 없습니다"로 오인하는 문제를 방지합니다. (보안상 로그인 실패 메시지는 계정 없음/비밀번호 불일치를 구분하지 않습니다. 공란으로 만들었다면 `orbit1234`로 로그인하세요.)
