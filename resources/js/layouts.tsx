@@ -1,6 +1,6 @@
 import { router, usePage } from '@inertiajs/react';
 import { useCallback, useEffect, useState } from 'react';
-import type { ColumnNode, FieldNode, LayoutComponentProps } from './contract';
+import type { ColumnNode, FieldNode, LayoutComponentProps, LayoutNode } from './contract';
 import { ChartLayout } from './layouts/chart';
 import { EntityTableToolbar, TableFilterTabs, TablePagination, defaultHiddenColumnSlugs, tableFilterFields } from './layouts/entity-table-toolbar';
 import { ListenerLayout } from './layouts/listener';
