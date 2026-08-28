@@ -1,6 +1,6 @@
 {
     "name": "cms-orbit/core",
-    "version": "4.1.0",
+    "version": "4.2.0",
     "description": "CMS Orbit core: server-driven Screen/Layout/Field engine rendered via Inertia + React.",
     "keywords": [
         "laravel",
@@ -22,10 +22,6 @@
         "geoip2/geoip2": "^3.0",
         "laravel/framework": "^11.0 || ^12.0 || ^13.0",
         "laravel/scout": "^10.0 || ^11.0",
-        "laravel/socialite": "^5.28",
-        "socialiteproviders/apple": "^5.10",
-        "socialiteproviders/kakao": "^4.3",
-        "socialiteproviders/manager": "^4.9",
         "tabuna/breadcrumbs": "^5.0",
         "watson/active": "^7.0"
     },
@@ -35,7 +31,11 @@
     "suggest": {
         "cms-orbit/announcement": "Document-based announcement content type for the Orbit admin.",
         "cms-orbit/popup": "Document-based popup content type for the Orbit admin.",
-        "cms-orbit/sendgo": "Install for SendGo admin GUI, template sync, campaign records, and phone verification delivery."
+        "cms-orbit/sendgo": "Install for SendGo admin GUI, template sync, campaign records, and phone verification delivery.",
+        "laravel/socialite": "소셜 로그인(구글·카카오·애플)을 쓸 때 설치하세요: composer require \"laravel/socialite:^5.28\" -W. socialite 는 아직 guzzle 8 을 지원하지 않아 guzzle 7 로 내려갑니다.",
+        "socialiteproviders/apple": "애플 로그인용 (^5.10). laravel/socialite 와 함께 설치하세요.",
+        "socialiteproviders/kakao": "카카오 로그인용 (^4.3). laravel/socialite 와 함께 설치하세요.",
+        "socialiteproviders/manager": "카카오·애플 프로바이더 등록용 (^4.9)."
     },
     "autoload": {
         "psr-4": {
