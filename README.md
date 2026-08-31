@@ -361,6 +361,13 @@ composer validate --no-check-publish
 
 ## 업데이트 노트
 
+### 4.4.0
+
+- **php 제약 `^8.3` → `^8.4`**: php 8.3 환경에서는 더 이상 설치되지 않습니다.
+- **`pestphp/pest` `^5.0`, `pestphp/pest-plugin-laravel` `^5.0`, `orchestra/testbench` `^11.0`** (모두 `require-dev`). Pest 5 가 php `^8.4` 를 요구하는 것이 php 하한을 올린 이유입니다. testbench 범위를 좁힌 이유는 `pest-plugin-laravel` 5 가 `laravel/framework ^13.23` 을 요구해 testbench 9(L11)·10(L12)이 Pest 5 와 공존할 수 없기 때문입니다.
+- **생산 의존은 하나도 바뀌지 않았습니다.** 직접 의존 20개를 전수 대조했고, php 하한 상향으로 새로 열린 것은 위 두 dev 패키지뿐입니다. 나머지 18개는 이미 `^8.3` 에서 최신을 받고 있었습니다. 이번 상향은 기능 확보가 아니라 장기 정리입니다.
+- **소비자의 Laravel 11·12 지원은 유지됩니다** (`^11.0 || ^12.0 || ^13.0`). 다만 이 저장소의 테스트는 L13 으로만 해석되므로 L11·L12 호환성은 로컬 테스트로 검증되지 않습니다.
+
 ### 4.3.0
 
 - **`intervention/image` `^3.0` → `^4.0`**: v4 에서 이미지 API 이름이 바뀌어 `MediaLibrary` 의 호출 4곳을 마이그레이션했습니다 — `ImageManager::read()` → `decodeBinary()`, `encodeByPath()` → `encodeUsingPath()`, `encodeByMediaType()` → `encodeUsingMediaType()`(2곳). v4 는 `intervention/gif ^5` 를 함께 요구합니다. 자기 코드에서 `Intervention\Image` v3 API 를 직접 쓰는 호스트는 함께 마이그레이션해야 합니다 — intervention/image 를 직접 선언하지 않은 호스트는 전이 의존으로 자동 상향되어 영향받지 않습니다.

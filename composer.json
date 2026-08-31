@@ -1,6 +1,6 @@
 {
     "name": "cms-orbit/core",
-    "version": "4.3.0",
+    "version": "4.4.0",
     "description": "CMS Orbit core: server-driven Screen/Layout/Field engine rendered via Inertia + React.",
     "keywords": [
         "laravel",
@@ -13,7 +13,7 @@
     "type": "library",
     "license": "MIT",
     "require": {
-        "php": "^8.3",
+        "php": "^8.4",
         "composer-runtime-api": "^2.2",
         "composer/semver": "^3.0",
         "inertiajs/inertia-laravel": "^3.0",
@@ -27,9 +27,9 @@
     },
     "require-dev": {
         "laravel/pint": "^1.30",
-        "orchestra/testbench": "^9.0 || ^10.0 || ^11.0",
-        "pestphp/pest": "^4.0",
-        "pestphp/pest-plugin-laravel": "^4.0"
+        "orchestra/testbench": "^11.0",
+        "pestphp/pest": "^5.0",
+        "pestphp/pest-plugin-laravel": "^5.0"
     },
     "suggest": {
         "cms-orbit/announcement": "Document-based announcement content type for the Orbit admin.",
