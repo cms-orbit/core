@@ -1,6 +1,6 @@
 {
     "name": "cms-orbit/core",
-    "version": "4.4.0",
+    "version": "4.5.0",
     "description": "CMS Orbit core: server-driven Screen/Layout/Field engine rendered via Inertia + React.",
     "keywords": [
         "laravel",
@@ -20,7 +20,7 @@
         "intervention/image": "^4.0",
         "league/html-to-markdown": "^5.1",
         "geoip2/geoip2": "^3.0",
-        "laravel/framework": "^11.0 || ^12.0 || ^13.0",
+        "laravel/framework": "^13.0",
         "laravel/scout": "^10.0 || ^11.0",
         "tabuna/breadcrumbs": "^5.0",
         "watson/active": "^7.0"

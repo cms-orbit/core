@@ -32,8 +32,8 @@ PHP에서 정의한 `Screen / Layout / Field / Entity` 계약을 Inertia + React
 
 ## 요구사항
 
-- PHP `^8.3`
-- Laravel `^11.0 || ^12.0 || ^13.0`
+- PHP `^8.4`
+- Laravel `^13.0`
 - Inertia Laravel `^3.0`
 
 ## 설치
@@ -360,6 +360,13 @@ composer validate --no-check-publish
 호스트 앱 전체 동작까지 함께 확인하려면 루트 애플리케이션에서 타입 체크와 Laravel 테스트를 같이 돌리는 것을 권장합니다.
 
 ## 업데이트 노트
+
+### 4.5.0
+
+- **`laravel/framework` `^11.0 || ^12.0 || ^13.0` → `^13.0`**: Laravel 13 전용으로 좁혔습니다.
+- **왜 좁혔나**: Pest 5 를 채택한 4.4.0(패키지별 4.1.0)부터 `pest-plugin-laravel` 5 가 `laravel/framework ^13.23` 을 요구해, 이 저장소의 테스트가 Laravel 13 으로만 해석됩니다. 즉 Laravel 11·12 호환성을 더 이상 검증할 수 없는 상태로 그 범위를 광고하고 있었습니다. 검증되지 않는 지원 범위를 제약에 남겨두지 않기로 했습니다.
+- **Laravel 11·12 사용자는 업그레이드가 필요합니다.** 이번 변경은 실제로 지원 구성을 제거하므로, php 하한 상향과 달리 소비자에게 직접 영향이 있습니다. Laravel 13 으로 올리거나 이전 버전에 머물러야 합니다.
+- 함께 검토했으나 좁히지 않은 것: `laravel/scout ^10.0 || ^11.0`(scout 10.25.0 이 Laravel 13 을 지원하는 것을 실측 확인), `inertiajs/inertia-laravel ^3.0`, `tabuna/breadcrumbs ^5.0`, `watson/active ^7.0` — 모두 L13 에서 정상 해석됩니다.
 
 ### 4.4.0
 
