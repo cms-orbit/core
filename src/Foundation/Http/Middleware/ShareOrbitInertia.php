@@ -423,7 +423,32 @@ SVG;
             return null;
         }
 
+        if (! $this->looksLikeAttachmentId($id)) {
+            return null;
+        }
+
         return Orbit::model(Attachment::class)::find($id);
+    }
+
+    /**
+     * Whether a scalar can plausibly be an attachment primary key.
+     *
+     * Brand config values hold either an attachment id or a ready-made public
+     * path (the shipped default favicon is `/vendor/orbit/favicon/favicon.ico`).
+     * Feeding a path to `find()` is harmless on SQLite/MySQL but fatal on
+     * PostgreSQL: casting it to the `attachments.id` uuid raises SQLSTATE 22P02,
+     * which aborts the surrounding transaction and takes every later query with
+     * it. An attachment key never contains a slash, so reject those up front.
+     */
+    protected function looksLikeAttachmentId(mixed $id): bool
+    {
+        if (! is_string($id)) {
+            return is_int($id);
+        }
+
+        return ! str_contains($id, '/')
+            && ! str_starts_with($id, 'data:')
+            && ! str_starts_with($id, '#');
     }
 
     /**
