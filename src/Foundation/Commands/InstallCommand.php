@@ -15,6 +15,7 @@ use Composer\InstalledVersions;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Process;
+use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Traits\Conditionable;
 use Laravel\Boost\BoostServiceProvider;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -278,19 +279,47 @@ class InstallCommand extends Command
 
         $path = app_path('Orbit/OrbitProvider.php');
 
-        if (file_exists($path)) {
-            return $this;
+        if (! file_exists($path)) {
+            if (! is_dir(dirname($path))) {
+                mkdir(dirname($path), 0755, true);
+            }
+
+            file_put_contents($path, file_get_contents(Orbit::path('stubs/app/OrbitProvider.stub')));
+
+            $this->info($this->messages->get('orbit_provider_created'));
         }
 
-        if (! is_dir(dirname($path))) {
-            mkdir(dirname($path), 0755, true);
-        }
-
-        file_put_contents($path, file_get_contents(Orbit::path('stubs/app/OrbitProvider.stub')));
-
-        $this->info($this->messages->get('orbit_provider_created'));
+        $this->registerOrbitProvider();
 
         return $this;
+    }
+
+    /**
+     * Add App\Orbit\OrbitProvider to the host's bootstrap/providers.php.
+     *
+     * Writing the file is not enough. Application providers are not
+     * auto-discovered — Laravel 11+ loads them from bootstrap/providers.php —
+     * so an unregistered OrbitProvider never boots, `registerEntities()` never
+     * runs, and host entities silently fail to appear in the admin.
+     */
+    private function registerOrbitProvider(): void
+    {
+        $provider = 'App\\Orbit\\OrbitProvider';
+        $bootstrapFile = $this->laravel->getBootstrapProvidersPath();
+
+        if (! is_file($bootstrapFile)) {
+            $this->warn($this->messages->get('orbit_provider_register_manually', ['provider' => $provider]));
+
+            return;
+        }
+
+        if (str_contains((string) file_get_contents($bootstrapFile), $provider)) {
+            return;
+        }
+
+        ServiceProvider::addProviderToBootstrapFile($provider, $bootstrapFile);
+
+        $this->info($this->messages->get('orbit_provider_registered'));
     }
 
     /**
