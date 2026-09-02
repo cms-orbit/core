@@ -12,12 +12,15 @@ use CmsOrbit\Core\Config\LayoutThemeRegistry;
 use CmsOrbit\Core\Foundation\Notifications\DashboardMessage;
 use CmsOrbit\Core\Foundation\Notifications\OrbitMessage;
 use CmsOrbit\Core\Foundation\Providers\ConfigServiceProvider;
+use CmsOrbit\Core\Support\Concerns\ReadsOptionalAttributes;
 use CmsOrbit\Core\Support\Facades\Orbit;
 use CmsOrbit\Core\Support\Locale;
 use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use ReflectionMethod;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -31,6 +34,8 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class ShareOrbitInertia
 {
+    use ReadsOptionalAttributes;
+
     /**
      * Handle an incoming request.
      *
@@ -93,10 +98,36 @@ class ShareOrbitInertia
         ];
     }
 
+    /**
+     * Whether `$method` can be invoked on `$target` from outside its class.
+     */
+    protected function hasPublicMethod(object $target, string $method): bool
+    {
+        if (! method_exists($target, $method)) {
+            return false;
+        }
+
+        return (new ReflectionMethod($target, $method))->isPublic();
+    }
+
     protected function resolveOrbitUserAvatarUrl(Authenticatable $user): ?string
     {
         foreach (['profilePhotoUrl', 'avatarUrl', 'getProfilePhotoUrl', 'getAvatarUrl'] as $method) {
-            if (method_exists($user, $method)) {
+            /*
+             * The method has to be *public*, not merely present.
+             * `method_exists()` is true for protected methods as well, so a host
+             * declaring the conventional Laravel accessor
+             *
+             *     protected function profilePhotoUrl(): Attribute
+             *
+             * would be called from outside its scope. That falls through to
+             * Eloquent's `__call`, which forwards to the query builder and
+             * raises "Call to undefined method".
+             *
+             * `is_callable()` cannot answer this either: Eloquent defines
+             * `__call`, so it reports true for every name.
+             */
+            if ($this->hasPublicMethod($user, $method)) {
                 $value = $user->{$method}();
 
                 if (is_string($value) && filled($value)) {
@@ -105,8 +136,14 @@ class ShareOrbitInertia
             }
         }
 
+        if (! $user instanceof Model) {
+            return $this->generatedOrbitAvatar(
+                (string) ($user->getAuthIdentifier() ?: 'Orbit User')
+            );
+        }
+
         foreach (['profile_photo_url', 'avatar_url'] as $attribute) {
-            $value = $user->getAttribute($attribute);
+            $value = $this->optionalAttribute($user, $attribute);
 
             if (is_string($value) && filled($value)) {
                 return $value;
@@ -114,7 +151,7 @@ class ShareOrbitInertia
         }
 
         foreach (['avatar', 'profile_photo', 'profile_photo_id', 'avatar_id'] as $attribute) {
-            $attachment = $this->resolveAttachment($user->getAttribute($attribute));
+            $attachment = $this->resolveAttachment($this->optionalAttribute($user, $attribute));
 
             if ($attachment !== null) {
                 return $attachment->url();
