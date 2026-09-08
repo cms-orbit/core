@@ -40,7 +40,7 @@ class DynamicTestScreen
     /**
      * Create a new DynamicTestScreen instance.
      *
-     * @param  string|null  $name  Route name
+     * @param string|null $name Route name
      */
     public function __construct(?string $name = null)
     {
@@ -51,9 +51,9 @@ class DynamicTestScreen
     /**
      * Register a dynamic screen
      *
-     * @param  string  $screen  Screen name
-     * @param  string|null  $route  Route name
-     * @param  array|string  $middleware  Middleware to be used
+     * @param string       $screen     Screen name
+     * @param string|null  $route      Route name
+     * @param array|string $middleware Middleware to be used
      */
     public function register(string $screen, ?string $route = null, array|string $middleware = 'web'): DynamicTestScreen
     {
@@ -70,7 +70,8 @@ class DynamicTestScreen
     /**
      * Set route parameters
      *
-     * @param  array  $parameters  Route parameters
+     * @param array $parameters Route parameters
+     *
      * @return $this
      */
     public function parameters(array $parameters = []): self
@@ -83,7 +84,8 @@ class DynamicTestScreen
     /**
      * Set session data
      *
-     * @param  array  $data  Session data
+     * @param array $data Session data
+     *
      * @return $this
      */
     public function session(array $data): DynamicTestScreen
@@ -96,7 +98,7 @@ class DynamicTestScreen
     /**
      * Get the test response for the screen.
      *
-     * @param  array  $headers  Headers to be used
+     * @param array $headers Headers to be used
      */
     public function display(array $headers = []): TestResponse
     {
@@ -109,9 +111,9 @@ class DynamicTestScreen
     /**
      * Call the specified screen method
      *
-     * @param  string  $method  Method to call
-     * @param  array  $parameters  Parameters to be used
-     * @param  array  $headers  Headers to be used
+     * @param string $method     Method to call
+     * @param array  $parameters Parameters to be used
+     * @param array  $headers    Headers to be used
      */
     public function method(string $method, array $parameters = [], array $headers = []): TestResponse
     {
@@ -147,8 +149,8 @@ class DynamicTestScreen
     /**
      * Set the currently logged-in user for the application.
      *
-     * @param  UserContract  $user  User to act as
-     * @param  string|null  $guard  Guard name
+     * @param UserContract $user  User to act as
+     * @param string|null  $guard Guard name
      */
     public function actingAs(UserContract $user, $guard = null): self
     {
@@ -160,8 +162,8 @@ class DynamicTestScreen
     /**
      * Set the currently logged-in user for the application.
      *
-     * @param  UserContract  $user  User to act as
-     * @param  string|null  $guard  Guard name
+     * @param UserContract $user  User to act as
+     * @param string|null  $guard Guard name
      */
     public function be(UserContract $user, ?string $guard = null): self
     {
@@ -173,8 +175,9 @@ class DynamicTestScreen
     /**
      * Dynamically pass all other methods to Http calls
      *
-     * @param  string  $name  Name of the method to call
-     * @param  mixed  $arguments  Arguments to be passed
+     * @param string $name      Name of the method to call
+     * @param mixed  $arguments Arguments to be passed
+     *
      * @return $this
      */
     public function __call(string $name, mixed $arguments)
@@ -187,7 +190,7 @@ class DynamicTestScreen
     /**
      * Set the URL of the previous request.
      *
-     * @param  string  $url  URL of the previous request
+     * @param string $url URL of the previous request
      */
     public function from(string $url): self
     {

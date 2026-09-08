@@ -18,10 +18,10 @@ class Persona extends Content
     public function render(Personable $user): View
     {
         return view($this->template, [
-            'title' => $user->title(),
+            'title'    => $user->title(),
             'subTitle' => $user->subTitle(),
-            'image' => $user->image(),
-            'url' => $user->url(),
+            'image'    => $user->image(),
+            'url'      => $user->url(),
         ]);
     }
 
@@ -39,10 +39,10 @@ class Persona extends Content
         }
 
         return [
-            'title' => $user->title(),
+            'title'    => $user->title(),
             'subTitle' => $user->subTitle(),
-            'image' => $user->image(),
-            'url' => $user->url(),
+            'image'    => $user->image(),
+            'url'      => $user->url(),
         ];
     }
 }

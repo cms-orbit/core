@@ -51,7 +51,7 @@ abstract class Component extends Layout
     {
         return [
             'component' => $this->component,
-            'props' => $this->data,
+            'props'     => $this->data,
         ];
     }
 

@@ -21,7 +21,7 @@ abstract class Blank extends Layout
     /**
      * Layout constructor.
      *
-     * @param  Layout[]  $layouts
+     * @param Layout[] $layouts
      */
     public function __construct(array $layouts = [])
     {

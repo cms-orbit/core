@@ -13,15 +13,15 @@ use Illuminate\Support\Facades\Crypt;
 class AsyncController extends Controller
 {
     /**
-     * @return mixed
-     *
      * @throws \Throwable
+     *
+     * @return mixed
      */
     public function load(Request $request)
     {
         $request->validate([
-            '_call' => 'required|string',
-            '_screen' => 'required|string',
+            '_call'     => 'required|string',
+            '_screen'   => 'required|string',
             '_template' => 'required|string',
         ]);
 
@@ -39,10 +39,10 @@ class AsyncController extends Controller
     }
 
     /**
-     * @return mixed
-     *
      * @throws BindingResolutionException
      * @throws \ReflectionException
+     *
+     * @return mixed
      */
     public function listener(Request $request, string $screen, string $layout)
     {

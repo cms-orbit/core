@@ -18,9 +18,9 @@ final readonly class ChoicePayload implements Stringable
     /**
      * Create a new choices payload instance.
      *
-     * @param  class-string<Model>  $model
-     * @param  array{name?: string, parameters?: array<int, mixed>}|null  $scope
-     * @param  array<int, string>  $searchColumns
+     * @param class-string<Model>                                       $model
+     * @param array{name?: string, parameters?: array<int, mixed>}|null $scope
+     * @param array<int, string>                                        $searchColumns
      */
     public function __construct(
         public string $model,
@@ -56,7 +56,7 @@ final readonly class ChoicePayload implements Stringable
     /**
      * Create a payload instance from a plain array.
      *
-     * @param  array<string, mixed>  $payload
+     * @param array<string, mixed> $payload
      */
     public static function fromArray(array $payload): self
     {
@@ -80,12 +80,12 @@ final readonly class ChoicePayload implements Stringable
     public function toArray(): array
     {
         return [
-            'model' => $this->model,
-            'name' => $this->name,
-            'key' => $this->key,
-            'chunk' => $this->chunk,
-            'scope' => $this->scope,
-            'append' => $this->append,
+            'model'         => $this->model,
+            'name'          => $this->name,
+            'key'           => $this->key,
+            'chunk'         => $this->chunk,
+            'scope'         => $this->scope,
+            'append'        => $this->append,
             'searchColumns' => $this->searchColumns,
         ];
     }
@@ -190,7 +190,8 @@ final readonly class ChoicePayload implements Stringable
     /**
      * Convert a model or array item into a browser choice option.
      *
-     * @param  object|array<string, mixed>  $item
+     * @param object|array<string, mixed> $item
+     *
      * @return array{value: mixed, label: mixed}
      */
     public function optionFrom(object|array $item): array
@@ -221,7 +222,7 @@ final readonly class ChoicePayload implements Stringable
 
         return collect($items)
             ->map(fn ($item): array => [
-                'id' => $this->enumValue(data_get($item, $this->key)),
+                'id'   => $this->enumValue(data_get($item, $this->key)),
                 'text' => $this->enumValue(data_get($item, $this->labelAttribute())),
             ])
             ->toArray();
@@ -253,7 +254,7 @@ final readonly class ChoicePayload implements Stringable
         }
 
         return [
-            'name' => (string) $scope['name'],
+            'name'       => (string) $scope['name'],
             'parameters' => array_values(Arr::wrap($scope['parameters'] ?? [])),
         ];
     }
@@ -261,7 +262,7 @@ final readonly class ChoicePayload implements Stringable
     /**
      * Resolve selected model records for scalar selected keys.
      *
-     * @param  iterable<int, mixed>  $keys
+     * @param iterable<int, mixed> $keys
      */
     private function selectedItems(iterable $keys): iterable
     {

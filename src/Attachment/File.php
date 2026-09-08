@@ -58,9 +58,9 @@ class File
     /**
      * Class constructor
      *
-     * @param  UploadedFile  $file  - the uploaded file object to store
-     * @param  string  $disk  - the disk to use for storage (defaults to the 'public' disk from the config)
-     * @param  string  $group  - the group to associate the file with
+     * @param UploadedFile $file  - the uploaded file object to store
+     * @param string       $disk  - the disk to use for storage (defaults to the 'public' disk from the config)
+     * @param string       $group - the group to associate the file with
      */
     public function __construct(UploadedFile $file, ?string $disk = null, ?string $group = null)
     {
@@ -84,9 +84,10 @@ class File
      * an already stored entry matching the hash of the file
      *
      *
-     * @return Model|Attachment
      *
      * @throws FilesystemException
+     *
+     * @return Model|Attachment
      */
     public function load(): Model
     {
@@ -99,8 +100,8 @@ class File
         $attachment = $attachment->replicate()
             ->fill([
                 'original_name' => $this->file->getClientOriginalName(),
-                'sort' => $this->sort,
-                'group' => $this->group,
+                'sort'          => $this->sort,
+                'group'         => $this->group,
             ])
             ->forceFill([
                 'user_id' => Auth::id(),
@@ -116,7 +117,8 @@ class File
     /**
      * Allow duplicates of the file
      *
-     * @param  bool  $status  - The status to allow/disable the duplicates
+     * @param bool $status - The status to allow/disable the duplicates
+     *
      * @return $this
      */
     public function allowDuplicates(bool $status = true): self
@@ -155,17 +157,17 @@ class File
 
         $attachment = Orbit::modelClass(Attachment::class)
             ->forceFill([
-                'name' => $this->engine->name(),
-                'mime' => $this->engine->mime(),
-                'hash' => $this->engine->hash(),
-                'extension' => $this->engine->extension(),
+                'name'          => $this->engine->name(),
+                'mime'          => $this->engine->mime(),
+                'hash'          => $this->engine->hash(),
+                'extension'     => $this->engine->extension(),
                 'original_name' => $this->file->getClientOriginalName(),
-                'size' => $this->file->getSize(),
-                'path' => Str::finish($this->engine->path(), '/'),
-                'disk' => $this->disk,
-                'group' => $this->group,
-                'user_id' => Auth::id(),
-                'sort' => $this->sort,
+                'size'          => $this->file->getSize(),
+                'path'          => Str::finish($this->engine->path(), '/'),
+                'disk'          => $this->disk,
+                'group'         => $this->group,
+                'user_id'       => Auth::id(),
+                'sort'          => $this->sort,
             ]);
 
         $attachment->save();
@@ -178,7 +180,8 @@ class File
     /**
      * Set a custom path for the file
      *
-     * @param  string|null  $path  - The custom path to use for this file
+     * @param string|null $path - The custom path to use for this file
+     *
      * @return File
      */
     public function path(?string $path = null)

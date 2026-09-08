@@ -262,7 +262,7 @@ abstract class DocumentModel extends Model
 
         $document = Document::query()->updateOrCreate(
             [
-                'documentable_id' => $this->getKey(),
+                'documentable_id'   => $this->getKey(),
                 'documentable_type' => static::class,
             ],
             array_merge($stash['document'], [
@@ -288,7 +288,7 @@ abstract class DocumentModel extends Model
      * a reload. They are synced as original (never dirty) and are removed again
      * on the next save, so they are never written to the child table.
      *
-     * @param  array{document: array<string, mixed>, contents: array<string, array<string, mixed>>}  $stash
+     * @param array{document: array<string, mixed>, contents: array<string, array<string, mixed>>} $stash
      */
     protected function rehydrateSplitValues(Document $document, array $stash): void
     {

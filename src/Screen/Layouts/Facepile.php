@@ -17,7 +17,7 @@ class Facepile extends Content
     protected $template = 'orbit::layouts.facepile';
 
     /**
-     * @param  Personable[]  $users
+     * @param Personable[] $users
      */
     public function render(ArrayAccess $users): View
     {

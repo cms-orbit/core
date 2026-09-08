@@ -53,7 +53,7 @@ class EntityRegistry
     /**
      * Register one or more Entity class names directly.
      *
-     * @param  class-string<Entity>|array<int, class-string<Entity>>  $class
+     * @param class-string<Entity>|array<int, class-string<Entity>> $class
      */
     public function registerClass(string|array $class): static
     {
@@ -72,7 +72,7 @@ class EntityRegistry
      * Smart entry point used by Orbit::registerEntities(): accepts a directory
      * path or one/many Entity class names.
      *
-     * @param  string|array<int, string>  $pathOrClass
+     * @param string|array<int, string> $pathOrClass
      */
     public function register(string|array $pathOrClass): static
     {

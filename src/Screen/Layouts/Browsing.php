@@ -18,15 +18,15 @@ class Browsing extends Layout
      * @var array
      */
     protected $variables = [
-        'allow' => null,
-        'loading' => 'lazy',
-        'csp' => null,
-        'name' => null,
+        'allow'          => null,
+        'loading'        => 'lazy',
+        'csp'            => null,
+        'name'           => null,
         'referrerpolicy' => null,
-        'sandbox' => null,
-        'src' => null,
-        'srcdoc' => null,
-        'width' => '100%',
+        'sandbox'        => null,
+        'src'            => null,
+        'srcdoc'         => null,
+        'width'          => '100%',
     ];
 
     /**
@@ -63,8 +63,8 @@ class Browsing extends Layout
     protected function serialize(Repository $repository): array
     {
         return [
-            'url' => $this->variables['src'] ?? null,
-            'title' => $this->variables['name'] ?? null,
+            'url'        => $this->variables['src'] ?? null,
+            'title'      => $this->variables['name'] ?? null,
             'attributes' => array_filter($this->variables),
         ];
     }

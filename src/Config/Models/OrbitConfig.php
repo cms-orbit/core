@@ -9,9 +9,9 @@ use Illuminate\Database\Eloquent\Model;
 /**
  * Key-value JSON row backing a stored configuration value.
  *
- * @property string $key
+ * @property string   $key
  * @property int|null $instance_id
- * @property mixed $value
+ * @property mixed    $value
  */
 class OrbitConfig extends Model
 {
@@ -24,7 +24,7 @@ class OrbitConfig extends Model
     ];
 
     protected $casts = [
-        'value' => 'array',
+        'value'       => 'array',
         'instance_id' => 'integer',
     ];
 

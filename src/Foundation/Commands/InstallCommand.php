@@ -18,10 +18,11 @@ use Illuminate\Support\Facades\Process;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Traits\Conditionable;
 use Laravel\Boost\BoostServiceProvider;
-use Symfony\Component\Console\Attribute\AsCommand;
-use Symfony\Component\Process\ExecutableFinder;
 
 use function Laravel\Prompts\multiselect;
+
+use Symfony\Component\Console\Attribute\AsCommand;
+use Symfony\Component\Process\ExecutableFinder;
 
 #[AsCommand(name: 'orbit:install')]
 class InstallCommand extends Command
@@ -40,19 +41,19 @@ class InstallCommand extends Command
      */
     public const SATELLITE_PACKAGES = [
         'announcement' => [
-            'package' => 'cms-orbit/announcement',
+            'package'    => 'cms-orbit/announcement',
             'constraint' => '^4.0',
-            'label' => 'Announcement (document announcements)',
+            'label'      => 'Announcement (document announcements)',
         ],
         'popup' => [
-            'package' => 'cms-orbit/popup',
+            'package'    => 'cms-orbit/popup',
             'constraint' => '^4.0',
-            'label' => 'Popup (document popups)',
+            'label'      => 'Popup (document popups)',
         ],
         'sendgo' => [
-            'package' => 'cms-orbit/sendgo',
+            'package'    => 'cms-orbit/sendgo',
             'constraint' => '^4.0',
-            'label' => 'SendGo (messaging admin GUI)',
+            'label'      => 'SendGo (messaging admin GUI)',
         ],
     ];
 

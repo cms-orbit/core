@@ -25,7 +25,7 @@ class NumberRange extends Field implements ComplexFieldConcern
 
     protected $attributes = [
         'class' => 'form-control',
-        'type' => 'number',
+        'type'  => 'number',
     ];
 
     /**

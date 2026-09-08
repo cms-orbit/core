@@ -75,15 +75,16 @@ abstract class Layout implements JsonSerializable
 
         $variables = array_merge($this->variables, [
             'templateSlug' => $this->getSlug(),
-            'manyForms' => $build,
+            'manyForms'    => $build,
         ]);
 
         return view($this->template, $variables);
     }
 
     /**
-     * @param  array  $layouts
-     * @param  int|string  $key
+     * @param array      $layouts
+     * @param int|string $key
+     *
      * @return array
      */
     protected function buildChild(iterable $layouts, $key, Repository $repository)
@@ -115,10 +116,10 @@ abstract class Layout implements JsonSerializable
         }
 
         return [
-            'type' => $this->getType(),
-            'key' => $this->getSlug(),
-            'canSee' => true,
-            'data' => $this->serialize($repository),
+            'type'     => $this->getType(),
+            'key'      => $this->getSlug(),
+            'canSee'   => true,
+            'data'     => $this->serialize($repository),
             'children' => $this->serializeChildren($repository),
         ];
     }

@@ -51,7 +51,7 @@ class Builder
     /**
      * Builder constructor.
      *
-     * @param  Fieldable[]  $fields
+     * @param Fieldable[] $fields
      */
     public function __construct(iterable $fields, ?Repository $data = null)
     {
@@ -100,9 +100,10 @@ class Builder
      * Mirrors generateForm() but emits arrays instead of Blade HTML.
      *
      *
-     * @return array<int, array<string, mixed>>
      *
      * @throws Throwable
+     *
+     * @return array<int, array<string, mixed>>
      */
     public function generateArray(): array
     {
@@ -133,13 +134,13 @@ class Builder
             ->all();
 
         return [
-            'component' => method_exists($group, 'getComponent') ? $group->getComponent() : 'group',
-            'name' => null,
-            'value' => null,
-            'old' => null,
+            'component'  => method_exists($group, 'getComponent') ? $group->getComponent() : 'group',
+            'name'       => null,
+            'value'      => null,
+            'old'        => null,
             'attributes' => method_exists($group, 'getAttributes') ? Arr::except($group->getAttributes(), ['value']) : [],
-            'errors' => [],
-            'fields' => $fields,
+            'errors'     => [],
+            'fields'     => $fields,
         ];
     }
 
@@ -161,9 +162,9 @@ class Builder
     }
 
     /**
-     * @return array|string
-     *
      * @throws Throwable
+     *
+     * @return array|string
      */
     private function renderGroup(Groupable $group)
     {
@@ -184,9 +185,10 @@ class Builder
      *
      *
      *
-     * @return mixed
      *
      * @throws Throwable
+     *
+     * @return mixed
      */
     private function render(Fieldable $field)
     {
@@ -229,7 +231,8 @@ class Builder
     /**
      * Gets value of Repository.
      *
-     * @param  mixed|null  $value
+     * @param mixed|null $value
+     *
      * @return mixed
      */
     private function getValue(string $key, $value = null)

@@ -16,7 +16,7 @@ use CmsOrbit\Core\Screen\Repository;
 class ConfigFields extends Rows
 {
     /**
-     * @param  Field[]  $fieldset
+     * @param Field[] $fieldset
      */
     public function __construct(private array $fieldset, ?string $title = null)
     {
@@ -33,7 +33,7 @@ class ConfigFields extends Rows
         $form = new Builder($this->fields(), $repository);
 
         return view($this->template, [
-            'form' => $form->setPrefix(ConfigFieldFactory::PREFIX)->generateForm(),
+            'form'  => $form->setPrefix(ConfigFieldFactory::PREFIX)->generateForm(),
             'title' => $this->title,
         ]);
     }
@@ -41,7 +41,7 @@ class ConfigFields extends Rows
     protected function serialize(Repository $repository): array
     {
         return [
-            'title' => $this->title,
+            'title'  => $this->title,
             'fields' => (new Builder($this->fields(), $repository))
                 ->setPrefix(ConfigFieldFactory::PREFIX)
                 ->generateArray(),

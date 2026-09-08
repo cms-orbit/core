@@ -39,7 +39,7 @@ class RichText extends Field
      * @var array<string, mixed>
      */
     protected $attributes = [
-        'value' => null,
+        'value'  => null,
         'height' => '300px',
     ];
 

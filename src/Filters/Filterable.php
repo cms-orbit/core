@@ -23,7 +23,7 @@ trait Filterable
     /**
      * Apply the filter to the given selection.
      *
-     * @param  string|Selection  $class
+     * @param string|Selection $class
      */
     public function scopeFiltersApplySelection(Builder $query, $class): Builder
     {
@@ -36,7 +36,7 @@ trait Filterable
     }
 
     /**
-     * @param  iterable|string|Selection  $kit
+     * @param iterable|string|Selection $kit
      */
     public function scopeFilters(Builder $builder, mixed $kit = null, ?HttpFilter $httpFilter = null): Builder
     {
@@ -68,7 +68,7 @@ trait Filterable
     {
         return collect([
             'allowedFilters' => collect($this->allowedFilters ?? []),
-            'allowedSorts' => collect($this->allowedSorts ?? []),
+            'allowedSorts'   => collect($this->allowedSorts ?? []),
         ]);
     }
 }

@@ -23,7 +23,8 @@ abstract class Action
     /**
      * Perform the action on the given models.
      *
-     * @param  Collection<int, Model>  $models
+     * @param Collection<int, Model> $models
+     *
      * @return mixed
      */
     abstract public function handle(Collection $models);

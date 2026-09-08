@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace CmsOrbit\Core\Foundation\Http\Middleware;
 
-use CmsOrbit\Core\Support\Concerns\ReadsOptionalAttributes;
-use Illuminate\Database\Eloquent\Model;
-use ReflectionMethod;
 use Closure;
+use CmsOrbit\Core\Support\Concerns\ReadsOptionalAttributes;
 use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use ReflectionMethod;
 use Symfony\Component\HttpFoundation\Response;
 
 class RequirePasswordChange
@@ -20,7 +20,7 @@ class RequirePasswordChange
     /**
      * Handle an incoming request.
      *
-     * @param  Closure(Request): (Response)  $next
+     * @param Closure(Request): (Response) $next
      */
     public function handle(Request $request, Closure $next): Response
     {

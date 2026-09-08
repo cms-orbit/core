@@ -22,7 +22,7 @@ trait ManagesResources
     /**
      * Register a resource with the given key.
      *
-     * @param  string|array  $value
+     * @param string|array $value
      */
     public function registerResource(string $key, $value): static
     {
@@ -36,7 +36,8 @@ trait ManagesResources
     /**
      * Return CSS\JS.
      *
-     * @param  null  $key
+     * @param null $key
+     *
      * @return array|Collection|mixed
      */
     public function getResource($key = null)

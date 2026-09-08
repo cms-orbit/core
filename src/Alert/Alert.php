@@ -30,14 +30,15 @@ class Alert
     /**
      * Instantiate the flash notifier with session.
      *
-     * @param  Store  $session  The session store instance.
+     * @param Store $session The session store instance.
      */
     public function __construct(protected Store $session) {}
 
     /**
      * Flash an information message.
      *
-     * @param  string  $message  The message to flash.
+     * @param string $message The message to flash.
+     *
      * @return $this
      */
     public function info(string $message): self
@@ -50,8 +51,8 @@ class Alert
     /**
      * Flash a general message.
      *
-     * @param  string  $message  The message to flash.
-     * @param  Color  $color  The color of the message (default: Color::INFO).
+     * @param string $message The message to flash.
+     * @param Color  $color   The color of the message (default: Color::INFO).
      */
     public function message(string $message, Color $color = Color::INFO): static
     {
@@ -64,7 +65,7 @@ class Alert
     /**
      * Flash a success message.
      *
-     * @param  string  $message  The message to flash.
+     * @param string $message The message to flash.
      */
     public function success(string $message): static
     {
@@ -76,7 +77,7 @@ class Alert
     /**
      * Flash an error message.
      *
-     * @param  string  $message  The message to flash.
+     * @param string $message The message to flash.
      */
     public function error(string $message): static
     {
@@ -88,7 +89,7 @@ class Alert
     /**
      * Flash a warning message.
      *
-     * @param  string  $message  The message to flash.
+     * @param string $message The message to flash.
      */
     public function warning(string $message): static
     {
@@ -100,9 +101,9 @@ class Alert
     /**
      * Flash a view message.
      *
-     * @param  string  $template  The name of the view to flash.
-     * @param  Color  $color  The color of the message (default: Color::INFO).
-     * @param  array  $data  The data to pass to the view.
+     * @param string $template The name of the view to flash.
+     * @param Color  $color    The color of the message (default: Color::INFO).
+     * @param array  $data     The data to pass to the view.
      *
      * @throws \Throwable
      */

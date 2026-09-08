@@ -57,11 +57,11 @@ class Code extends Field
      * @var array
      */
     protected $attributes = [
-        'class' => 'form-control',
-        'language' => self::JS,
+        'class'       => 'form-control',
+        'language'    => self::JS,
         'lineNumbers' => true,
-        'height' => '300px',
-        'value' => null,
+        'height'      => '300px',
+        'value'       => null,
     ];
 
     /**

@@ -14,13 +14,15 @@ interface Fieldable
     public function render();
 
     /**
-     * @param  mixed  $value
+     * @param mixed $value
+     *
      * @return mixed
      */
     public function get(string $key, $value = null);
 
     /**
-     * @param  mixed  $value
+     * @param mixed $value
+     *
      * @return $this
      */
     public function set(string $key, $value);

@@ -36,9 +36,9 @@ abstract class TabMenu extends Layout
     }
 
     /**
-     * @return Factory|View|void
-     *
      * @throws Throwable
+     *
+     * @return Factory|View|void
      */
     public function build(Repository $repository)
     {

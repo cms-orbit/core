@@ -53,9 +53,10 @@ trait ManagesSearch
      *
      *
      *
-     * @return array{label: string,result: LengthAwarePaginator }|null
      *
      * @throws \Throwable
+     *
+     * @return array{label: string,result: LengthAwarePaginator }|null
      */
     protected function buildSearchResult(Model $model, ?string $query): ?array
     {
@@ -81,7 +82,7 @@ trait ManagesSearch
             ->transform(static fn (Model $model) => $model->presenter());
 
         return [
-            'label' => $presenter->label(),
+            'label'  => $presenter->label(),
             'result' => $result,
         ];
     }

@@ -20,7 +20,7 @@ trait Presentable
     /**
      * Return a presenter instance, optionally overriding the presenter class for this instance.
      *
-     * @param  class-string<Presenter>|null  $class
+     * @param class-string<Presenter>|null $class
      */
     public function presenter(?string $class = null): Presenter
     {
@@ -43,7 +43,7 @@ trait Presentable
     }
 
     /**
-     * @param  ReflectionClass  $ref
+     * @param ReflectionClass $ref
      */
     private function findPresenterAttribute(?ReflectionClass $reflectionClass = null): ?\ReflectionAttribute
     {

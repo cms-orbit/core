@@ -24,7 +24,7 @@ abstract class Content extends Layout
     /**
      * Card constructor.
      *
-     * @param  mixed  $target
+     * @param mixed $target
      */
     public function __construct($target)
     {

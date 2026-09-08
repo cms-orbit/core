@@ -18,7 +18,8 @@ trait AsSource
     /**
      * Retrieve the value of a given field from the object.
      *
-     * @param  string  $field  The name of the field to retrieve.
+     * @param string $field The name of the field to retrieve.
+     *
      * @return mixed|null The value of the field, or null if the field is not found.
      */
     public function getContent(string $field): mixed

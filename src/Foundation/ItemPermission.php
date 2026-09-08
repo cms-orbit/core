@@ -20,7 +20,8 @@ class ItemPermission
     /**
      * Create a new permission group instance with the given group name.
      *
-     * @param  string  $group  The name of the permission group.
+     * @param string $group The name of the permission group.
+     *
      * @return self The new permission group instance.
      */
     public static function group(string $group): self
@@ -33,14 +34,15 @@ class ItemPermission
     /**
      * Add a permission to the permission group.
      *
-     * @param  string  $slug  The slug of the permission.
-     * @param  string  $name  The description of the permission.
+     * @param string $slug The slug of the permission.
+     * @param string $name The description of the permission.
+     *
      * @return $this The current permission group instance.
      */
     public function addPermission(string $slug, string $name): self
     {
         $this->items[] = [
-            'slug' => $slug,
+            'slug'        => $slug,
             'description' => $name,
         ];
 

@@ -80,8 +80,8 @@ class User extends Authenticatable
      * @var array
      */
     protected $casts = [
-        'permissions' => 'array',
-        'email_verified_at' => 'datetime',
+        'permissions'          => 'array',
+        'email_verified_at'    => 'datetime',
         'must_change_password' => 'bool',
     ];
 
@@ -91,9 +91,9 @@ class User extends Authenticatable
      * @var array
      */
     protected $allowedFilters = [
-        'id' => Where::class,
-        'name' => Like::class,
-        'email' => Like::class,
+        'id'         => Where::class,
+        'name'       => Like::class,
+        'email'      => Like::class,
         'updated_at' => WhereDateStartEnd::class,
         'created_at' => WhereDateStartEnd::class,
     ];
@@ -121,9 +121,9 @@ class User extends Authenticatable
         throw_if(static::where('email', $email)->exists(), 'User exists');
 
         static::create([
-            'name' => $name,
-            'email' => $email,
-            'password' => Hash::make($password),
+            'name'        => $name,
+            'email'       => $email,
+            'password'    => Hash::make($password),
             'permissions' => Orbit::getAllowAllPermission(),
         ]);
     }

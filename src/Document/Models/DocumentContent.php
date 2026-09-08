@@ -10,8 +10,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 /**
  * Per-locale content row for a document.
  *
- * @property int $content_id
- * @property int $document_id
+ * @property int    $content_id
+ * @property int    $document_id
  * @property string $locale
  * @property string $slug
  */

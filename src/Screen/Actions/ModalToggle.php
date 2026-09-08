@@ -29,19 +29,19 @@ class ModalToggle extends Button
      * @var array
      */
     protected $attributes = [
-        'class' => 'btn btn-link icon-link gap-2',
-        'modal' => null,
-        'method' => null,
+        'class'      => 'btn btn-link icon-link gap-2',
+        'modal'      => null,
+        'method'     => null,
         'modalTitle' => null,
-        'icon' => null,
-        'action' => null,
-        'async' => false,
-        'open' => false,
+        'icon'       => null,
+        'action'     => null,
+        'async'      => false,
+        'open'       => false,
         'parameters' => [],
     ];
 
     /**
-     * @param  int|string|array  $options
+     * @param int|string|array $options
      */
     public function asyncParameters($options = []): self
     {

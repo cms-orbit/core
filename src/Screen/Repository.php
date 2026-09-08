@@ -29,7 +29,8 @@ class Repository extends \Illuminate\Config\Repository implements Countable
     }
 
     /**
-     * @param  mixed|null  $default
+     * @param mixed|null $default
+     *
      * @return mixed
      */
     public function getContent(string $key, $default = null)

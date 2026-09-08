@@ -37,8 +37,8 @@ class Link extends Action
      */
     protected $attributes = [
         'class' => 'btn btn-link icon-link gap-2',
-        'icon' => null,
-        'href' => '#!',
+        'icon'  => null,
+        'href'  => '#!',
         'turbo' => true,
     ];
 
@@ -71,8 +71,9 @@ class Link extends Action
     }
 
     /**
-     * @param  mixed  $parameters
-     * @param  bool  $absolute
+     * @param mixed $parameters
+     * @param bool  $absolute
+     *
      * @return $this
      */
     public function route(string $name, $parameters = [], $absolute = true): self

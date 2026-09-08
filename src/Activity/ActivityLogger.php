@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace CmsOrbit\Core\Activity;
 
-use CmsOrbit\Core\Support\Concerns\ReadsOptionalAttributes;
 use CmsOrbit\Core\Activity\Models\OrbitActivity;
+use CmsOrbit\Core\Support\Concerns\ReadsOptionalAttributes;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;

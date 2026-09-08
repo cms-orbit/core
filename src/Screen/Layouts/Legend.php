@@ -61,9 +61,9 @@ abstract class Legend extends Layout
 
         return view($this->template, [
             'repository' => $repository,
-            'columns' => $columns,
-            'slug' => $this->getSlug(),
-            'title' => $this->title,
+            'columns'    => $columns,
+            'slug'       => $this->getSlug(),
+            'title'      => $this->title,
         ]);
     }
 
@@ -86,8 +86,8 @@ abstract class Legend extends Layout
             ->all();
 
         return [
-            'title' => $this->title,
-            'target' => $this->target,
+            'title'   => $this->title,
+            'target'  => $this->target,
             'columns' => $columns,
         ];
     }

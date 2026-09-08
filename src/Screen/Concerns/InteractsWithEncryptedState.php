@@ -16,10 +16,11 @@ trait InteractsWithEncryptedState
      * Otherwise, the state is extracted from the encrypted '_state' parameter, deserialized and returned.
      *
      *
-     * @return Repository - The extracted state.
      *
      * @throws ContainerExceptionInterface - If the container cannot provide the dependency injection for a class.
-     * @throws NotFoundExceptionInterface - If the container cannot find a required dependency injection for a class.
+     * @throws NotFoundExceptionInterface  - If the container cannot find a required dependency injection for a class.
+     *
+     * @return Repository - The extracted state.
      */
     protected function extractState(?string $state = null): Repository
     {
@@ -43,9 +44,10 @@ trait InteractsWithEncryptedState
      * Serializes the current state of the screen into a string.
      *
      *
-     * @return string The serialized state.
      *
      * @throws PhpVersionNotSupportedException If the PHP version is not supported for serialization.
+     *
+     * @return string The serialized state.
      */
     protected function serializableState(): string
     {

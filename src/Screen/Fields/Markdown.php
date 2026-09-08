@@ -72,9 +72,9 @@ class Markdown extends Field
      * @var array
      */
     protected $attributes = [
-        'class' => 'form-control',
-        'value' => null,
-        'rows' => 8,
+        'class'   => 'form-control',
+        'value'   => null,
+        'rows'    => 8,
         'toolbar' => self::DEFAULT_TOOLBAR,
     ];
 
@@ -146,19 +146,19 @@ class Markdown extends Field
     protected function toolbarButtons(): array
     {
         return [
-            self::H1 => ['H1', 'headingOne', 'bs.type-h1'],
-            self::H2 => ['H2', 'headingTwo', 'bs.type-h2'],
-            self::H3 => ['H3', 'headingThree', 'bs.type-h3'],
-            self::H4 => ['H4', 'headingFour', 'bs.type-h4'],
-            self::H5 => ['H5', 'headingFive', 'bs.type-h5'],
-            self::BOLD => [__('Bold'), 'bold', 'bs.type-bold'],
-            self::ITALIC => [__('Italic'), 'italic', 'bs.type-italic'],
-            self::LINK => [__('Link'), 'link', 'bs.link-45deg'],
-            self::QUOTE => [__('Quote'), 'quote', 'bs.quote'],
-            self::CODE => [__('Code'), 'code', 'bs.code-slash'],
-            self::LIST => [__('List'), 'list', 'bs.list-ul'],
+            self::H1           => ['H1', 'headingOne', 'bs.type-h1'],
+            self::H2           => ['H2', 'headingTwo', 'bs.type-h2'],
+            self::H3           => ['H3', 'headingThree', 'bs.type-h3'],
+            self::H4           => ['H4', 'headingFour', 'bs.type-h4'],
+            self::H5           => ['H5', 'headingFive', 'bs.type-h5'],
+            self::BOLD         => [__('Bold'), 'bold', 'bs.type-bold'],
+            self::ITALIC       => [__('Italic'), 'italic', 'bs.type-italic'],
+            self::LINK         => [__('Link'), 'link', 'bs.link-45deg'],
+            self::QUOTE        => [__('Quote'), 'quote', 'bs.quote'],
+            self::CODE         => [__('Code'), 'code', 'bs.code-slash'],
+            self::LIST         => [__('List'), 'list', 'bs.list-ul'],
             self::ORDERED_LIST => [__('Numbered list'), 'orderedList', 'bs.list-ol'],
-            self::UPLOAD => [__('Upload file'), 'showDialogUpload', 'bs.cloud-arrow-up'],
+            self::UPLOAD       => [__('Upload file'), 'showDialogUpload', 'bs.cloud-arrow-up'],
         ];
     }
 }

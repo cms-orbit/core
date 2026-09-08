@@ -19,7 +19,7 @@ class Boolean extends Component
     /**
      * Create a new component instance.
      *
-     * @param  string|null  $falseLabel
+     * @param string|null $falseLabel
      */
     public function __construct(?bool $value, ?string $true = null, ?string $false = null)
     {

@@ -1,0 +1,64 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  php:
+    name: PHP ${{ matrix.php }}
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        # php ^8.4 라인. 8.5 도 함께 돌려 다음 버전에서 깨지는 것을 미리 본다.
+        php: ['8.4', '8.5']
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: gd, sqlite3, pdo_sqlite
+          coverage: none
+
+      # composer.json 이 config.lock=false 라 lock 파일이 없다. install 이 아니라
+      # update 를 써야 한다.
+      - name: Install dependencies
+        run: composer update --no-interaction --no-progress --prefer-dist
+
+      - name: Validate composer.json
+        run: composer validate --no-check-publish --no-check-lock
+
+      - name: Check formatting
+        run: vendor/bin/pint --test
+
+      - name: Run tests
+        run: vendor/bin/pest --ci
+
+  types:
+    name: TypeScript
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+          cache: npm
+
+      # 패키지는 .tsx 원본을 그대로 배포한다. 여기서 잡지 않으면 타입 오류가
+      # 릴리스를 타고 호스트마다 각자 발견하게 된다 (#3).
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type check
+        run: npm run types:check

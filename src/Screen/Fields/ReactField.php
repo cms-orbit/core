@@ -37,7 +37,7 @@ class ReactField extends Field
     /**
      * Pass arbitrary props to the custom React component.
      *
-     * @param  array<string, mixed>  $props
+     * @param array<string, mixed> $props
      */
     public function props(array $props): static
     {

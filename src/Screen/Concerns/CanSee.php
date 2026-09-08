@@ -25,7 +25,8 @@ trait CanSee
      * This method allows toggling the visibility of the component.
      * If set to `false`, the component will not be included in the rendered template.
      *
-     * @param  bool  $value  The visibility status. `true` to display, `false` to hide.
+     * @param bool $value The visibility status. `true` to display, `false` to hide.
+     *
      * @return $this
      */
     public function canSee(bool $value): self

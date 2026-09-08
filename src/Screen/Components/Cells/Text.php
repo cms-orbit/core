@@ -32,7 +32,7 @@ class Text extends Component
                               <span class="text-muted">{{ $text }}</span></div>', [
             'class' => $this->clamp ? 'line-clamp-'.$this->clamp : '',
             'title' => $this->title ? Str::of($this->value->getContent($this->title))->words($this->words) : '',
-            'text' => Str::of($this->value->getContent($this->text))->words($this->words),
+            'text'  => Str::of($this->value->getContent($this->text))->words($this->words),
         ]);
     }
 }

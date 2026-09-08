@@ -88,15 +88,16 @@ class AttachmentController extends Controller
      * Create and load an attachment model from the uploaded file.
      *
      *
-     * @return mixed
      *
      * @throws BindingResolutionException
+     *
+     * @return mixed
      */
     private function createModel(UploadedFile $file, Request $request)
     {
         $file = resolve(File::class, [
-            'file' => $file,
-            'disk' => $request->input('storage'),
+            'file'  => $file,
+            'disk'  => $request->input('storage'),
             'group' => $request->input('group'),
         ]);
 

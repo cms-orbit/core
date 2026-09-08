@@ -36,9 +36,9 @@ abstract class SideMenu extends Layout
     }
 
     /**
-     * @return Factory|View|void
-     *
      * @throws Throwable
+     *
+     * @return Factory|View|void
      */
     public function build(Repository $repository)
     {

@@ -99,10 +99,11 @@ trait ModelStateRetrievable
      *
      *
      *
-     * @return void
      *
      * @throws BindingResolutionException
      * @throws \ReflectionException
+     *
+     * @return void
      */
     public function __unserialize(array $values)
     {

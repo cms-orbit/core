@@ -36,9 +36,10 @@ class FieldCommand extends GeneratorCommand
      * Execute the console command.
      *
      *
-     * @return bool Whether the command execution was successful.
      *
      * @throws FileNotFoundException
+     *
+     * @return bool Whether the command execution was successful.
      */
     public function handle(): bool
     {
@@ -64,7 +65,7 @@ class FieldCommand extends GeneratorCommand
     /**
      * Get the default namespace for the class.
      *
-     * @param  string  $rootNamespace
+     * @param string $rootNamespace
      */
     protected function getDefaultNamespace($rootNamespace): string
     {
@@ -74,7 +75,8 @@ class FieldCommand extends GeneratorCommand
     /**
      * Get the view name based on the field name input.
      *
-     * @param  string  $separator  The separator to use for the view path.
+     * @param string $separator The separator to use for the view path.
+     *
      * @return string The formatted view name.
      */
     protected function getView($separator = '.'): string
@@ -129,10 +131,11 @@ class FieldCommand extends GeneratorCommand
     /**
      * Build the class with additional replacements.
      *
-     * @param  string  $name  The class name.
-     * @return string The processed class stub.
+     * @param string $name The class name.
      *
      * @throws FileNotFoundException
+     *
+     * @return string The processed class stub.
      */
     protected function buildClass($name): string
     {

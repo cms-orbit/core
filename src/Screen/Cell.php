@@ -116,8 +116,9 @@ abstract class Cell
     /**
      * Renders the component with optional parameters.
      *
-     * @param  string  $component  The component to render.
-     * @param  mixed  ...$params  Optional parameters for the component.
+     * @param string $component The component to render.
+     * @param mixed  ...$params Optional parameters for the component.
+     *
      * @return $this
      */
     public function component(string $component, ...$params): static
@@ -141,9 +142,10 @@ abstract class Cell
      * Pass only the cell value to the component
      *
      *
-     * @return $this
      *
      * @throws \ReflectionException
+     *
+     * @return $this
      */
     public function asComponent(string $component, array $params = []): static
     {
@@ -153,10 +155,11 @@ abstract class Cell
     /**
      * Pass only the cell value to the component
      *
-     * @param  mixed  ...$params
-     * @return $this
+     * @param mixed ...$params
      *
      * @throws \ReflectionException
+     *
+     * @return $this
      */
     public function usingComponent(string $component, ...$params): static
     {
@@ -164,7 +167,8 @@ abstract class Cell
     }
 
     /**
-     * @param  Repository|Model  $source
+     * @param Repository|Model $source
+     *
      * @return mixed
      */
     protected function handler($source, ?object $loop = null)

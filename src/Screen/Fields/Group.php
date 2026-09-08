@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CmsOrbit\Core\Screen\Fields;
 
+use CmsOrbit\Core\Screen\Builder;
 use CmsOrbit\Core\Screen\Contracts\Fieldable;
 use CmsOrbit\Core\Screen\Contracts\Groupable;
 use CmsOrbit\Core\Screen\Field;
@@ -18,10 +19,10 @@ class Group implements Fieldable, Groupable
      * @var array
      */
     protected $attributes = [
-        'group' => [],
-        'class' => 'col-12 col-md form-group mb-md-0',
-        'align' => 'align-items-baseline',
-        'itemToEnd' => false,
+        'group'        => [],
+        'class'        => 'col-12 col-md form-group mb-md-0',
+        'align'        => 'align-items-baseline',
+        'itemToEnd'    => false,
         'widthColumns' => null,
     ];
 
@@ -81,7 +82,7 @@ class Group implements Fieldable, Groupable
     /**
      * Serialize the group to the React JSON contract (a node carrying nested
      * `fields`). The CRUD builder normally serializes groups through
-     * {@see \CmsOrbit\Core\Screen\Builder::renderGroupArray()} so field prefixes
+     * {@see Builder::renderGroupArray()} so field prefixes
      * and values are bound; this standalone form is used when a group is
      * serialized directly.
      *
@@ -94,13 +95,13 @@ class Group implements Fieldable, Groupable
         }
 
         return [
-            'component' => $this->getComponent(),
-            'name' => null,
-            'value' => null,
-            'old' => null,
+            'component'  => $this->getComponent(),
+            'name'       => null,
+            'value'      => null,
+            'old'        => null,
             'attributes' => Arr::except($this->getAttributes(), ['value']),
-            'errors' => [],
-            'fields' => collect($this->getGroup())
+            'errors'     => [],
+            'fields'     => collect($this->getGroup())
                 ->map(fn (Fieldable $field) => $field->toArray())
                 ->filter()
                 ->values()
@@ -171,9 +172,10 @@ class Group implements Fieldable, Groupable
      * $group->widthColumns('repeat(4, 1fr)');
      * ```
      *
-     * @param  string  $template  A string representing the CSS grid template
-     *                            for the column widths. This should conform
-     *                            to the CSS `grid-template-columns` specification.
+     * @param string $template A string representing the CSS grid template
+     *                         for the column widths. This should conform
+     *                         to the CSS `grid-template-columns` specification.
+     *
      * @return static Returns the current instance for method chaining.
      */
     public function widthColumns(string $template): static
@@ -182,7 +184,7 @@ class Group implements Fieldable, Groupable
     }
 
     /**
-     * @param  mixed  $value
+     * @param mixed $value
      */
     public function set(string $key, $value = true): static
     {
@@ -192,7 +194,8 @@ class Group implements Fieldable, Groupable
     }
 
     /**
-     * @param  mixed|null  $value
+     * @param mixed|null $value
+     *
      * @return static|mixed|null
      */
     public function get(string $key, $value = null)

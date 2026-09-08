@@ -32,7 +32,7 @@ class PublishCommand extends Command
     public function handle()
     {
         $this->call('vendor:publish', [
-            '--tag' => 'orbit-assets',
+            '--tag'   => 'orbit-assets',
             '--force' => true,
         ]);
     }

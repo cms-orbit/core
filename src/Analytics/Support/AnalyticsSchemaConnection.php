@@ -27,7 +27,7 @@ final class AnalyticsSchemaConnection
      * non-empty string selects that connection; returning null (or an empty
      * string) falls back to the application's default connection.
      *
-     * @param  (callable(Request): ?string)|null  $resolver
+     * @param (callable(Request): ?string)|null $resolver
      */
     public static function resolveUsing(?callable $resolver): void
     {

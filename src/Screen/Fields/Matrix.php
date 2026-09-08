@@ -27,14 +27,14 @@ class Matrix extends Field
      * @var array
      */
     protected $attributes = [
-        'index' => 0,
+        'index'         => 0,
         'removableRows' => true,
-        'idPrefix' => null,
-        'maxRows' => 0,
-        'keyValue' => false,
-        'fields' => [],
-        'addRowLabel' => 'Add row',
-        'columns' => [
+        'idPrefix'      => null,
+        'maxRows'       => 0,
+        'keyValue'      => false,
+        'fields'        => [],
+        'addRowLabel'   => 'Add row',
+        'columns'       => [
             'key',
             'value',
         ],
@@ -93,7 +93,7 @@ class Matrix extends Field
     }
 
     /**
-     * @param  Field[]  $fields
+     * @param Field[] $fields
      */
     public function fields(array $fields = []): static
     {

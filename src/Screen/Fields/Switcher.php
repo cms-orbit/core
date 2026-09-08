@@ -43,10 +43,10 @@ class Switcher extends Field
      * @var array
      */
     protected $attributes = [
-        'type' => 'checkbox',
-        'class' => 'form-check-input',
-        'value' => false,
-        'novalue' => 0,
+        'type'     => 'checkbox',
+        'class'    => 'form-check-input',
+        'value'    => false,
+        'novalue'  => 0,
         'yesvalue' => 1,
     ];
 

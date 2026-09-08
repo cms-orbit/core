@@ -16,7 +16,7 @@ class Impersonation
     /**
      * Changes the current authenticated user to the given user.
      *
-     * @param  Authenticatable  $user  The user to switch to
+     * @param Authenticatable $user The user to switch to
      */
     public static function loginAs(Authenticatable $user): void
     {

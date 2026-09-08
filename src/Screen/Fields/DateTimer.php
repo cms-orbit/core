@@ -43,24 +43,24 @@ class DateTimer extends Field
      * @var array
      */
     protected $attributes = [
-        'class' => 'form-control',
-        'data-datetime-enable-time' => 'false',
-        'data-datetime-time_24hr' => 'false',
-        'data-datetime-allow-input' => 'false',
-        'data-datetime-date-format' => 'Y-m-d H:i:S',
-        'data-datetime-no-calendar' => 'false',
-        'data-datetime-minute-increment' => 5,
-        'data-datetime-hour-increment' => 1,
-        'data-datetime-static' => 'false',
-        'data-datetime-disable-mobile' => 'false',
-        'data-datetime-inline' => 'false',
-        'data-datetime-position' => 'auto auto',
+        'class'                                 => 'form-control',
+        'data-datetime-enable-time'             => 'false',
+        'data-datetime-time_24hr'               => 'false',
+        'data-datetime-allow-input'             => 'false',
+        'data-datetime-date-format'             => 'Y-m-d H:i:S',
+        'data-datetime-no-calendar'             => 'false',
+        'data-datetime-minute-increment'        => 5,
+        'data-datetime-hour-increment'          => 1,
+        'data-datetime-static'                  => 'false',
+        'data-datetime-disable-mobile'          => 'false',
+        'data-datetime-inline'                  => 'false',
+        'data-datetime-position'                => 'auto auto',
         'data-datetime-shorthand-current-month' => 'false',
-        'data-datetime-alt-input' => 'false',
-        'data-datetime-show-months' => 1,
-        'allowEmpty' => false,
-        'placeholder' => 'Select Date...',
-        'quickDates' => [],
+        'data-datetime-alt-input'               => 'false',
+        'data-datetime-show-months'             => 1,
+        'allowEmpty'                            => false,
+        'placeholder'                           => 'Select Date...',
+        'quickDates'                            => [],
     ];
 
     /**
@@ -357,7 +357,7 @@ class DateTimer extends Field
     /**
      * Set quick date options for selection near an input field.
      *
-     * @param  array  $presets  An array of preset date values
+     * @param array $presets An array of preset date values
      */
     public function withQuickDates(array $presets): static
     {

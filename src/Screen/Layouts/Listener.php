@@ -43,7 +43,7 @@ abstract class Listener extends Layout
         $this->layouts = $this->layouts();
 
         $this->variables = array_merge($this->variables, [
-            'targets' => collect($this->targets)->map(fn ($target) => Builder::convertDotToArray($target))->toJson(),
+            'targets'    => collect($this->targets)->map(fn ($target) => Builder::convertDotToArray($target))->toJson(),
             'asyncRoute' => $this->asyncRoute(),
         ]);
 

@@ -19,7 +19,8 @@ class Sight extends Cell
      * columns expose their data key so the value is read from the row client
      * side.
      *
-     * @param  Repository|Model  $repository
+     * @param Repository|Model $repository
+     *
      * @return array<string, mixed>
      */
     public function toArray($repository = null): array
@@ -32,11 +33,11 @@ class Sight extends Cell
         }
 
         return [
-            'name' => $this->name,
-            'column' => $this->column,
-            'title' => $this->title,
-            'slug' => Str::slug($this->name),
-            'popover' => $this->popover,
+            'name'     => $this->name,
+            'column'   => $this->column,
+            'title'    => $this->title,
+            'slug'     => Str::slug($this->name),
+            'popover'  => $this->popover,
             'rendered' => $rendered,
         ];
     }
@@ -49,8 +50,8 @@ class Sight extends Cell
     public function buildDt()
     {
         return view('orbit::partials.layouts.dt', [
-            'column' => $this->column,
-            'title' => $this->title,
+            'column'  => $this->column,
+            'title'   => $this->title,
             'popover' => $this->popover,
         ]);
     }
@@ -58,7 +59,8 @@ class Sight extends Cell
     /**
      * Builds content for the column.
      *
-     * @param  Repository|Model  $repository
+     * @param Repository|Model $repository
+     *
      * @return string|Htmlable|null
      */
     public function buildDd($repository)

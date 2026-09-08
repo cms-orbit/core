@@ -12,15 +12,15 @@ class OrbitChannel extends DatabaseChannel
     /**
      * Build an array payload for the DatabaseNotification model.
      *
-     * @param  mixed  $notifiable  The notifiable entity instance
-     * @param  Notification  $notification  The notification object instance
+     * @param mixed        $notifiable   The notifiable entity instance
+     * @param Notification $notification The notification object instance
      */
     protected function buildPayload($notifiable, Notification $notification): array
     {
         return [
-            'id' => $notification->id,
-            'type' => OrbitMessage::class,
-            'data' => $this->getData($notifiable, $notification),
+            'id'      => $notification->id,
+            'type'    => OrbitMessage::class,
+            'data'    => $this->getData($notifiable, $notification),
             'read_at' => null,
         ];
     }
@@ -28,8 +28,8 @@ class OrbitChannel extends DatabaseChannel
     /**
      * Get the data for the notification.
      *
-     * @param  mixed  $notifiable  The notifiable entity instance
-     * @param  Notification  $notification  The notification object instance
+     * @param mixed        $notifiable   The notifiable entity instance
+     * @param Notification $notification The notification object instance
      *
      * @throws \RuntimeException
      */

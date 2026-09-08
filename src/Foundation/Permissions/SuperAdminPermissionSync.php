@@ -58,11 +58,11 @@ class SuperAdminPermissionSync
                     ]);
 
                 $role->forceFill([
-                    'name' => $name,
-                    'slug' => Role::SystemKeySuperAdmin,
-                    'system_key' => Role::SystemKeySuperAdmin,
+                    'name'         => $name,
+                    'slug'         => Role::SystemKeySuperAdmin,
+                    'system_key'   => Role::SystemKeySuperAdmin,
                     'is_deletable' => false,
-                    'permissions' => $permissions->toArray(),
+                    'permissions'  => $permissions->toArray(),
                 ])->save();
 
                 Cache::forever(self::CACHE_KEY, $fingerprint);
@@ -75,7 +75,7 @@ class SuperAdminPermissionSync
     }
 
     /**
-     * @param  array<string, bool>  $permissions
+     * @param array<string, bool> $permissions
      */
     public function fingerprint(array $permissions): string
     {

@@ -47,23 +47,23 @@ class Cropper extends Picture
      * @var array
      */
     protected $attributes = [
-        'value' => null,
-        'target' => 'url',
-        'url' => null,
-        'width' => null,
-        'height' => null,
-        'minWidth' => 0,
-        'minHeight' => 0,
-        'maxWidth' => 'Infinity',
-        'maxHeight' => 'Infinity',
-        'maxFileSize' => null,
-        'staticBackdrop' => false,
-        'acceptedFiles' => 'image/*',
-        'keepOriginalType' => false,
+        'value'                  => null,
+        'target'                 => 'url',
+        'url'                    => null,
+        'width'                  => null,
+        'height'                 => null,
+        'minWidth'               => 0,
+        'minHeight'              => 0,
+        'maxWidth'               => 'Infinity',
+        'maxHeight'              => 'Infinity',
+        'maxFileSize'            => null,
+        'staticBackdrop'         => false,
+        'acceptedFiles'          => 'image/*',
+        'keepOriginalType'       => false,
         'maxSizeValidateMessage' => 'The upload file is too large. Max size: {value} MB',
-        'imageSmoothingEnabled' => true,
-        'imageSmoothingQuality' => 'medium',
-        'fillColor' => '#fff',
+        'imageSmoothingEnabled'  => true,
+        'imageSmoothingQuality'  => 'medium',
+        'fillColor'              => '#fff',
     ];
 
     /**
@@ -160,7 +160,7 @@ class Cropper extends Picture
     /**
      * Set whether to keep the original image type.
      *
-     * @param  bool  $keep  Whether to keep the original image type.
+     * @param bool $keep Whether to keep the original image type.
      */
     public function keepOriginalType(bool $keep = true): static
     {
@@ -172,7 +172,7 @@ class Cropper extends Picture
     /**
      * Enables or disables image smoothing.
      *
-     * @param  bool  $enabled  - Whether to enable image smoothing.
+     * @param bool $enabled - Whether to enable image smoothing.
      */
     public function imageSmoothingEnabled(bool $enabled = true): static
     {
@@ -187,7 +187,7 @@ class Cropper extends Picture
      * Accepts values: 'low', 'medium', 'high'.
      * Defaults to 'medium'.
      *
-     * @param  string  $quality  The quality of image smoothing.
+     * @param string $quality The quality of image smoothing.
      */
     public function imageSmoothingQuality(string $quality = 'medium'): static
     {

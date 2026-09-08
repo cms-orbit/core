@@ -13,14 +13,14 @@ class SortableController extends Controller
      * Save the sort order for a sortable model.
      * Authorization is performed via the model's Policy method `isSortable`.
      *
-     * @param  Request  $request  Must contain 'model' (class name) and 'items' (array of {id, sortOrder})
+     * @param Request $request Must contain 'model' (class name) and 'items' (array of {id, sortOrder})
      */
     public function saveSortOrder(Request $request): void
     {
         $request->validate([
-            'model' => 'required|string',
-            'items' => 'required|array',
-            'items.*.id' => 'required',
+            'model'             => 'required|string',
+            'items'             => 'required|array',
+            'items.*.id'        => 'required',
             'items.*.sortOrder' => 'required|integer|min:0',
         ]);
 

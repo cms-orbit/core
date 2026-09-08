@@ -38,10 +38,10 @@ trait HasCounters
         }
 
         $this->counterLogs()->create([
-            'action' => 'view',
-            'causer_id' => Auth::id(),
+            'action'      => 'view',
+            'causer_id'   => Auth::id(),
             'causer_type' => Auth::check() ? Auth::user()->getMorphClass() : null,
-            'ip_address' => request()->ip(),
+            'ip_address'  => request()->ip(),
         ]);
 
         $this->increment('read_count');
@@ -91,10 +91,10 @@ trait HasCounters
     protected function createVote(string $type, int|string $userId, string $userType): void
     {
         $this->counterLogs()->create([
-            'action' => $type,
-            'causer_id' => $userId,
+            'action'      => $type,
+            'causer_id'   => $userId,
             'causer_type' => $userType,
-            'ip_address' => request()->ip(),
+            'ip_address'  => request()->ip(),
         ]);
     }
 }

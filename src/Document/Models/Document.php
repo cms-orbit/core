@@ -12,9 +12,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 /**
  * Central document row shared by every DocumentModel-based content type.
  *
- * @property int $document_id
- * @property string $document_uuid
- * @property string $document_type
+ * @property int      $document_id
+ * @property string   $document_uuid
+ * @property string   $document_type
  * @property int|null $instance_id
  */
 class Document extends Model
@@ -30,15 +30,15 @@ class Document extends Model
     protected $hidden = ['certify_key'];
 
     protected $casts = [
-        'read_count' => 'integer',
+        'read_count'    => 'integer',
         'comment_count' => 'integer',
-        'assent_count' => 'integer',
+        'assent_count'  => 'integer',
         'dissent_count' => 'integer',
-        'is_notice' => 'boolean',
-        'is_secret' => 'boolean',
-        'approved' => 'integer',
-        'public_at' => 'datetime',
-        'instance_id' => 'integer',
+        'is_notice'     => 'boolean',
+        'is_secret'     => 'boolean',
+        'approved'      => 'integer',
+        'public_at'     => 'datetime',
+        'instance_id'   => 'integer',
     ];
 
     public function documentable(): MorphTo

@@ -91,7 +91,8 @@ class Action extends Field implements Actionable
      * This method applies a CSS class to the action element that corresponds to
      * the desired button color, ensuring consistency with the platform's color palette.
      *
-     * @param  Color  $visual  The color style to apply to the button.
+     * @param Color $visual The color style to apply to the button.
+     *
      * @return static
      */
     public function type(Color $visual): self
@@ -106,9 +107,9 @@ class Action extends Field implements Actionable
     }
 
     /**
-     * @return Factory|View|mixed
-     *
      * @throws \Throwable
+     *
+     * @return Factory|View|mixed
      */
     public function build(?Repository $repository = null)
     {
@@ -121,7 +122,8 @@ class Action extends Field implements Actionable
      * By setting the `turbo` attribute, this method controls whether
      * Hotwire Turbo should be applied when the action is clicked.
      *
-     * @param  bool  $status  Set to `true` to disable Turbo, or `false` to enable it (default).
+     * @param bool $status Set to `true` to disable Turbo, or `false` to enable it (default).
+     *
      * @return static
      */
     public function rawClick(bool $status = false): self

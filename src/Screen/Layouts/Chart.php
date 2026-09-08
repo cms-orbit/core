@@ -115,9 +115,9 @@ abstract class Chart extends Layout
      */
     protected $barOptions = [
         'spaceRatio' => 0.5,
-        'stacked' => 0,
-        'height' => 20,
-        'depth' => 2,
+        'stacked'    => 0,
+        'height'     => 20,
+        'depth'      => 2,
     ];
 
     /**
@@ -127,11 +127,11 @@ abstract class Chart extends Layout
      */
     protected $lineOptions = [
         'regionFill' => 0,
-        'hideDots' => 0,
-        'hideLine' => 0,
-        'heatline' => 0,
-        'dotSize' => 4,
-        'spline' => 0,
+        'hideDots'   => 0,
+        'hideLine'   => 0,
+        'heatline'   => 0,
+        'dotSize'    => 4,
+        'spline'     => 0,
     ];
 
     /**
@@ -248,14 +248,14 @@ abstract class Chart extends Layout
     protected function serialize(Repository $repository): array
     {
         return [
-            'type' => $this->type,
-            'title' => __($this->title),
-            'description' => $this->description !== null ? __($this->description) : null,
-            'height' => $this->height,
-            'data' => $repository->getContent($this->target, []),
-            'colors' => $this->colors,
-            'export' => $this->export,
-            'maxSlices' => $this->maxSlices,
+            'type'             => $this->type,
+            'title'            => __($this->title),
+            'description'      => $this->description !== null ? __($this->description) : null,
+            'height'           => $this->height,
+            'data'             => $repository->getContent($this->target, []),
+            'colors'           => $this->colors,
+            'export'           => $this->export,
+            'maxSlices'        => $this->maxSlices,
             'valuesOverPoints' => $this->valuesOverPoints,
         ];
     }
@@ -278,21 +278,21 @@ abstract class Chart extends Layout
             ->toJson(JSON_NUMERIC_CHECK);
 
         return view($this->template, [
-            'title' => __($this->title),
-            'description' => __($this->description),
-            'slug' => Str::slug($this->target.$this->title),
-            'type' => $this->type,
-            'height' => $this->height,
-            'labels' => $labels,
-            'export' => $this->export,
-            'data' => json_encode($repository->getContent($this->target), JSON_NUMERIC_CHECK),
-            'colors' => json_encode($this->colors),
-            'maxSlices' => json_encode($this->maxSlices),
+            'title'            => __($this->title),
+            'description'      => __($this->description),
+            'slug'             => Str::slug($this->target.$this->title),
+            'type'             => $this->type,
+            'height'           => $this->height,
+            'labels'           => $labels,
+            'export'           => $this->export,
+            'data'             => json_encode($repository->getContent($this->target), JSON_NUMERIC_CHECK),
+            'colors'           => json_encode($this->colors),
+            'maxSlices'        => json_encode($this->maxSlices),
             'valuesOverPoints' => json_encode($this->valuesOverPoints),
-            'axisOptions' => json_encode($this->axisOptions),
-            'barOptions' => json_encode($this->barOptions),
-            'lineOptions' => json_encode($this->lineOptions),
-            'markers' => json_encode($this->markers()),
+            'axisOptions'      => json_encode($this->axisOptions),
+            'barOptions'       => json_encode($this->barOptions),
+            'lineOptions'      => json_encode($this->lineOptions),
+            'markers'          => json_encode($this->markers()),
         ]);
     }
 }

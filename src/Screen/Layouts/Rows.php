@@ -35,9 +35,9 @@ abstract class Rows extends Layout
     protected $query;
 
     /**
-     * @return Factory|View
-     *
      * @throws Throwable
+     *
+     * @return Factory|View
      */
     public function build(Repository $repository)
     {
@@ -50,7 +50,7 @@ abstract class Rows extends Layout
         $form = new Builder($this->fields(), $repository);
 
         return view($this->template, [
-            'form' => $form->generateForm(),
+            'form'  => $form->generateForm(),
             'title' => $this->title,
         ]);
     }
@@ -68,7 +68,7 @@ abstract class Rows extends Layout
     protected function serialize(Repository $repository): array
     {
         return [
-            'title' => $this->title,
+            'title'  => $this->title,
             'fields' => (new Builder($this->fields(), $repository))->generateArray(),
         ];
     }

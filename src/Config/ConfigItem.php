@@ -10,7 +10,7 @@ namespace CmsOrbit\Core\Config;
 class ConfigItem
 {
     /**
-     * @param  array<string, mixed>  $attributes
+     * @param array<string, mixed> $attributes
      */
     public function __construct(
         private readonly string $key,

@@ -58,14 +58,14 @@ abstract class Sortable extends Layout
         $rows = collect()->merge($repository->getContent($this->target));
 
         return view($this->template, [
-            'rows' => $rows,
-            'columns' => $columns,
-            'slug' => $this->getSlug(),
-            'title' => $this->title,
-            'showBlockHeaders' => $this->showBlockHeaders,
-            'iconNotFound' => $this->iconNotFound(),
-            'textNotFound' => $this->textNotFound(),
-            'subNotFound' => $this->subNotFound(),
+            'rows'               => $rows,
+            'columns'            => $columns,
+            'slug'               => $this->getSlug(),
+            'title'              => $this->title,
+            'showBlockHeaders'   => $this->showBlockHeaders,
+            'iconNotFound'       => $this->iconNotFound(),
+            'textNotFound'       => $this->textNotFound(),
+            'subNotFound'        => $this->subNotFound(),
             'successSortMessage' => $this->successSortMessage(),
             'failureSortMessage' => $this->failureSortMessage(),
         ]);
@@ -85,13 +85,13 @@ abstract class Sortable extends Layout
             ->all();
 
         return [
-            'title' => $this->title,
-            'target' => $this->target,
-            'columns' => $columns,
-            'rows' => collect($repository->getContent($this->target))->values()->all(),
+            'title'            => $this->title,
+            'target'           => $this->target,
+            'columns'          => $columns,
+            'rows'             => collect($repository->getContent($this->target))->values()->all(),
             'showBlockHeaders' => $this->showBlockHeaders,
-            'textNotFound' => $this->textNotFound(),
-            'subNotFound' => $this->subNotFound(),
+            'textNotFound'     => $this->textNotFound(),
+            'subNotFound'      => $this->subNotFound(),
         ];
     }
 
@@ -113,7 +113,8 @@ abstract class Sortable extends Layout
     /**
      * Show or hide block headers.
      *
-     * @param  bool  $showHeaders  Whether to show block headers or not. Default is false.
+     * @param bool $showHeaders Whether to show block headers or not. Default is false.
+     *
      * @return $this
      */
     public function showBlockHeaders(bool $showHeaders = true): self

@@ -1,0 +1,39 @@
+name: Release guard
+
+on:
+  push:
+    tags: ['*']
+
+permissions:
+  contents: read
+
+jobs:
+  version-matches-tag:
+    name: composer.json version == tag
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v5
+
+      # Packagist 는 태그의 composer.json 안 "version" 이 태그명과 다르면 그
+      # 태그를 조용히 무시한다. cms-orbit/core 4.0.8 이 version=4.0.7 로
+      # 태깅되어 게시되지 않았고 아무 오류도 나지 않았다. .githooks/pre-push 가
+      # 로컬에서 막지만 --no-verify 나 GitHub UI 태깅은 통과하므로 여기서도 본다.
+      - name: Compare composer.json version with the pushed tag
+        run: |
+          tag="${GITHUB_REF_NAME}"
+          expected="${tag#v}"
+          actual="$(php -r 'echo json_decode(file_get_contents("composer.json"), true)["version"] ?? "";')"
+
+          if [ -z "$actual" ]; then
+            echo "composer.json has no version field; Packagist will use the tag name. OK."
+            exit 0
+          fi
+
+          if [ "$actual" != "$expected" ]; then
+            echo "::error::Tag ${tag} carries composer.json version ${actual}."
+            echo "::error::Packagist would ignore this tag. Create releases with bin/release <version>."
+            exit 1
+          fi
+
+          echo "Tag ${tag} matches composer.json version ${actual}."

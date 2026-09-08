@@ -31,14 +31,14 @@ class DropDown extends Action
      * @var array
      */
     protected $attributes = [
-        'class' => 'btn btn-link icon-link gap-2',
+        'class'  => 'btn btn-link icon-link gap-2',
         'source' => null,
-        'icon' => null,
-        'list' => [],
+        'icon'   => null,
+        'list'   => [],
     ];
 
     /**
-     * @param  Actionable[]  $list
+     * @param Actionable[] $list
      */
     public function list(array $list): self
     {
@@ -46,9 +46,9 @@ class DropDown extends Action
     }
 
     /**
-     * @return Factory|View|mixed
-     *
      * @throws \Throwable
+     *
+     * @return Factory|View|mixed
      */
     public function build(?Repository $repository = null)
     {

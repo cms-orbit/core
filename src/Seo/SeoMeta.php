@@ -11,8 +11,9 @@ namespace CmsOrbit\Core\Seo;
 class SeoMeta
 {
     /**
-     * @param  array<string, mixed>  $seo
-     * @param  array<string, mixed>  $options  url, type, site_name, robots overrides
+     * @param array<string, mixed> $seo
+     * @param array<string, mixed> $options url, type, site_name, robots overrides
+     *
      * @return array<string, string>
      */
     public static function build(array $seo, array $options = []): array
@@ -26,17 +27,17 @@ class SeoMeta
         $robots = $options['robots'] ?? orbit_config('seo.robots', 'index,follow');
 
         $meta = [
-            'title' => $title,
-            'description' => $description,
-            'canonical' => (string) $url,
-            'robots' => (string) $robots,
-            'og:title' => $title,
-            'og:description' => $description,
-            'og:type' => (string) $type,
-            'og:url' => (string) $url,
-            'og:site_name' => (string) $siteName,
-            'twitter:card' => $image ? 'summary_large_image' : 'summary',
-            'twitter:title' => $title,
+            'title'               => $title,
+            'description'         => $description,
+            'canonical'           => (string) $url,
+            'robots'              => (string) $robots,
+            'og:title'            => $title,
+            'og:description'      => $description,
+            'og:type'             => (string) $type,
+            'og:url'              => (string) $url,
+            'og:site_name'        => (string) $siteName,
+            'twitter:card'        => $image ? 'summary_large_image' : 'summary',
+            'twitter:title'       => $title,
             'twitter:description' => $description,
         ];
 

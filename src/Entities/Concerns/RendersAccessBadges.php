@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace CmsOrbit\Core\Entities\Concerns;
 
+use CmsOrbit\Core\Screen\Sight;
 use Illuminate\Support\Collection;
 
 /**
  * Small HTML badge helpers shared by the built-in access entities and reused by
- * their {@see \CmsOrbit\Core\Screen\Sight} render closures on the view screen.
+ * their {@see Sight} render closures on the view screen.
  * The markup is injected verbatim by the React legend layout, so the Tailwind
  * classes below are scanned from `packages/.../src` (see resources/css/app.css).
  */
@@ -17,7 +18,7 @@ trait RendersAccessBadges
     /**
      * Render a pill list from a set of labels, or a muted placeholder.
      *
-     * @param  array<int, string>  $items
+     * @param array<int, string> $items
      */
     protected function badgeList(array $items, string $empty): string
     {

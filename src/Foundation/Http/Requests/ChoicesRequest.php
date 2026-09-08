@@ -32,9 +32,9 @@ class ChoicesRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'search' => 'sometimes|string|nullable',
+            'search'  => 'sometimes|string|nullable',
             'choices' => 'required|string',
-            'chunk' => 'sometimes|integer|min:1|max:100',
+            'chunk'   => 'sometimes|integer|min:1|max:100',
         ];
     }
 
@@ -50,7 +50,7 @@ class ChoicesRequest extends FormRequest
         return [
             ...$validated,
             'search' => (string) ($validated['search'] ?? $this->input('search', '')),
-            'chunk' => isset($validated['chunk']) ? (int) $validated['chunk'] : self::DEFAULT_CHUNK,
+            'chunk'  => isset($validated['chunk']) ? (int) $validated['chunk'] : self::DEFAULT_CHUNK,
         ];
     }
 

@@ -28,8 +28,8 @@ trait Chartable
     }
 
     /**
-     * @param  mixed|null  $startDate
-     * @param  mixed|null  $stopDate
+     * @param mixed|null $startDate
+     * @param mixed|null $stopDate
      */
     private function groupByDays(Builder $builder, string $value, $startDate = null, $stopDate = null, ?string $dateColumn = null): TimeCollection
     {
@@ -72,8 +72,8 @@ trait Chartable
     /**
      * Get total models grouped by `created_at` day.
      *
-     * @param  string|DateTimeInterface|null  $startDate
-     * @param  string|DateTimeInterface|null  $stopDate
+     * @param string|DateTimeInterface|null $startDate
+     * @param string|DateTimeInterface|null $stopDate
      */
     public function scopeCountByDays(Builder $builder, $startDate = null, $stopDate = null, ?string $dateColumn = null): TimeCollection
     {
@@ -83,8 +83,8 @@ trait Chartable
     /**
      * Get average models grouped by `created_at` day.
      *
-     * @param  string|DateTimeInterface|null  $startDate
-     * @param  string|DateTimeInterface|null  $stopDate
+     * @param string|DateTimeInterface|null $startDate
+     * @param string|DateTimeInterface|null $stopDate
      */
     public function scopeAverageByDays(Builder $builder, string $value, $startDate = null, $stopDate = null, ?string $dateColumn = null): TimeCollection
     {
@@ -94,8 +94,8 @@ trait Chartable
     /**
      * Get sum models grouped by `created_at` day.
      *
-     * @param  string|DateTimeInterface|null  $startDate
-     * @param  string|DateTimeInterface|null  $stopDate
+     * @param string|DateTimeInterface|null $startDate
+     * @param string|DateTimeInterface|null $stopDate
      */
     public function scopeSumByDays(Builder $builder, string $value, $startDate = null, $stopDate = null, ?string $dateColumn = null): TimeCollection
     {
@@ -105,8 +105,8 @@ trait Chartable
     /**
      * Get sum models grouped by `created_at` day.
      *
-     * @param  string|DateTimeInterface|null  $startDate
-     * @param  string|DateTimeInterface|null  $stopDate
+     * @param string|DateTimeInterface|null $startDate
+     * @param string|DateTimeInterface|null $stopDate
      */
     public function scopeMaxByDays(Builder $builder, string $value, $startDate = null, $stopDate = null, ?string $dateColumn = null): TimeCollection
     {
@@ -116,8 +116,8 @@ trait Chartable
     /**
      * Get min models grouped by `created_at` day.
      *
-     * @param  string|DateTimeInterface|null  $startDate
-     * @param  string|DateTimeInterface|null  $stopDate
+     * @param string|DateTimeInterface|null $startDate
+     * @param string|DateTimeInterface|null $stopDate
      */
     public function scopeMinByDays(Builder $builder, string $value, $startDate = null, $stopDate = null, ?string $dateColumn = null): TimeCollection
     {
@@ -129,8 +129,8 @@ trait Chartable
      *
      * Get values models grouped by `created_at` day.
      *
-     * @param  string|DateTimeInterface|null  $startDate
-     * @param  string|DateTimeInterface|null  $stopDate
+     * @param string|DateTimeInterface|null $startDate
+     * @param string|DateTimeInterface|null $stopDate
      */
     public function scopeValuesByDays(Builder $builder, string $value, $startDate = null, $stopDate = null, string $dateColumn = 'created_at'): TimeCollection
     {

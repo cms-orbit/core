@@ -15,7 +15,7 @@ trait ManagesEntities
      * Entity class, or an array of paths/classes. This is the primary package
      * contract used by external packages in their ServiceProvider::boot().
      *
-     * @param  string|array<int, string>  $pathOrClass
+     * @param string|array<int, string> $pathOrClass
      */
     public function registerEntities(string|array $pathOrClass): static
     {

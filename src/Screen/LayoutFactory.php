@@ -35,7 +35,7 @@ class LayoutFactory
     use Macroable;
 
     /**
-     * @param  Arrayable|array  $data
+     * @param Arrayable|array $data
      */
     public static function view(string $view, $data = []): View
     {
@@ -45,7 +45,7 @@ class LayoutFactory
     /**
      * Render a custom React component as a layout node (escape hatch).
      *
-     * @param  array<string, mixed>  $props
+     * @param array<string, mixed> $props
      */
     public static function component(string $component, array $props = []): Component
     {
@@ -55,7 +55,7 @@ class LayoutFactory
     /**
      * Alias for component(): render a custom React component as a layout node.
      *
-     * @param  array<string, mixed>  $props
+     * @param array<string, mixed> $props
      */
     public static function react(string $component, array $props = []): Component
     {
@@ -126,8 +126,8 @@ class LayoutFactory
     /**
      * Translatable fields grouped into one tab per content locale.
      *
-     * @param  Field[]  $fields
-     * @param  array<int, string>|null  $locales
+     * @param Field[]                 $fields
+     * @param array<int, string>|null $locales
      */
     public static function localeTabs(array $fields, ?array $locales = null): LocaleTabs
     {
@@ -135,7 +135,7 @@ class LayoutFactory
     }
 
     /**
-     * @param  string|string[]  $layouts
+     * @param string|string[] $layouts
      */
     public static function modal(string $key, $layouts): Modal
     {
@@ -160,7 +160,7 @@ class LayoutFactory
     }
 
     /**
-     * @param  string[]  $filters
+     * @param string[] $filters
      */
     public static function selection(array $filters): Selection
     {
@@ -174,7 +174,7 @@ class LayoutFactory
             /**
              * Constructor.
              *
-             * @param  string[]  $filters
+             * @param string[] $filters
              */
             public function __construct(array $filters = [])
             {
@@ -192,7 +192,7 @@ class LayoutFactory
     }
 
     /**
-     * @param  Layout|string|string[]  $layouts
+     * @param Layout|string|string[] $layouts
      */
     public static function block($layouts): Block
     {

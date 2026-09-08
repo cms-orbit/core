@@ -9,7 +9,8 @@ class GroupCollection extends Collection
     /**
      * Formats the collection data into a format that can be used in a chart.
      *
-     * @param  \Closure|null  $closure  The closure that formats the label. It receives a string and returns a string.
+     * @param \Closure|null $closure The closure that formats the label. It receives a string and returns a string.
+     *
      * @return array A multidimensional array ready to be used in a chart.
      */
     public function toChart(?\Closure $closure = null): array
@@ -30,7 +31,8 @@ class GroupCollection extends Collection
     /**
      * Helper function for the toChart() method. It gets the chart values for a given label.
      *
-     * @param  string  $name  The label that we want to get the chart values for.
+     * @param string $name The label that we want to get the chart values for.
+     *
      * @return array An array of values that will be used in the chart.
      */
     private function getChartsValues(string $name): array

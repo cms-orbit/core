@@ -28,17 +28,17 @@ class Toggle extends Button
      * @var array
      */
     protected $attributes = [
-        'class' => 'form-check-input',
-        'type' => 'checkbox',
+        'class'      => 'form-check-input',
+        'type'       => 'checkbox',
         'novalidate' => false,
-        'method' => null,
-        'icon' => null,
-        'action' => null,
-        'confirm' => null,
+        'method'     => null,
+        'icon'       => null,
+        'action'     => null,
+        'confirm'    => null,
         'parameters' => [],
-        'turbo' => true,
-        'form' => 'post-form',
-        'status' => false,
+        'turbo'      => true,
+        'form'       => 'post-form',
+        'status'     => false,
     ];
 
     public function __construct()

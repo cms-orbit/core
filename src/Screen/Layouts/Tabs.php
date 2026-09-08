@@ -28,7 +28,7 @@ abstract class Tabs extends Layout
     /**
      * Layout constructor.
      *
-     * @param  Layout[]  $layouts
+     * @param Layout[] $layouts
      */
     public function __construct(array $layouts = [])
     {
@@ -59,7 +59,7 @@ abstract class Tabs extends Layout
     protected function serialize(Repository $repository): array
     {
         return [
-            'titles' => array_values(array_map(static fn ($k) => is_string($k) ? $k : null, array_keys($this->layouts))),
+            'titles'    => array_values(array_map(static fn ($k) => is_string($k) ? $k : null, array_keys($this->layouts))),
             'activeTab' => $this->variables['activeTab'] ?? null,
         ];
     }
@@ -84,10 +84,10 @@ abstract class Tabs extends Layout
                     ->all();
 
                 return [
-                    'type' => 'tab-pane',
-                    'key' => (string) $title,
-                    'canSee' => true,
-                    'data' => ['title' => is_string($title) ? $title : null],
+                    'type'     => 'tab-pane',
+                    'key'      => (string) $title,
+                    'canSee'   => true,
+                    'data'     => ['title' => is_string($title) ? $title : null],
                     'children' => $panes,
                 ];
             })

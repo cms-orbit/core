@@ -59,7 +59,8 @@ class Turbo
     }
 
     /**
-     * @param  Request  $request
+     * @param Request $request
+     *
      * @return bool
      */
     private function turboVisit($request)

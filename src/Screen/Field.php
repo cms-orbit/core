@@ -164,7 +164,7 @@ class Field implements Fieldable, Htmlable
     /**
      * Sets the 'value' attribute of the field.
      *
-     * @param  mixed  $value  The value to be set for the 'value' attribute.
+     * @param mixed $value The value to be set for the 'value' attribute.
      */
     public function value(mixed $value): static
     {
@@ -174,8 +174,9 @@ class Field implements Fieldable, Htmlable
     /**
      * Sets the value for the specified attribute of the field.
      *
-     * @param  string  $key  The name of the attribute to set.
-     * @param  mixed  $value  The value of the attribute. Defaults to true.
+     * @param string $key   The name of the attribute to set.
+     * @param mixed  $value The value of the attribute. Defaults to true.
+     *
      * @return static Returns the current instance for method chaining.
      */
     public function set(string $key, $value = true): static
@@ -189,9 +190,10 @@ class Field implements Fieldable, Htmlable
      * Validates that all required attributes are present in the field.
      *
      *
-     * @return static Returns the current instance for method chaining.
      *
      * @throws FieldRequiredAttributeException if any required attribute is missing.
+     *
+     * @return static Returns the current instance for method chaining.
      */
     protected function ensureRequiredAttributesArePresent(): static
     {
@@ -208,9 +210,10 @@ class Field implements Fieldable, Htmlable
      * Renders the field.
      *
      *
-     * @return Factory|View|mixed
      *
      * @throws Throwable
+     *
+     * @return Factory|View|mixed
      */
     public function render()
     {
@@ -230,11 +233,11 @@ class Field implements Fieldable, Htmlable
         $errors = $this->getErrorsMessage();
 
         $slot = view($this->view, array_merge($this->getAttributes(), [
-            'attributes' => $this->getAllowAttributes(),
+            'attributes'     => $this->getAllowAttributes(),
             'dataAttributes' => $this->getAllowDataAttributes(),
-            'old' => $this->getOldValue(),
-            'oldName' => $this->getOldName(),
-            'errors' => $errors,
+            'old'            => $this->getOldValue(),
+            'oldName'        => $this->getOldName(),
+            'errors'         => $errors,
         ]));
 
         if (! $this->typeForm) {
@@ -242,8 +245,8 @@ class Field implements Fieldable, Htmlable
         }
 
         return view($this->typeForm, [
-            'slot' => $slot,
-            'field' => $this,
+            'slot'   => $slot,
+            'field'  => $this,
             'errors' => $errors,
         ]);
     }
@@ -274,12 +277,12 @@ class Field implements Fieldable, Htmlable
         $attributes = $this->getAttributes();
 
         return [
-            'component' => $this->getComponent(),
-            'name' => Arr::get($attributes, 'name'),
-            'value' => Arr::get($attributes, 'value'),
-            'old' => $this->getOldValue(),
+            'component'  => $this->getComponent(),
+            'name'       => Arr::get($attributes, 'name'),
+            'value'      => Arr::get($attributes, 'value'),
+            'old'        => $this->getOldValue(),
             'attributes' => Arr::except($attributes, ['value']),
-            'errors' => $this->getFieldErrors(),
+            'errors'     => $this->getFieldErrors(),
         ];
     }
 
@@ -358,7 +361,8 @@ class Field implements Fieldable, Htmlable
     /**
      * Generates a field ID if not already set.
      *
-     * @param  string  $defaultId  The default ID to set if none is provided.
+     * @param string $defaultId The default ID to set if none is provided.
+     *
      * @return static Returns the current instance for method chaining.
      */
     public function generateId(): static
@@ -383,7 +387,8 @@ class Field implements Fieldable, Htmlable
     }
 
     /**
-     * @param  mixed|null  $value
+     * @param mixed|null $value
+     *
      * @return static|mixed|null
      */
     public function get(string $key, $value = null)
@@ -392,7 +397,8 @@ class Field implements Fieldable, Htmlable
     }
 
     /**
-     * @param  mixed|null  $value
+     * @param mixed|null $value
+     *
      * @return static|mixed|null
      */
     public function has(string $key)
@@ -579,7 +585,7 @@ class Field implements Fieldable, Htmlable
     /**
      * Adds a closure to be executed before rendering the field.
      *
-     * @param  Closure  $closure  The closure to be executed before rendering.
+     * @param Closure $closure The closure to be executed before rendering.
      */
     public function addBeforeRender(Closure $closure): static
     {
@@ -604,10 +610,10 @@ class Field implements Fieldable, Htmlable
     }
 
     /**
-     * @return Closure|mixed|object|null
-     *
      * @throws ContainerExceptionInterface
      * @throws NotFoundExceptionInterface
+     *
+     * @return Closure|mixed|object|null
      */
     private function getErrorsMessage()
     {
@@ -638,9 +644,10 @@ class Field implements Fieldable, Htmlable
      * Converts the field to an HTML string.
      *
      *
-     * @return string
      *
      * @throws Throwable
+     *
+     * @return string
      */
     public function toHtml()
     {

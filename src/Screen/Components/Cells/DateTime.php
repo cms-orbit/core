@@ -12,7 +12,7 @@ class DateTime extends Component
     /**
      * Create a new component instance.
      *
-     * @param  float  $value
+     * @param float $value
      */
     public function __construct(
         protected mixed $value,

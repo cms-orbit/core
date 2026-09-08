@@ -32,8 +32,8 @@ class LocaleTabs extends Layout
     protected $type = 'locale-tabs';
 
     /**
-     * @param  Field[]  $fields
-     * @param  array<int, string>|null  $locales  Content locales (defaults to config).
+     * @param Field[]                 $fields
+     * @param array<int, string>|null $locales Content locales (defaults to config).
      */
     public function __construct(
         protected array $fields = [],
@@ -41,7 +41,7 @@ class LocaleTabs extends Layout
     ) {}
 
     /**
-     * @param  Field[]  $fields
+     * @param Field[] $fields
      */
     public static function make(array $fields = [], ?array $locales = null): static
     {
@@ -73,9 +73,9 @@ class LocaleTabs extends Layout
         $locales = $this->contentLocales();
 
         return [
-            'titles' => array_map(fn (string $code) => Locale::label($code), $locales),
+            'titles'  => array_map(fn (string $code) => Locale::label($code), $locales),
             'locales' => array_map(fn (string $code) => [
-                'code' => $code,
+                'code'  => $code,
                 'label' => Locale::label($code),
             ], $locales),
             'activeTab' => in_array(app()->getLocale(), $locales, true)
@@ -102,10 +102,10 @@ class LocaleTabs extends Layout
                 $pane = LayoutFactory::rows($fields)->toArray($repository);
 
                 return [
-                    'type' => 'tab-pane',
-                    'key' => $code,
-                    'canSee' => true,
-                    'data' => ['title' => Locale::label($code), 'locale' => $code],
+                    'type'     => 'tab-pane',
+                    'key'      => $code,
+                    'canSee'   => true,
+                    'data'     => ['title' => Locale::label($code), 'locale' => $code],
                     'children' => $pane !== null ? [$pane] : [],
                 ];
             })

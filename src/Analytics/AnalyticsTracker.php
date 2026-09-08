@@ -65,20 +65,20 @@ class AnalyticsTracker
         $attributes = [
             'instance_id' => $instanceId,
             ...$this->userPayload($user),
-            'visitor_hash' => hash_hmac('sha256', $visitorId, $this->hashKey()),
-            'visit_token' => $visitToken,
-            'is_entrance' => $isEntrance,
-            'route_name' => $request->route()?->getName(),
-            'route_uri' => $this->normalizePath($request->route()?->uri()),
-            'page_path' => $this->normalizePath($request->path()) ?? '/',
-            'referrer_host' => $this->referrerHost($request),
-            'ip_address' => $network['ip_address'],
-            'country_code' => $network['country_code'],
+            'visitor_hash'   => hash_hmac('sha256', $visitorId, $this->hashKey()),
+            'visit_token'    => $visitToken,
+            'is_entrance'    => $isEntrance,
+            'route_name'     => $request->route()?->getName(),
+            'route_uri'      => $this->normalizePath($request->route()?->uri()),
+            'page_path'      => $this->normalizePath($request->path()) ?? '/',
+            'referrer_host'  => $this->referrerHost($request),
+            'ip_address'     => $network['ip_address'],
+            'country_code'   => $network['country_code'],
             'browser_family' => $details['browser_family'],
-            'device_type' => $details['device_type'],
-            'user_agent' => $request->userAgent(),
-            'is_bot' => $details['is_bot'],
-            'visited_on' => today()->toDateString(),
+            'device_type'    => $details['device_type'],
+            'user_agent'     => $request->userAgent(),
+            'is_bot'         => $details['is_bot'],
+            'visited_on'     => today()->toDateString(),
         ];
 
         $this->persistPageview($attributes);
@@ -93,7 +93,7 @@ class AnalyticsTracker
     }
 
     /**
-     * @param  array<string, mixed>  $attributes
+     * @param array<string, mixed> $attributes
      */
     protected function persistPageview(array $attributes): void
     {
@@ -226,28 +226,28 @@ class AnalyticsTracker
         $isBot = preg_match('/bot|crawl|spider|slurp|preview|mediapartners/i', $userAgent) === 1;
 
         $browser = match (true) {
-            str_contains($userAgent, 'Edg/') => 'Edge',
-            str_contains($userAgent, 'OPR/') || str_contains($userAgent, 'Opera') => 'Opera',
-            str_contains($userAgent, 'SamsungBrowser/') => 'Samsung Internet',
-            str_contains($userAgent, 'CriOS') || str_contains($userAgent, 'Chrome/') => 'Chrome',
-            str_contains($userAgent, 'FxiOS') || str_contains($userAgent, 'Firefox/') => 'Firefox',
+            str_contains($userAgent, 'Edg/')                                             => 'Edge',
+            str_contains($userAgent, 'OPR/') || str_contains($userAgent, 'Opera')        => 'Opera',
+            str_contains($userAgent, 'SamsungBrowser/')                                  => 'Samsung Internet',
+            str_contains($userAgent, 'CriOS') || str_contains($userAgent, 'Chrome/')     => 'Chrome',
+            str_contains($userAgent, 'FxiOS') || str_contains($userAgent, 'Firefox/')    => 'Firefox',
             str_contains($userAgent, 'Safari/') && ! str_contains($userAgent, 'Chrome/') => 'Safari',
-            str_contains($userAgent, 'Trident/') || str_contains($userAgent, 'MSIE ') => 'Internet Explorer',
-            $isBot => 'Bot',
-            default => 'Unknown',
+            str_contains($userAgent, 'Trident/') || str_contains($userAgent, 'MSIE ')    => 'Internet Explorer',
+            $isBot                                                                       => 'Bot',
+            default                                                                      => 'Unknown',
         };
 
         $deviceType = match (true) {
-            $isBot => 'bot',
-            str_contains($lowered, 'ipad') || str_contains($lowered, 'tablet') => 'tablet',
+            $isBot                                                                                                    => 'bot',
+            str_contains($lowered, 'ipad') || str_contains($lowered, 'tablet')                                        => 'tablet',
             str_contains($lowered, 'mobile') || str_contains($lowered, 'iphone') || str_contains($lowered, 'android') => 'mobile',
-            default => 'desktop',
+            default                                                                                                   => 'desktop',
         };
 
         return [
             'browser_family' => $browser,
-            'device_type' => $deviceType,
-            'is_bot' => $isBot,
+            'device_type'    => $deviceType,
+            'is_bot'         => $isBot,
         ];
     }
 
@@ -383,7 +383,7 @@ class AnalyticsTracker
     protected function networkPayload(Request $request): array
     {
         return [
-            'ip_address' => $this->anonymizeIp($request->ip()),
+            'ip_address'   => $this->anonymizeIp($request->ip()),
             'country_code' => app(AnalyticsGeoLocator::class)->countryCode($request),
         ];
     }
@@ -425,9 +425,9 @@ class AnalyticsTracker
     {
         if ($user === null) {
             return [
-                'user_id' => null,
-                'user_type' => null,
-                'user_name' => null,
+                'user_id'    => null,
+                'user_type'  => null,
+                'user_name'  => null,
                 'user_email' => null,
             ];
         }
@@ -436,9 +436,9 @@ class AnalyticsTracker
         $email = $user->getAttribute('email');
 
         return [
-            'user_id' => (string) $user->getKey(),
-            'user_type' => $user->getMorphClass(),
-            'user_name' => is_string($name) && filled($name) ? $name : null,
+            'user_id'    => (string) $user->getKey(),
+            'user_type'  => $user->getMorphClass(),
+            'user_name'  => is_string($name) && filled($name) ? $name : null,
             'user_email' => is_string($email) && filled($email) ? Str::lower($email) : null,
         ];
     }

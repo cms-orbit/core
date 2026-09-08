@@ -33,16 +33,16 @@ class Button extends Action
      * @var array
      */
     protected $attributes = [
-        'class' => 'btn btn-link icon-link gap-2',
-        'type' => 'submit',
+        'class'      => 'btn btn-link icon-link gap-2',
+        'type'       => 'submit',
         'novalidate' => false,
-        'method' => null,
-        'icon' => null,
-        'action' => null,
-        'confirm' => null,
+        'method'     => null,
+        'icon'       => null,
+        'action'     => null,
+        'confirm'    => null,
         'parameters' => [],
-        'turbo' => true,
-        'form' => 'post-form',
+        'turbo'      => true,
+        'form'       => 'post-form',
     ];
 
     /**
@@ -163,9 +163,9 @@ class Button extends Action
     }
 
     /**
-     * @param  array|string  $name
-     * @param  mixed  $parameters
-     * @param  bool  $absolute
+     * @param array|string $name
+     * @param mixed        $parameters
+     * @param bool         $absolute
      */
     public function route($name, $parameters = [], $absolute = true): static
     {

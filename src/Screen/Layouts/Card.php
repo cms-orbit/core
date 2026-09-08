@@ -24,8 +24,8 @@ class Card extends Content
     /**
      * Card constructor.
      *
-     * @param  string|Cardable  $target
-     * @param  Action[]  $commandBar
+     * @param string|Cardable $target
+     * @param Action[]        $commandBar
      */
     public function __construct($target, array $commandBar = [])
     {
@@ -37,11 +37,11 @@ class Card extends Content
     public function render(Cardable $card): View
     {
         return view($this->template, [
-            'title' => $card->title(),
+            'title'       => $card->title(),
             'description' => $card->description(),
-            'image' => $card->image(),
-            'commandBar' => $this->buildCommandBar(),
-            'color' => $card->color()?->name(),
+            'image'       => $card->image(),
+            'commandBar'  => $this->buildCommandBar(),
+            'color'       => $card->color()?->name(),
         ]);
     }
 

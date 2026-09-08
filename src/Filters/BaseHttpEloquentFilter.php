@@ -9,7 +9,7 @@ abstract class BaseHttpEloquentFilter extends Filter
     /**
      * Constructor that initializes the filter with the specified column.
      *
-     * @param  string  $column  The database column that the filter will apply to.
+     * @param string $column The database column that the filter will apply to.
      */
     public function __construct(protected string $column)
     {

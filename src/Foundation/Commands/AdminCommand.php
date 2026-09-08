@@ -84,7 +84,7 @@ class AdminCommand extends Command
         /** @var Model|null $existingUser */
         $existingUser = match ($provider) {
             LoginProvider::Email => $userModelClass::query()->where('email', $identifier)->first(),
-            default => UserAccount::query()
+            default              => UserAccount::query()
                 ->where('provider', $provider->value)
                 ->where('normalized_identifier', LoginIdentifierNormalizer::normalize($provider, $identifier))
                 ->first()?->user,
@@ -101,17 +101,17 @@ class AdminCommand extends Command
 
         /** @var Model $user */
         $user = $userModelClass::query()->create([
-            'name' => $name,
-            'email' => $provider === LoginProvider::Email ? $identifier : null,
-            'password' => Hash::make($password),
+            'name'                 => $name,
+            'email'                => $provider === LoginProvider::Email ? $identifier : null,
+            'password'             => Hash::make($password),
             'must_change_password' => true,
-            'permissions' => [],
+            'permissions'          => [],
         ]);
 
         $this->accounts->syncManagedAccounts($user, [
-            'primary_email' => $provider === LoginProvider::Email ? $identifier : null,
-            'login_id' => $provider === LoginProvider::Id ? $identifier : null,
-            'phone' => $provider === LoginProvider::Phone ? $identifier : null,
+            'primary_email'  => $provider === LoginProvider::Email ? $identifier : null,
+            'login_id'       => $provider === LoginProvider::Id ? $identifier : null,
+            'phone'          => $provider === LoginProvider::Phone ? $identifier : null,
             'email_verified' => $provider === LoginProvider::Email,
             'phone_verified' => $provider === LoginProvider::Phone,
         ]);
@@ -253,21 +253,21 @@ class AdminCommand extends Command
         if ($role === null) {
             /** @var Role $role */
             $role = $roleModelClass::query()->create([
-                'name' => Role::DisplayNameSuperAdmin,
-                'slug' => Role::SystemKeySuperAdmin,
-                'system_key' => Role::SystemKeySuperAdmin,
+                'name'         => Role::DisplayNameSuperAdmin,
+                'slug'         => Role::SystemKeySuperAdmin,
+                'system_key'   => Role::SystemKeySuperAdmin,
                 'is_deletable' => false,
-                'permissions' => $permissions,
+                'permissions'  => $permissions,
             ]);
 
             return $role;
         }
 
         $role->forceFill([
-            'slug' => Role::SystemKeySuperAdmin,
-            'system_key' => Role::SystemKeySuperAdmin,
+            'slug'         => Role::SystemKeySuperAdmin,
+            'system_key'   => Role::SystemKeySuperAdmin,
             'is_deletable' => false,
-            'permissions' => $permissions,
+            'permissions'  => $permissions,
         ])->save();
 
         return $role;

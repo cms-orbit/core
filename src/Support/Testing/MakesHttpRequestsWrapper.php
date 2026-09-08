@@ -25,7 +25,7 @@ class MakesHttpRequestsWrapper
     /**
      * Creates a new wrapper instance.
      *
-     * @param  Application  $app  The application instance
+     * @param Application $app The application instance
      */
     public function __construct(protected Application $app) {}
 

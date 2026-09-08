@@ -27,7 +27,8 @@ trait Sortable
     /**
      * Set the sort column value.
      *
-     * @param  int  $sortOrder  The new sort column value.
+     * @param int $sortOrder The new sort column value.
+     *
      * @return $this
      */
     public function setSortColumn(int $sortOrder): static
@@ -40,8 +41,9 @@ trait Sortable
     /**
      * Scope a query to sort the results by the sort column.
      *
-     * @param  Builder  $query
-     * @param  string  $direction  The sorting direction (ASC or DESC). Default is ASC.
+     * @param Builder $query
+     * @param string  $direction The sorting direction (ASC or DESC). Default is ASC.
+     *
      * @return Builder
      */
     public function scopeSorted($query, $direction = 'ASC')

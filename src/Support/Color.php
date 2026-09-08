@@ -29,16 +29,16 @@ enum Color
     public function name(): string
     {
         return match ($this) {
-            Color::INFO => 'info',
-            Color::SUCCESS => 'success',
-            Color::WARNING => 'warning',
+            Color::INFO                  => 'info',
+            Color::SUCCESS               => 'success',
+            Color::WARNING               => 'warning',
             Color::BASIC, Color::DEFAULT => 'default',
-            Color::DANGER, Color::ERROR => 'danger',
-            Color::PRIMARY => 'primary',
-            Color::SECONDARY => 'secondary',
-            Color::LIGHT => 'light',
-            Color::DARK => 'dark',
-            Color::LINK => 'link',
+            Color::DANGER, Color::ERROR  => 'danger',
+            Color::PRIMARY               => 'primary',
+            Color::SECONDARY             => 'secondary',
+            Color::LIGHT                 => 'light',
+            Color::DARK                  => 'dark',
+            Color::LINK                  => 'link',
         };
     }
 
@@ -46,8 +46,9 @@ enum Color
      * This method returns the color based on the given name.
      * It is used to maintain backwards compatibility to 13.0.
      *
-     * @param  string  $name
-     * @param  array  $arguments
+     * @param string $name
+     * @param array  $arguments
+     *
      * @return \Closure|Color
      */
     public static function __callStatic($name, $arguments)

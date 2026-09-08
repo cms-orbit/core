@@ -22,7 +22,7 @@ class SitemapRegistry
     /**
      * Register a URL source.
      *
-     * @param  Closure|iterable<int, array<string, mixed>>  $source
+     * @param Closure|iterable<int, array<string, mixed>> $source
      */
     public function register(Closure|iterable $source): static
     {

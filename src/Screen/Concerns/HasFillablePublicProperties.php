@@ -11,7 +11,7 @@ trait HasFillablePublicProperties
     /**
      * Fills the public properties of the object with values from the given repository.
      *
-     * @param  Repository  $repository  The repository containing the values to fill the properties with.
+     * @param Repository $repository The repository containing the values to fill the properties with.
      */
     protected function fillPublicProperty(Repository $repository): void
     {

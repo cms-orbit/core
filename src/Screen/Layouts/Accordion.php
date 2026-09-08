@@ -23,13 +23,13 @@ abstract class Accordion extends Layout
      */
     protected $variables = [
         'stayOpen' => false,
-        'open' => [],
+        'open'     => [],
     ];
 
     /**
      * Layout constructor.
      *
-     * @param  Layout[]  $layouts
+     * @param Layout[] $layouts
      */
     public function __construct(array $layouts = [])
     {

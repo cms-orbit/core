@@ -92,11 +92,11 @@ abstract class DocumentEntity extends Entity
     public function seo(Model $model): array
     {
         return [
-            'title' => $model->getAttribute('title'),
+            'title'       => $model->getAttribute('title'),
             'description' => $model->getAttribute('description')
                 ?? $model->getAttribute('pure_content'),
             'thumbnail' => $model->getAttribute('thumbnail'),
-            'slug' => $model->getAttribute('slug'),
+            'slug'      => $model->getAttribute('slug'),
         ];
     }
 }

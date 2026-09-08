@@ -40,7 +40,7 @@ abstract class Block extends Layout
     /**
      * Layout constructor.
      *
-     * @param  Layout[]  $layouts
+     * @param Layout[] $layouts
      */
     public function __construct(array $layouts = [])
     {
@@ -90,7 +90,7 @@ abstract class Block extends Layout
     /**
      * Used to define block orientation.
      *
-     * @param  bool  $vertical
+     * @param bool $vertical
      */
     public function vertical($vertical = true): self
     {

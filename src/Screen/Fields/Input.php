@@ -36,7 +36,7 @@ use Illuminate\Contracts\Support\Htmlable;
  * @method $this src($value = true)
  * @method $this step($value = true)
  * @method $this tabindex($value = true)
- * @method self type($value = true)
+ * @method self  type($value = true)
  * @method $this value($value = true)
  * @method Input help(string|Htmlable $value = null)
  * @method $this popover(string $value = null)
@@ -59,7 +59,7 @@ class Input extends Field
      * @var array
      */
     protected $attributes = [
-        'class' => 'form-control',
+        'class'    => 'form-control',
         'datalist' => [],
     ];
 

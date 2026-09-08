@@ -20,7 +20,8 @@ trait AsMultiSource
     public $jsonColumnName = 'content';
 
     /**
-     * @param  null  $locale
+     * @param null $locale
+     *
      * @return mixed|null
      */
     public function getContent(string $field, $locale = null)
@@ -29,7 +30,8 @@ trait AsMultiSource
     }
 
     /**
-     * @param  null  $locale
+     * @param null $locale
+     *
      * @return mixed
      */
     private function getContentMultiLang(string $field, $locale = null)

@@ -46,17 +46,17 @@ class Attach extends Field
      * @var array
      */
     protected $attributes = [
-        'maxCount' => 0,
-        'maxSize' => 0, // MB
-        'accept' => '*/*',
-        'placeholder' => 'Upload file',
+        'maxCount'            => 0,
+        'maxSize'             => 0, // MB
+        'accept'              => '*/*',
+        'placeholder'         => 'Upload file',
         'errorMaxSizeMessage' => 'File ":name" is too large to upload',
-        'errorTypeMessage' => 'The attached file must be an image',
-        'uploadUrl' => null,
-        'sortUrl' => null,
-        'path' => null,
-        'storage' => 'public',
-        'group' => null,
+        'errorTypeMessage'    => 'The attached file must be an image',
+        'uploadUrl'           => null,
+        'sortUrl'             => null,
+        'path'                => null,
+        'storage'             => 'public',
+        'group'               => null,
     ];
 
     /**

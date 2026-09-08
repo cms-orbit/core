@@ -18,7 +18,8 @@ use Illuminate\Support\Str;
 trait SerializesMenu
 {
     /**
-     * @param  iterable<Menu>  $navigations
+     * @param iterable<Menu> $navigations
+     *
      * @return array<int, array{label: mixed, url: string|null, active: bool}>
      */
     protected function serializeNavigations(iterable $navigations, Repository $repository): array
@@ -32,8 +33,8 @@ trait SerializesMenu
                 $attributes = $node['attributes'] ?? [];
 
                 return [
-                    'label' => $attributes['title'] ?? $attributes['name'] ?? ($node['name'] ?? null),
-                    'url' => $attributes['href'] ?? null,
+                    'label'  => $attributes['title'] ?? $attributes['name'] ?? ($node['name'] ?? null),
+                    'url'    => $attributes['href'] ?? null,
                     'active' => $this->isMenuActive($attributes['active'] ?? null),
                 ];
             })
@@ -44,7 +45,7 @@ trait SerializesMenu
     /**
      * Resolve whether any of the menu's active patterns matches the current URL.
      *
-     * @param  array<int, string>|string|null  $patterns
+     * @param array<int, string>|string|null $patterns
      */
     protected function isMenuActive(array|string|null $patterns): bool
     {

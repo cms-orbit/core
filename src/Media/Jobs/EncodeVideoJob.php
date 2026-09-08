@@ -73,7 +73,7 @@ class EncodeVideoJob implements ShouldQueue
     protected function resolutionHeight(string $resolution): int
     {
         return match ($resolution) {
-            '480p' => 480,
+            '480p'  => 480,
             '1080p' => 1080,
             default => 720,
         };

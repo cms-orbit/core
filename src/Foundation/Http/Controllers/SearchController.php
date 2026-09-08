@@ -14,7 +14,7 @@ class SearchController
     {
         return view('orbit::partials.search.results', [
             'results' => Orbit::search($query),
-            'query' => $query,
+            'query'   => $query,
         ]);
     }
 }
