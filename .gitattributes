@@ -1,5 +1,14 @@
-/.githooks     export-ignore
+/.githooks      export-ignore
 /.gitattributes export-ignore
-/bin           export-ignore
-/tests         export-ignore
-/phpunit.xml   export-ignore
+/.github        export-ignore
+/bin            export-ignore
+/tests          export-ignore
+/phpunit.xml    export-ignore
+
+# 패키지 자체 타입 게이트용. 호스트가 받으면 host.d.ts 의 '@/routes/orbit'
+# 선언이 호스트의 실제 wayfinder 타입과 충돌할 수 있어 dist 에서 제외한다.
+# resources/js/**/*.d.mts 는 반대로 호스트 타입 체크에도 쓰이므로 함께 배포한다.
+/package.json   export-ignore
+/package-lock.json export-ignore
+/tsconfig.json  export-ignore
+/types          export-ignore

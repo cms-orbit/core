@@ -39,7 +39,7 @@ class ShareOrbitInertia
     /**
      * Handle an incoming request.
      *
-     * @param  Closure(Request): (Response)  $next
+     * @param Closure(Request): (Response) $next
      */
     public function handle(Request $request, Closure $next): Response
     {
@@ -68,16 +68,16 @@ class ShareOrbitInertia
         $user = $request->user(config('orbit.guard'));
 
         return [
-            'menu' => $this->safe(fn () => Orbit::getMenu(), []),
-            'sections' => $this->safe(fn () => Orbit::getSections(), []),
-            'permissions' => $user?->getAttribute('permissions') ?? [],
-            'home' => Route::has('orbit.main') ? route('orbit.main') : '/main',
-            'user' => $this->orbitUser($user),
-            'flash' => $this->orbitFlash($request),
-            'brand' => $this->safe(fn () => $this->orbitBrand($request), $this->orbitBrandDefaults()),
+            'menu'          => $this->safe(fn () => Orbit::getMenu(), []),
+            'sections'      => $this->safe(fn () => Orbit::getSections(), []),
+            'permissions'   => $user?->getAttribute('permissions') ?? [],
+            'home'          => Route::has('orbit.main') ? route('orbit.main') : '/main',
+            'user'          => $this->orbitUser($user),
+            'flash'         => $this->orbitFlash($request),
+            'brand'         => $this->safe(fn () => $this->orbitBrand($request), $this->orbitBrandDefaults()),
             'notifications' => $this->safe(fn () => $this->orbitNotifications($user), []),
-            'media' => $this->safe(fn () => $this->orbitMediaEndpoints(), null),
-            'i18n' => $this->safe(fn () => $this->orbitI18n(), $this->orbitI18nDefaults()),
+            'media'         => $this->safe(fn () => $this->orbitMediaEndpoints(), null),
+            'i18n'          => $this->safe(fn () => $this->orbitI18n(), $this->orbitI18nDefaults()),
         ];
     }
 
@@ -91,9 +91,9 @@ class ShareOrbitInertia
         }
 
         return [
-            'id' => $user->getKey(),
-            'name' => $user->getAttribute('name'),
-            'email' => $user->getAttribute('email'),
+            'id'        => $user->getKey(),
+            'name'      => $user->getAttribute('name'),
+            'email'     => $user->getAttribute('email'),
             'avatarUrl' => $this->resolveOrbitUserAvatarUrl($user),
         ];
     }
@@ -201,7 +201,7 @@ SVG;
 
         return [
             'message' => $message,
-            'type' => $type,
+            'type'    => $type,
         ];
     }
 
@@ -219,8 +219,8 @@ SVG;
         }
 
         return [
-            'locale' => app()->getLocale(),
-            'messages' => Locale::messages(),
+            'locale'    => app()->getLocale(),
+            'messages'  => Locale::messages(),
             'available' => $available,
             'switchUrl' => Route::has('orbit.locale.switch') ? route('orbit.locale.switch') : null,
         ];
@@ -234,8 +234,8 @@ SVG;
     protected function orbitI18nDefaults(): array
     {
         return [
-            'locale' => app()->getLocale(),
-            'messages' => [],
+            'locale'    => app()->getLocale(),
+            'messages'  => [],
             'available' => [],
             'switchUrl' => null,
         ];
@@ -258,12 +258,12 @@ SVG;
             ->limit(10)
             ->get()
             ->map(fn ($notification) => [
-                'id' => $notification->id,
-                'title' => $notification->data['title'] ?? null,
+                'id'      => $notification->id,
+                'title'   => $notification->data['title'] ?? null,
                 'message' => $notification->data['message'] ?? '',
-                'url' => $notification->data['action'] ?? null,
-                'time' => optional($notification->getAttribute('created_at'))->diffForHumans(),
-                'read' => $notification->getAttribute('read_at') !== null,
+                'url'     => $notification->data['action'] ?? null,
+                'time'    => optional($notification->getAttribute('created_at'))->diffForHumans(),
+                'read'    => $notification->getAttribute('read_at') !== null,
             ])
             ->all();
     }
@@ -276,7 +276,7 @@ SVG;
     protected function orbitMediaEndpoints(): array
     {
         return [
-            'index' => route('orbit.media.index'),
+            'index'  => route('orbit.media.index'),
             'upload' => route('orbit.media.upload'),
             'remove' => route('orbit.media.index'),
         ];
@@ -307,37 +307,37 @@ SVG;
         $darkTokens = $dualTone ? $registry->resolveColors($mode, 'dark') : [];
 
         $colors = [
-            'primary' => $activeTokens['color_primary'] ?? $defaults['colors']['primary'],
+            'primary'   => $activeTokens['color_primary'] ?? $defaults['colors']['primary'],
             'secondary' => $activeTokens['color_secondary'] ?? $defaults['colors']['secondary'],
-            'accent' => $activeTokens['color_accent'] ?? $defaults['colors']['accent'],
-            'surface' => $activeTokens['color_panel_bg'] ?? '#ffffff',
-            'muted' => $activeTokens['color_nav_muted'] ?? '#f1f5f9',
+            'accent'    => $activeTokens['color_accent'] ?? $defaults['colors']['accent'],
+            'surface'   => $activeTokens['color_panel_bg'] ?? '#ffffff',
+            'muted'     => $activeTokens['color_nav_muted'] ?? '#f1f5f9',
         ];
 
         $brand = [
-            'name' => orbit_config('branding.name', $defaults['name']),
-            'logo' => $this->resolveBrandAsset(orbit_config('branding.logo', $defaults['logo']), $defaults['logo']),
-            'logoDark' => $this->resolveBrandAsset(orbit_config('branding.logo_dark'), $defaults['logo']),
-            'symbol' => $this->resolveBrandAsset(orbit_config('branding.symbol', $defaults['symbol']), $defaults['symbol']),
-            'symbolDark' => $this->resolveBrandAsset(orbit_config('branding.symbol_dark'), $defaults['symbol']),
-            'favicon' => $this->resolveBrandAsset(orbit_config('branding.favicon', $defaults['favicon']), $defaults['favicon']),
-            'faviconVariants' => $this->resolveFaviconVariants(orbit_config('branding.favicon')),
-            'themeMode' => in_array($themeMode, ['system', 'light', 'dark'], true) ? $themeMode : $defaults['themeMode'],
+            'name'               => orbit_config('branding.name', $defaults['name']),
+            'logo'               => $this->resolveBrandAsset(orbit_config('branding.logo', $defaults['logo']), $defaults['logo']),
+            'logoDark'           => $this->resolveBrandAsset(orbit_config('branding.logo_dark'), $defaults['logo']),
+            'symbol'             => $this->resolveBrandAsset(orbit_config('branding.symbol', $defaults['symbol']), $defaults['symbol']),
+            'symbolDark'         => $this->resolveBrandAsset(orbit_config('branding.symbol_dark'), $defaults['symbol']),
+            'favicon'            => $this->resolveBrandAsset(orbit_config('branding.favicon', $defaults['favicon']), $defaults['favicon']),
+            'faviconVariants'    => $this->resolveFaviconVariants(orbit_config('branding.favicon')),
+            'themeMode'          => in_array($themeMode, ['system', 'light', 'dark'], true) ? $themeMode : $defaults['themeMode'],
             'themeToggleEnabled' => $themeToggleEnabled,
-            'palette' => (string) orbit_config("theme.{$mode}.palette", 'orbit'),
-            'layout' => $mode,
-            'contentWidth' => ConfigServiceProvider::normalizeContentWidth(
+            'palette'            => (string) orbit_config("theme.{$mode}.palette", 'orbit'),
+            'layout'             => $mode,
+            'contentWidth'       => ConfigServiceProvider::normalizeContentWidth(
                 orbit_config('layout.content_width', $defaults['contentWidth'])
             ),
-            'colors' => $colors,
-            'tokens' => $activeTokens,
+            'colors'     => $colors,
+            'tokens'     => $activeTokens,
             'activeTone' => $tone,
         ];
 
         if ($dualTone) {
             $brand['tokenSchemes'] = [
                 'light' => $lightTokens,
-                'dark' => $darkTokens,
+                'dark'  => $darkTokens,
             ];
         }
 
@@ -387,21 +387,21 @@ SVG;
     protected function orbitBrandDefaults(): array
     {
         return [
-            'name' => config('app.name'),
-            'logo' => '/vendor/orbit/SVG/logo.svg',
-            'logoDark' => '/vendor/orbit/SVG/logo.svg',
-            'symbol' => '/vendor/orbit/SVG/symbol.svg',
-            'symbolDark' => '/vendor/orbit/SVG/symbol.svg',
-            'favicon' => '/vendor/orbit/favicon/favicon.ico',
-            'themeMode' => 'light',
+            'name'               => config('app.name'),
+            'logo'               => '/vendor/orbit/SVG/logo.svg',
+            'logoDark'           => '/vendor/orbit/SVG/logo.svg',
+            'symbol'             => '/vendor/orbit/SVG/symbol.svg',
+            'symbolDark'         => '/vendor/orbit/SVG/symbol.svg',
+            'favicon'            => '/vendor/orbit/favicon/favicon.ico',
+            'themeMode'          => 'light',
             'themeToggleEnabled' => true,
-            'palette' => 'orbit',
-            'layout' => 'palette-split',
-            'contentWidth' => 'default',
-            'colors' => [
-                'primary' => '#17ce91',
+            'palette'            => 'orbit',
+            'layout'             => 'palette-split',
+            'contentWidth'       => 'default',
+            'colors'             => [
+                'primary'   => '#17ce91',
                 'secondary' => '#64748b',
-                'accent' => '#fc8024',
+                'accent'    => '#fc8024',
             ],
         ];
     }
@@ -489,19 +489,33 @@ SVG;
     }
 
     /**
-     * Run a closure, swallowing failures (e.g. missing tables pre-migration).
+     * Run a closure, falling back to a default when it fails (e.g. missing
+     * tables pre-migration) but reporting the failure.
+     *
+     * The fallback keeps the panel bootable before migrations run. Reporting is
+     * what makes the fallback debuggable: without it the cause and the symptom
+     * come apart. On PostgreSQL a single swallowed query error aborts the whole
+     * transaction, so every later query fails with 25P02 and the stack trace
+     * points somewhere unrelated. It also hid silent degradation — a failing
+     * menu lookup just rendered an empty menu.
+     *
+     * report() goes through the application's exception handler, so the host's
+     * own ignore rules and log channels still apply.
      *
      * @template T
      *
-     * @param  Closure():T  $callback
-     * @param  T  $default
+     * @param Closure():T $callback
+     * @param T           $default
+     *
      * @return T
      */
     protected function safe(Closure $callback, $default)
     {
         try {
             return $callback();
-        } catch (\Throwable) {
+        } catch (\Throwable $exception) {
+            report($exception);
+
             return $default;
         }
     }

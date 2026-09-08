@@ -55,6 +55,25 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Host routes
+    |--------------------------------------------------------------------------
+    |
+    | The package's own route files register under the "orbit." name prefix.
+    | The optional host file (routes/orbit.php) historically did not, so hosts
+    | had to spell the prefix themselves (->name('orbit.dashboard')).
+    |
+    | Enabling this applies "orbit." to the host file too, matching the package
+    | files. It is opt-in because turning it on for a host that already spells
+    | the prefix produces "orbit.orbit.*" names.
+    |
+    */
+
+    'host_routes' => [
+        'name_prefix' => env('ORBIT_HOST_ROUTES_NAME_PREFIX', false),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Guard
     |--------------------------------------------------------------------------
     */
@@ -231,7 +250,7 @@ return [
     */
 
     'analytics' => [
-        'queue' => (bool) env('ORBIT_ANALYTICS_QUEUE', false),
+        'queue'           => (bool) env('ORBIT_ANALYTICS_QUEUE', false),
         'country_headers' => array_values(array_filter(array_map(
             static fn (string $header): string => trim($header),
             explode(',', (string) env('ORBIT_ANALYTICS_COUNTRY_HEADERS', '')),

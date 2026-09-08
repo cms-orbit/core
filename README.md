@@ -94,6 +94,41 @@ npm run dev   # 또는 npm run build
 
 기존 Laravel `User` 모델을 유지하려면 설치 중 덮어쓰기 확인에서 **아니오**를 선택하고, 안내되는 trait/extends 호환 가이드를 따르세요.
 
+### 호스트 `routes/orbit.php` 의 라우트 이름
+
+패키지 자체 라우트 파일은 `orbit.` 이름 접두사 아래 등록되지만, 호스트의
+`routes/orbit.php` 는 **기본적으로 접두사를 받지 않습니다.** domain·prefix·
+미들웨어는 동일하게 적용되므로 이름만 다릅니다.
+
+```php
+// routes/orbit.php (호스트)
+Route::screen('dashboard', ConsoleDashboardScreen::class)->name('dashboard');
+// 등록되는 이름: "dashboard"
+```
+
+오류가 나지 않기 때문에 `config('orbit.index')` 를 `orbit.dashboard` 로 두거나
+breadcrumb 에서 `$trail->parent('orbit.dashboard')` 를 쓸 때 "Route not defined"
+로 처음 드러납니다. 두 가지 방법이 있습니다.
+
+**1) 이름에 직접 접두사를 붙인다** (기본 동작, 추가 설정 없음)
+
+```php
+Route::screen('dashboard', ConsoleDashboardScreen::class)->name('orbit.dashboard');
+```
+
+**2) 패키지 파일과 동작을 맞춘다** — `config/orbit.php` 에서 켜면 호스트 파일도
+`orbit.` 을 받습니다.
+
+```php
+'host_routes' => [
+    'name_prefix' => true,   // 또는 ORBIT_HOST_ROUTES_NAME_PREFIX=true
+],
+```
+
+기본값이 `false` 인 이유는, 이미 1번 방식으로 접두사를 직접 적어둔 호스트에서
+켜면 이름이 `orbit.orbit.dashboard` 가 되기 때문입니다. 2번으로 옮길 때는
+호스트 라우트 파일의 `->name('orbit.…')` 을 함께 걷어내세요.
+
 
 ```bash
 php artisan vendor:publish --tag=orbit-assets

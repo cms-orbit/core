@@ -64,11 +64,21 @@ class RouteServiceProvider extends ServiceProvider
             ->group(Orbit::path('routes/auth.php'));
 
         // Optional host-application routes file.
+        //
+        // The "orbit." name prefix is opt-in here, unlike the package files
+        // above. Applying it unconditionally would rename every route in hosts
+        // that already spell the prefix themselves, turning "orbit.dashboard"
+        // into "orbit.orbit.dashboard". See config('orbit.host_routes').
         if (file_exists(base_path('routes/orbit.php'))) {
-            Route::domain($domain)
+            $hostRoutes = Route::domain($domain)
                 ->prefix($prefix)
-                ->middleware($privateMiddleware)
-                ->group(base_path('routes/orbit.php'));
+                ->middleware($privateMiddleware);
+
+            if (config('orbit.host_routes.name_prefix', false)) {
+                $hostRoutes->as('orbit.');
+            }
+
+            $hostRoutes->group(base_path('routes/orbit.php'));
         }
     }
 

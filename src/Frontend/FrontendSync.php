@@ -18,10 +18,17 @@ final class FrontendSync
      */
     private const CSS_ENTRY = 'resources/css/orbit.css';
 
+    /**
+     * Alias namespace this class owns inside the host tsconfig `paths`. Keys
+     * under it are added/removed as packages come and go; anything else the
+     * host declared (e.g. "@/*") is left alone.
+     */
+    private const MANAGED_PATH_PREFIX = '@cms-orbit/';
+
     public function __construct(private readonly string $basePath) {}
 
     /**
-     * @return array{bridges: list<string>, vite: bool, aliases: list<string>, css: bool, npm: list<string>}
+     * @return array{bridges: list<string>, vite: bool, tsconfig: array{updated: bool, reason: string|null}, aliases: list<string>, css: bool, npm: list<string>}
      */
     public function sync(bool $force = false): array
     {
@@ -47,16 +54,18 @@ final class FrontendSync
         $this->syncRegistrations($manifests);
 
         $viteUpdated = $this->syncViteAliases($manifests);
+        $tsconfig = $this->syncTsconfigPaths($manifests);
         $cssUpdated = $this->syncStyleEntry($manifests);
         $viteInputUpdated = $this->syncViteInput();
         $addedNpm = $this->syncNpmDependencies($manifests);
 
         return [
-            'bridges' => $createdBridges,
-            'vite' => $viteUpdated || $viteInputUpdated,
-            'aliases' => $aliases,
-            'css' => $cssUpdated,
-            'npm' => $addedNpm,
+            'bridges'  => $createdBridges,
+            'vite'     => $viteUpdated || $viteInputUpdated,
+            'tsconfig' => $tsconfig,
+            'aliases'  => $aliases,
+            'css'      => $cssUpdated,
+            'npm'      => $addedNpm,
         ];
     }
 
@@ -66,7 +75,7 @@ final class FrontendSync
      * screen bridge imports it so custom admin fields/screens resolve. Packages
      * contribute admin React without any host file edits.
      *
-     * @param  list<FrontendManifest>  $manifests
+     * @param list<FrontendManifest> $manifests
      */
     private function syncRegistrations(array $manifests): bool
     {
@@ -123,7 +132,8 @@ final class FrontendSync
      * admin frontend. Existing host versions are never overwritten; only missing
      * packages are added.
      *
-     * @param  list<FrontendManifest>  $manifests
+     * @param list<FrontendManifest> $manifests
+     *
      * @return list<string> Names of packages newly added to the host manifest.
      */
     private function syncNpmDependencies(array $manifests): array
@@ -204,7 +214,7 @@ final class FrontendSync
      * Orbit design tokens, and every installed package's class sources. This
      * keeps a plain Laravel host from having to hand-author any Orbit CSS.
      *
-     * @param  list<FrontendManifest>  $manifests
+     * @param list<FrontendManifest> $manifests
      */
     private function syncStyleEntry(array $manifests): bool
     {
@@ -335,7 +345,7 @@ final class FrontendSync
     }
 
     /**
-     * @param  list<FrontendManifest>  $manifests
+     * @param list<FrontendManifest> $manifests
      */
     private function syncViteAliases(array $manifests): bool
     {
@@ -418,7 +428,7 @@ final class FrontendSync
     }
 
     /**
-     * @param  list<FrontendManifest>  $manifests
+     * @param list<FrontendManifest> $manifests
      */
     private function buildViteAliasBlock(array $manifests): string
     {
@@ -483,6 +493,113 @@ TSX;
         }
 
         return null;
+    }
+
+    /**
+     * Mirror the Vite aliases into the host tsconfig `compilerOptions.paths`.
+     *
+     * Vite resolves the generated page bridges through `resolve.alias`, but tsc
+     * knows nothing about that — so the host built fine while `types:check`
+     * failed with TS2307 on every bridge. The starter kit's `composer ci:check`
+     * runs `types:check`, which left new projects red from the first commit.
+     *
+     * Only keys under the managed prefix are touched, so host-owned entries
+     * such as "@/*" survive and stale package entries are dropped.
+     *
+     * @param list<FrontendManifest> $manifests
+     *
+     * @return array{updated: bool, reason: string|null}
+     */
+    private function syncTsconfigPaths(array $manifests): array
+    {
+        $path = $this->basePath.DIRECTORY_SEPARATOR.'tsconfig.json';
+
+        if (! is_file($path)) {
+            return ['updated' => false, 'reason' => 'missing'];
+        }
+
+        $contents = (string) file_get_contents($path);
+        $data = json_decode($contents, true);
+
+        if (! is_array($data)) {
+            // tsconfig allows comments and trailing commas; rewriting such a
+            // file through json_encode would drop them. Report instead so the
+            // command can print the block for the host to paste.
+            return ['updated' => false, 'reason' => 'unparsable'];
+        }
+
+        $existing = $data['compilerOptions']['paths'] ?? [];
+        $existing = is_array($existing) ? $existing : [];
+
+        $desired = [];
+
+        foreach ($manifests as $manifest) {
+            $relativeJsRoot = str_replace(
+                DIRECTORY_SEPARATOR,
+                '/',
+                $this->relativePath($manifest->jsRoot()),
+            );
+
+            $desired[$manifest->alias().'/*'] = ['./'.trim($relativeJsRoot, '/').'/*'];
+        }
+
+        $merged = $existing;
+
+        foreach (array_keys($merged) as $key) {
+            if (Str::startsWith((string) $key, self::MANAGED_PATH_PREFIX)
+                && ! array_key_exists((string) $key, $desired)) {
+                unset($merged[$key]);
+            }
+        }
+
+        foreach ($desired as $key => $value) {
+            $merged[$key] = $value;
+        }
+
+        if ($merged === $existing) {
+            return ['updated' => false, 'reason' => null];
+        }
+
+        if ($merged === []) {
+            unset($data['compilerOptions']['paths']);
+        } else {
+            $data['compilerOptions'] ??= [];
+            $data['compilerOptions']['paths'] = $merged;
+        }
+
+        $encoded = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+
+        if ($encoded === false) {
+            return ['updated' => false, 'reason' => 'unparsable'];
+        }
+
+        file_put_contents($path, $encoded."\n");
+
+        return ['updated' => true, 'reason' => null];
+    }
+
+    /**
+     * The tsconfig `paths` block for hosts we could not write to automatically.
+     *
+     * @param list<FrontendManifest> $manifests
+     *
+     * @return array<string, list<string>>
+     */
+    public function tsconfigPathsBlock(array $manifests): array
+    {
+        $block = [];
+
+        foreach ($manifests as $manifest) {
+            $relativeJsRoot = str_replace(
+                DIRECTORY_SEPARATOR,
+                '/',
+                $this->relativePath($manifest->jsRoot()),
+            );
+
+            $block[$manifest->alias().'/*'] = ['./'.trim($relativeJsRoot, '/').'/*'];
+        }
+
+        return $block;
     }
 
     private function relativePath(string $absolutePath): string

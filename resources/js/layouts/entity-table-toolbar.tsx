@@ -251,7 +251,10 @@ function InlineTableFilter({ field }: { field: FieldNode }) {
     const selected = pending ?? committed;
 
     const apply = (values: string[]) => {
-        if (!fieldName) {
+        // Guard the value actually passed down. FieldNode.name is nullable, so
+        // paramName is too; checking fieldName instead left paramName widened
+        // to `string | null` at the call site.
+        if (!paramName) {
             return;
         }
 
