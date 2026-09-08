@@ -396,6 +396,18 @@ composer validate --no-check-publish
 
 ## 업데이트 노트
 
+### 4.6.0
+
+- **`OrbitAccess` 라우팅 리졸버** (#1) — 패널의 도메인·접두사·미들웨어를 요청마다 해석하고 컨테이너 싱글턴으로 바인딩합니다. 위성 패키지가 서브클래스로 갈아끼워 마운트 지점을 바꿉니다 (`cms-orbit/saas` 의 `{endpoint}/settings`).
+- **PostgreSQL 관리자 500 수정** (#4) — 브랜드 자산 경로를 첨부 ID 로 조회해 트랜잭션이 깨지고 이후 모든 질의가 `25P02` 로 죽었습니다.
+- **`Model::shouldBeStrict()` 호스트에서 관리자가 죽는 문제 수정** (#5), **`orbit:install` 의 OrbitProvider 미등록 수정** (#6), **호스트 `tsc` 를 막던 타입 오류 2건 수정** (#2).
+- **`safe()` 가 삼킨 예외를 `report()` 합니다** (#7) — 폴백은 유지하되 원인이 로그에 남습니다. 위 #4·#5 가 이것 때문에 찾기 어려웠습니다.
+- **`orbit:frontend-sync` 가 tsconfig paths 를 동기화합니다** (#3) — 빌드는 통과하는데 `types:check` 만 깨지던 문제입니다.
+- **패키지 자체 타입 게이트 도입** (#3) — `npm run types:check`. 도입하자마자 실제 결함 3건을 더 잡았습니다.
+- **`orbit.host_routes.name_prefix` opt-in** (#8) — 호스트 `routes/orbit.php` 에도 `orbit.` 접두사를 붙입니다. 기본값 `false`.
+- **CI 워크플로 추가** — php 8.4·8.5 게이트와 태그 version 일치 검사.
+- 테스트 3개 → **20개**.
+
 ### 4.5.0
 
 - **`laravel/framework` `^11.0 || ^12.0 || ^13.0` → `^13.0`**: Laravel 13 전용으로 좁혔습니다.

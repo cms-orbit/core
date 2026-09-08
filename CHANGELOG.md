@@ -2,6 +2,34 @@
 
 이 문서는 `cms-orbit/core`의 릴리스 노트를 기록합니다.
 
+## 4.6.0 - 2026-09-08
+
+### 추가
+
+- **`OrbitAccess` 라우팅 리졸버** (#1): 관리자 패널의 도메인·URL 접두사·미들웨어를 요청마다 해석하는 클래스를 도입하고 컨테이너에 싱글턴으로 바인딩했습니다. 위성 패키지가 이 바인딩을 서브클래스로 갈아끼워 패널의 마운트 지점을 바꿀 수 있습니다 — `cms-orbit/saas` 가 인스턴스 엔드포인트 아래 `{endpoint}/settings` 로 패널을 올리는 것이 그 용례입니다. `Orbit::prefix()` 도 이 리졸버를 타므로 URL 생성이 함께 따라갑니다.
+- **패키지 자체 타입 게이트** (#3): `package.json` + `tsconfig.json` + `types/` 를 추가해 `npm run types:check`(`tsc --noEmit`)가 패키지 안에서 돕니다. 패키지가 `.tsx` 원본을 그대로 배포하는 구조라 여기서 잡지 않으면 타입 오류가 릴리스를 타고 호스트마다 각자 발견하게 됩니다. 도입하자마자 실제 결함 4건을 잡았습니다(아래 수정 항목).
+- **GitHub Actions 워크플로**: php 8.4·8.5 로 `composer validate`·`pint --test`·`pest` 를 돌리는 `ci.yml`, 그리고 태그의 `composer.json` version 이 태그명과 일치하는지 확인하는 `release-guard.yml`. Packagist 는 불일치 태그를 조용히 무시합니다(4.0.8 이 그렇게 게시되지 않았습니다). `.githooks/pre-push` 가 로컬에서 막지만 `--no-verify` 나 GitHub UI 태깅은 통과하므로 CI 에서도 봅니다.
+- **`orbit:frontend-sync` 가 tsconfig paths 를 동기화합니다** (#3): Vite 는 페이지 브리지를 `resolve.alias` 로 찾지만 tsc 는 그 매핑을 몰라 **빌드는 통과하는데 `types:check` 만** 브리지마다 TS2307 로 깨졌습니다. 스타터 킷의 `composer ci:check` 가 `types:check` 를 포함하므로 새 프로젝트가 처음부터 빨간 상태였습니다. `@cms-orbit/` 접두사 키만 관리하므로 호스트가 직접 선언한 `@/*` 같은 항목은 보존되고, 제거된 패키지의 항목은 걷어냅니다. 주석이나 트레일링 콤마가 있어 다시 쓰면 내용이 사라지는 tsconfig 는 건드리지 않고 붙여 넣을 블록을 출력합니다.
+- **`orbit.host_routes.name_prefix` 설정** (#8): 호스트 `routes/orbit.php` 도 패키지 파일과 같은 `orbit.` 이름 접두사를 받게 하는 opt-in 입니다. 기본값은 `false` — 무조건 붙이면 이미 `->name('orbit.dashboard')` 라고 직접 적어둔 호스트의 이름이 `orbit.orbit.dashboard` 가 됩니다.
+
+### 수정
+
+- **PostgreSQL 호스트에서 관리자 화면이 전부 500** (#4): 브랜드 자산 경로를 첨부 ID 로 조회해 트랜잭션이 깨졌고, 그 뒤의 모든 질의가 `25P02`(current transaction is aborted)로 죽었습니다.
+- **`Model::shouldBeStrict()` 를 켠 호스트에서 관리자 화면이 죽는 문제** (#5): 속성 탐색이 예외를 던졌습니다. `ReadsOptionalAttributes` 로 정리했습니다.
+- **`orbit:install` 이 OrbitProvider 를 등록하지 않아 호스트 엔티티가 조용히 사라지는 문제** (#6).
+- **`ShareOrbitInertia::safe()` 가 삼킨 예외를 보고합니다** (#7): 기본값 폴백은 마이그레이션 전 부팅을 위해 유지하되 `report()` 를 붙였습니다. 삼키기만 하면 원인과 증상이 분리됩니다 — PostgreSQL 에서는 삼켜진 질의 오류 하나가 트랜잭션을 중단시켜 이후 모든 질의가 `25P02` 로 죽고 스택 트레이스는 엉뚱한 곳을 가리킵니다. 위 #4·#5 두 버그가 실제로 이것 때문에 벤더 파일을 뚫어야 원인이 드러났습니다. `report()` 는 앱 예외 핸들러를 타므로 호스트의 무시 규칙도 그대로 적용됩니다.
+- **호스트 `tsc` 를 막는 타입 오류 2건** (#2): `layouts.tsx` 의 `LayoutNode` 미정의(TS2304), `login.tsx` 의 폼 오류 속성 접근(TS2339).
+- **타입 게이트가 새로 잡은 결함 3건** (#3): `inline-filter-query.mjs` 에 선언 파일이 없어 호출부가 조용히 `any` 로 떨어진 것(TS7016 — `.d.mts` 선언을 추가했고 이 선언은 호스트 타입 체크에도 쓰이므로 함께 배포합니다), `import.meta.env` 가 타입 없이 쓰인 것(TS2339 ×2), 그리고 `entity-table-toolbar` 의 `apply()` 가 nullable 인 `paramName` 을 `string` 파라미터에 넘긴 것(TS2345 — `fieldName` 을 검사했지만 실제로 넘기는 값은 `paramName` 이라 좁혀지지 않았습니다).
+
+### 변경
+
+- **pint 포맷 정규화**: `pint --test` 를 CI 게이트로 걸려면 기존 코드가 설정에 맞아야 해서 143개 파일을 정규화했습니다. 순수 포맷 변경이며 동작은 바뀌지 않습니다.
+
+### 안내
+
+- 테스트가 3개에서 **20개**로 늘었습니다 (`MediaLibrary` 3, `OrbitAccess` 6, `safe()` 3, 호스트 라우트 접두사 2, tsconfig 동기화 6).
+- `package.json`·`tsconfig.json`·`types/`·`.github/` 는 dist 아카이브에서 제외됩니다. `types/host.d.ts` 의 `@/routes/orbit` 선언이 호스트의 실제 wayfinder 타입과 충돌할 수 있습니다.
+
 ## 4.5.0 - 2026-08-31
 
 ### 변경
