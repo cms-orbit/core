@@ -2,6 +2,12 @@
 
 이 문서는 `cms-orbit/core`의 릴리스 노트를 기록합니다.
 
+## 4.6.1 - 2026-09-08
+
+### 변경
+
+- **`laravel/octane` 을 `suggest` 에 추가했습니다**: `FoundationServiceProvider` 가 `Laravel\Octane\Events\RequestReceived` 를 참조하지만 `Event::listen` 의 클로저 타입으로만 쓰이므로 리플렉션이 문자열만 읽고, octane 미설치에서도 정상 동작합니다(core 테스트가 octane 없이 통과). 하드 의존이 아니므로 require 가 아니라 suggest 가 맞고, 선언이 없어 관계 자체가 문서화되지 않았던 것을 채웠습니다.
+
 ## 4.6.0 - 2026-09-08
 
 ### 추가

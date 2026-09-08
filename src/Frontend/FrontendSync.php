@@ -590,16 +590,50 @@ TSX;
         $block = [];
 
         foreach ($manifests as $manifest) {
-            $relativeJsRoot = str_replace(
+            $relativeJsRoot = trim(str_replace(
                 DIRECTORY_SEPARATOR,
                 '/',
                 $this->relativePath($manifest->jsRoot()),
-            );
+            ), '/');
 
-            $block[$manifest->alias().'/*'] = ['./'.trim($relativeJsRoot, '/').'/*'];
+            $block[$manifest->alias().'/*'] = ['./'.$relativeJsRoot.'/*'];
+
+            /*
+             * The bare specifier needs its own entry. A `paths` wildcard only
+             * matches when there is something after the slash, so
+             * "@cms-orbit/core/*" leaves
+             *
+             *     import { registerComponents } from '@cms-orbit/core';
+             *
+             * unresolved — the form this package's own guidelines document.
+             * Vite handles it because its alias points at the directory and
+             * node resolution finds the index; tsc needs to be told.
+             */
+            $index = $this->packageIndexFile($manifest->jsRoot());
+
+            if ($index !== null) {
+                $block[$manifest->alias()] = ['./'.$relativeJsRoot.'/'.$index];
+            }
         }
 
         return $block;
+    }
+
+    /**
+     * The entry file a bare import of the package resolves to, if any.
+     *
+     * Satellite packages without an index only get the wildcard entry, so we
+     * never write a path that resolves to nothing.
+     */
+    private function packageIndexFile(string $jsRoot): ?string
+    {
+        foreach (['index.ts', 'index.tsx', 'index.js'] as $candidate) {
+            if (is_file($jsRoot.DIRECTORY_SEPARATOR.$candidate)) {
+                return $candidate;
+            }
+        }
+
+        return null;
     }
 
     private function relativePath(string $absolutePath): string
