@@ -9,6 +9,7 @@ use CmsOrbit\Core\Screen\Actions\Menu;
 use CmsOrbit\Core\Screen\Field;
 use CmsOrbit\Core\Screen\Sight;
 use CmsOrbit\Core\Screen\TD;
+use CmsOrbit\Core\Support\Concerns\ReadsOptionalAttributes;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -29,6 +30,8 @@ use Illuminate\Validation\ValidationException;
  */
 abstract class Entity
 {
+    use ReadsOptionalAttributes;
+
     /**
      * The fully-qualified Eloquent model class this entity administers.
      *
@@ -485,8 +488,8 @@ abstract class Entity
      */
     public function presenter(Model $model): array
     {
-        $title = (string) ($model->getAttribute('title')
-            ?? $model->getAttribute('name')
+        $title = (string) ($this->optionalAttribute($model, 'title')
+            ?? $this->optionalAttribute($model, 'name')
             ?? $this->singularLabel().' #'.$model->getKey());
 
         return [

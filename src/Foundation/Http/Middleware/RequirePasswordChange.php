@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace CmsOrbit\Core\Foundation\Http\Middleware;
 
+use CmsOrbit\Core\Support\Concerns\ReadsOptionalAttributes;
+use Illuminate\Database\Eloquent\Model;
+use ReflectionMethod;
 use Closure;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\RedirectResponse;
@@ -12,6 +15,8 @@ use Symfony\Component\HttpFoundation\Response;
 
 class RequirePasswordChange
 {
+    use ReadsOptionalAttributes;
+
     /**
      * Handle an incoming request.
      *
@@ -43,10 +48,15 @@ class RequirePasswordChange
             return false;
         }
 
-        if (method_exists($user, 'shouldChangePassword')) {
-            return $user->shouldChangePassword();
+        if (method_exists($user, 'shouldChangePassword')
+            && (new ReflectionMethod($user, 'shouldChangePassword'))->isPublic()) {
+            return (bool) $user->shouldChangePassword();
         }
 
-        return (bool) $user->getAttribute('must_change_password');
+        if (! $user instanceof Model) {
+            return false;
+        }
+
+        return (bool) $this->optionalAttribute($user, 'must_change_password');
     }
 }

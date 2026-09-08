@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CmsOrbit\Core\Activity;
 
+use CmsOrbit\Core\Support\Concerns\ReadsOptionalAttributes;
 use CmsOrbit\Core\Activity\Models\OrbitActivity;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
@@ -12,6 +13,8 @@ use Illuminate\Support\Str;
 
 class ActivityLogger
 {
+    use ReadsOptionalAttributes;
+
     /**
      * @param array<string, mixed> $properties
      */
@@ -188,7 +191,7 @@ class ActivityLogger
         }
 
         foreach (['title', 'name', 'email', 'slug'] as $attribute) {
-            $value = $model->getAttribute($attribute);
+            $value = $this->optionalAttribute($model, $attribute);
 
             if (is_string($value) && filled($value)) {
                 return Str::limit($value, 180);
