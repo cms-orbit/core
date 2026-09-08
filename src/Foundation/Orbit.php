@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace CmsOrbit\Core\Foundation;
 
+use CmsOrbit\Core\Foundation\Routing\OrbitAccess;
 use CmsOrbit\Core\Support\Attributes\FlushOctaneState;
-use Illuminate\Support\Str;
 use Illuminate\Support\Traits\Macroable;
 
 class Orbit
@@ -29,11 +29,7 @@ class Orbit
      */
     public static function prefix(string $path = ''): string
     {
-        $prefix = config('orbit.access.mode') === 'path'
-            ? '/'.trim((string) config('orbit.access.prefix', 'settings'), '/')
-            : '';
-
-        return Str::start($prefix.$path, '/');
+        return app(OrbitAccess::class)->url($path);
     }
 
     /**

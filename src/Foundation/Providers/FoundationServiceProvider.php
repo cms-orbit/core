@@ -6,6 +6,7 @@ namespace CmsOrbit\Core\Foundation\Providers;
 
 use CmsOrbit\Core\Demo\DemoServiceProvider;
 use CmsOrbit\Core\Foundation\Orbit;
+use CmsOrbit\Core\Foundation\Routing\OrbitAccess;
 use CmsOrbit\Core\Support\Facades\Dashboard;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Event;
@@ -142,6 +143,14 @@ class FoundationServiceProvider extends ServiceProvider
         $this->app->singleton(
             Orbit::class,
             static fn (Application $app) => new Orbit
+        );
+
+        // Resolves the panel's domain/prefix/middleware. Bound as a singleton so
+        // satellite packages (cms-orbit/saas) can override it to mount the panel
+        // per instance (e.g. {endpoint}/settings) without host changes.
+        $this->app->singleton(
+            OrbitAccess::class,
+            static fn (Application $app): OrbitAccess => new OrbitAccess
         );
 
         $this
