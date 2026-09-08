@@ -21,6 +21,15 @@ interface LoginPageProps {
     pendingChallenge: { identifier: string; expires_at: string } | null;
 }
 
+/**
+ * 로그인 폼이 받을 수 있는 검증 오류 키.
+ *
+ * 폼 데이터에는 없지만 서버가 보낼 수 있는 `email` 을 포함한다.
+ */
+type LoginFormErrors = Partial<
+    Record<'provider' | 'identifier' | 'password' | 'challenge_code' | 'remember' | 'email', string>
+>;
+
 interface SharedProps {
     orbit?: { brand?: OrbitBrand; flash?: { message?: string | null; type?: string | null } };
     [key: string]: unknown;
@@ -66,7 +75,17 @@ function LoginForm({
         challenge_code: '',
         remember: false,
     });
-    const { data, setData, post, processing, errors } = form;
+    const { data, setData, post, processing } = form;
+
+    /*
+     * 서버는 email provider 로 실패했을 때 `identifier` 와 `email` 두 키에 같은
+     * 메시지를 담아 보낸다 (LoginController::identifierErrorMessages). 호스트가
+     * Laravel 기본 `email` 필드명을 쓰는 경우와의 호환을 위해서다.
+     *
+     * `useForm` 은 errors 키를 폼 데이터에서 추론하므로 `email` 이 타입에 없다.
+     * 서버가 실제로 보내는 키를 그대로 반영한 타입으로 좁혀 읽는다.
+     */
+    const errors = form.errors as LoginFormErrors;
     const selectedMethod = methods.local.find((method) => method.value === data.provider) ?? provider;
     const isPhoneMethod = selectedMethod?.value === 'phone';
     const showPassword = !isPhoneMethod;
