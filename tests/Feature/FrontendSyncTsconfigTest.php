@@ -108,3 +108,45 @@ it('tsconfig 가 없으면 missing 으로 보고하고 붙여 넣을 블록을 �
         ->and($sync->tsconfigPathsBlock(FrontendManifest::discover($base)))
         ->toBe(['@cms-orbit/core/*' => ['./vendor/cms-orbit/core/resources/js/*']]);
 });
+
+/*
+ * bare specifier 는 별도 항목이 필요하다. paths 와일드카드는 슬래시 뒤에
+ * 뭔가 있어야 매칭되므로 "@cms-orbit/core/*" 만으로는
+ *
+ *     import { registerComponents } from '@cms-orbit/core';
+ *
+ * 가 해석되지 않는다. 이 패키지 가이드가 문서화한 형태인데도 그렇다.
+ * Vite 는 alias 가 디렉터리를 가리키고 node 해석이 index 를 찾아 주므로
+ * 통과하지만, tsc 는 알려 줘야 한다.
+ */
+it('index 가 있으면 bare alias 도 넣는다', function () {
+    $base = fakeHost(['compilerOptions' => ['paths' => []]]);
+    file_put_contents($base.'/vendor/cms-orbit/core/resources/js/index.ts', "export {};\n");
+
+    (new FrontendSync($base))->sync();
+
+    expect(hostTsconfigPaths($base))->toBe([
+        '@cms-orbit/core/*' => ['./vendor/cms-orbit/core/resources/js/*'],
+        '@cms-orbit/core'   => ['./vendor/cms-orbit/core/resources/js/index.ts'],
+    ]);
+});
+
+it('index 가 없는 패키지에는 bare alias 를 넣지 않는다', function () {
+    $base = fakeHost(['compilerOptions' => ['paths' => []]]);
+
+    (new FrontendSync($base))->sync();
+
+    expect(hostTsconfigPaths($base))->toBe([
+        '@cms-orbit/core/*' => ['./vendor/cms-orbit/core/resources/js/*'],
+    ]);
+});
+
+it('수동 안내 블록에도 bare alias 가 포함된다', function () {
+    $base = fakeHost();
+    file_put_contents($base.'/vendor/cms-orbit/core/resources/js/index.ts', "export {};\n");
+
+    $sync = new FrontendSync($base);
+    $manifests = FrontendManifest::discover($base);
+
+    expect($sync->tsconfigPathsBlock($manifests))->toHaveKey('@cms-orbit/core');
+});
