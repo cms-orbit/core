@@ -1,6 +1,6 @@
 {
     "name": "cms-orbit/core",
-    "version": "4.6.1",
+    "version": "4.6.2",
     "description": "CMS Orbit core: server-driven Screen/Layout/Field engine rendered via Inertia + React.",
     "keywords": [
         "laravel",
@@ -35,6 +35,7 @@
         "cms-orbit/announcement": "Document-based announcement content type for the Orbit admin.",
         "cms-orbit/popup": "Document-based popup content type for the Orbit admin.",
         "cms-orbit/sendgo": "Install for SendGo admin GUI, template sync, campaign records, and phone verification delivery.",
+        "laravel/octane": "Install to run Orbit under Laravel Octane; request-scoped state is flushed between requests.",
         "laravel/socialite": "소셜 로그인(구글·카카오·애플)을 쓸 때 설치하세요: composer require \"laravel/socialite:^5.28\" -W. socialite 는 아직 guzzle 8 을 지원하지 않아 guzzle 7 로 내려갑니다.",
         "socialiteproviders/apple": "애플 로그인용 (^5.10). laravel/socialite 와 함께 설치하세요.",
         "socialiteproviders/kakao": "카카오 로그인용 (^4.3). laravel/socialite 와 함께 설치하세요.",
