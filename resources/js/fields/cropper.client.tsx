@@ -1,6 +1,5 @@
 import Cropper from 'cropperjs';
 import { useEffect, useRef, useState } from 'react';
-import 'cropperjs/dist/cropper.css';
 import type { FieldComponentProps } from '../contract';
 import { orbitFetch } from '../lib/http';
 import { useT } from '../lib/i18n';
@@ -73,14 +72,21 @@ export function CropperFieldClient(props: FieldComponentProps) {
         }
 
         const cropper = new Cropper(imageRef.current, {
-            viewMode: 1,
-            aspectRatio: width > 0 && height > 0 ? width / height : NaN,
-            autoCropArea: 1,
+            container: imageRef.current.parentElement!,
         });
+        const selection = cropper.getCropperSelection();
+        if (selection) {
+            selection.aspectRatio = width > 0 && height > 0 ? width / height : NaN;
+            selection.initialCoverage = 1;
+        }
+        const canvas = cropper.getCropperCanvas();
+        if (canvas) {
+            canvas.style.height = '320px';
+        }
         cropperRef.current = cropper;
 
         return () => {
-            cropper.destroy();
+            cropper.getCropperCanvas()?.remove();
             cropperRef.current = null;
         };
     }, [source, width, height]);
@@ -97,14 +103,18 @@ export function CropperFieldClient(props: FieldComponentProps) {
         reader.readAsDataURL(file);
     };
 
-    const apply = () => {
+    const apply = async () => {
         const cropper = cropperRef.current;
 
         if (!cropper) {
             return;
         }
 
-        const canvas = cropper.getCroppedCanvas(width > 0 ? { width, height: height || width } : undefined);
+        const selection = cropper.getCropperSelection();
+        if (!selection) {
+            return;
+        }
+        const canvas = await selection.$toCanvas(width > 0 ? { width, height: height || width } : undefined);
         const dataUrl = canvas.toDataURL('image/png');
         setPreview(dataUrl);
         setSource(null);

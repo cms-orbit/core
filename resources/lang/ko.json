@@ -1,4 +1,6 @@
 {
+    "Invalid social login state.": "소셜 로그인 요청을 확인할 수 없습니다. 다시 로그인해 주세요.",
+    "Prepared the React entry for the Orbit admin panel.": "Orbit 관리자용 React 진입점을 준비했습니다.",
     ":count selected": ":count개 선택됨",
     ":total records, showing :from–:to": ":total건 중 :from–:to",
     "A comprehensive guide to basic form controls, including input fields, buttons, checkboxes, and radio buttons.": "입력 필드, 버튼, 체크박스, 라디오 버튼을 포함한 기본 폼 컨트롤 가이드입니다.",

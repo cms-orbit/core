@@ -4,12 +4,13 @@
     "description": "Type-check gate for the .tsx sources shipped by cms-orbit/core. Not published to npm; the host consumes resources/js through a Vite alias.",
     "type": "module",
     "scripts": {
-        "types:check": "tsc --noEmit"
+        "types:check": "tsc --noEmit",
+        "test:frontend": "node --test tests/Frontend/*.test.mjs"
     },
     "devDependencies": {
-        "@blocknote/core": "^0.51.4",
-        "@blocknote/mantine": "^0.51.4",
-        "@blocknote/react": "^0.51.4",
+        "@blocknote/core": "^0.55.0",
+        "@blocknote/mantine": "^0.55.0",
+        "@blocknote/react": "^0.55.0",
         "@codemirror/lang-css": "^6.3.1",
         "@codemirror/lang-html": "^6.4.11",
         "@codemirror/lang-javascript": "^6.2.5",
@@ -21,16 +22,19 @@
         "@types/react": "^19.0.0",
         "@types/react-dom": "^19.0.0",
         "@uiw/react-codemirror": "^4.25.10",
+        "@vitejs/plugin-react": "^6.1.1",
         "clsx": "^2.1.1",
-        "cropperjs": "^1.6.2",
+        "cropperjs": "^2.2.0",
         "leaflet": "^1.9.4",
         "marked": "^18.0.5",
+        "playwright": "^1.63.0",
         "react": "^19.0.0",
         "react-bootstrap-icons": "^1.11.6",
         "react-dom": "^19.0.0",
         "react-leaflet": "^5.0.0",
         "recharts": "^3.9.0",
         "tailwind-merge": "^3.0.1",
-        "typescript": "^5.7.0"
+        "typescript": "^7.0.2",
+        "vite": "^8.3.2"
     }
 }

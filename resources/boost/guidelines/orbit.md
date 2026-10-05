@@ -7,9 +7,18 @@ these rules when working anywhere in an Orbit-powered application.
 
 ## Package independence (critical)
 
-These packages (`cms-orbit/core`, `cms-orbit/announcement`, `cms-orbit/popup`,
-`cms-orbit/saas`, `cms-orbit/blog`) must remain **installable in a vanilla Laravel app**
-without copying host-project code into the package repository.
+Every `cms-orbit/*` package, including Core, Announcement, Popup, SaaS, Blog, SendGo,
+LMS, and future packages, must **install and work on any fresh `laravel new` host**
+that meets its declared requirements, using declared dependencies and documented
+installation commands alone.
+
+- The package-development host is a **disposable verification environment**. It may
+  be recreated at any time; do not preserve, commit, or distribute it as a product artifact.
+- Durable fixes, reusable regression tests, configuration defaults, scaffolding, and
+  development instructions belong in the owning package so they survive host recreation.
+- A host-only workaround is not a completed package fix. Validate installation and
+  behavior on a clean host; passing tests in the existing development host alone does
+  not establish standalone compatibility.
 
 - Never commit host-app files (`app/`, `resources/js/pages` bridges, `.env`, project tests)
   into a package PR.
@@ -124,3 +133,7 @@ conventions and respect the theme tokens and dark mode.
   `resources/boost/skills/{name}/SKILL.md`. Host apps merge them via `php artisan boost:install`
   (first time) or automatically through `orbit:install` / `orbit:sync` → `boost:update` when Boost
   is already configured.
+
+### Package release completion
+
+For authorized cms-orbit package changes, finish validation, commit, push, version/changelog updates, tags, and public/private distribution verification in dependency order. This includes necessary major-version compatibility work and weekly dependency maintenance. Keep disposable hosts, vendor/node_modules, secrets, and unrelated changes out of releases.

@@ -2,6 +2,26 @@
 
 이 문서는 `cms-orbit/core`의 릴리스 노트를 기록합니다.
 
+## 4.7.0 - 2026-10-05
+
+### Added
+
+- Bootstrap the React entry, React plugin, and Wayfinder on a plain Laravel host while preserving existing host entries.
+- Declare required Wayfinder dependencies and ship disposable-host and complete-release guidance.
+- Add Apple nonce/callback, migration rollback, and real-browser cropper regression coverage.
+
+### Changed
+
+- Upgrade BlockNote to 0.55, Cropper to 2.2, the React Vite plugin to 6.1, and package type checking to TypeScript 7.
+- Support Apple provider 6.1 POST callbacks with encrypted browser-bound nonce cookies. Apple requires HTTPS and `socialiteproviders/apple:^6.1`; invalid nonce callbacks are rejected.
+- Verify Laravel 13.34, Inertia 3, and Socialite 5.31 with Guzzle 8. Socialite remains optional at runtime.
+
+### Validation
+
+- Fresh Laravel 13.34 host: all seven packages installed, migrated, and built with Cropper 2.2, BlockNote 0.55, and React Vite plugin 6.1.
+- Host: 377 tests passed; package: 32 tests passed; type checks, production build, and Chromium crop/export lifecycle passed.
+- ESLint 10 and TypeScript 7 in the development host remain gated by upstream ESLint plugin peer requirements; no peer checks are bypassed.
+
 ## 4.6.2 - 2026-09-22
 
 ### 수정

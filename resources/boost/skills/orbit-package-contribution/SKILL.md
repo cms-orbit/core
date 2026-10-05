@@ -7,11 +7,18 @@ description: Contribute to cms-orbit/* Composer packages safely. Activate when o
 
 ## When to use
 
-- Committing to `cms-orbit/core`, `announcement`, `popup`, `saas`, or `blog`
+- Contributing to any `cms-orbit/*` package, including future packages
 - Preparing a release (version in `composer.json`, CHANGELOG, git tag)
 - Reviewing whether a change requires host manual setup
 
 ## Independence checklist
+
+The development host is disposable and may be recreated with `laravel new` at any
+time. Do not preserve or version it as a deliverable. All `cms-orbit/*` packages must
+work on any fresh host meeting their declared requirements, using declared dependencies
+and documented installation commands alone. Keep durable fixes, reusable regression
+tests, defaults, scaffolding, and instructions in the owning package. A host-only
+workaround does not complete a package fix.
 
 1. **Scope:** Only change files inside the target package (and its tests). Never commit host
    `app/`, `routes/web.php`, or demo entities unless they are published stubs from Core.
@@ -24,12 +31,17 @@ description: Contribute to cms-orbit/* Composer packages safely. Activate when o
 6. **README:** Document required vs optional host steps clearly.
 7. **Boost:** Add/update `resources/boost/guidelines/*.md` and `resources/boost/skills/*/SKILL.md`.
 8. **i18n:** Every user-visible string through `__()` / `useT()` with `ko.json` updates.
-9. **Release:** Bump `"version"` in package `composer.json`, update CHANGELOG, tag, push.
+9. **Release:** After the user-authorized package changes pass validation, complete commit, push, version tagging, and package distribution verification. This standing authorization includes required dependency/major-version compatibility updates and weekly maintenance. Never include vendor/node_modules, secrets, disposable host files, or unrelated work. Bump `"version"` in package `composer.json`, update CHANGELOG, tag, push.
    Align dependent package constraints (e.g. `"cms-orbit/core": "4.0.0"`).
 
 ## Verify standalone install
 
-In a clean Laravel app (or CI):
+Verify installation and behavior in a fresh `laravel new` app (or equivalent clean CI
+fixture) that meets the package requirements. Follow the package README for required
+dependencies and setup. Do not copy the existing development host's files or data.
+Passing tests only in that existing host does not prove standalone compatibility.
+
+The Core-based installation flow is:
 
 ```bash
 composer require cms-orbit/{package}

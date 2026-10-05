@@ -16,7 +16,9 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Laravel\Socialite\Contracts\Provider;
 use Laravel\Socialite\Facades\Socialite;
+use Laravel\Socialite\Two\InvalidStateException;
 
 class SocialLoginController extends Controller
 {
@@ -39,7 +41,7 @@ class SocialLoginController extends Controller
 
         abort_unless(class_exists(Socialite::class), 500, 'Laravel Socialite is not installed.');
 
-        return Socialite::driver($loginProvider->value)->redirect();
+        return $this->socialProvider($loginProvider)->redirect();
     }
 
     public function callback(Request $request, string $provider): RedirectResponse
@@ -49,7 +51,13 @@ class SocialLoginController extends Controller
 
         abort_unless(class_exists(Socialite::class), 500, 'Laravel Socialite is not installed.');
 
-        $socialUser = Socialite::driver($loginProvider->value)->user();
+        abort_if($request->isMethod('POST') && $loginProvider !== LoginProvider::Apple, 405);
+
+        try {
+            $socialUser = $this->socialProvider($loginProvider)->user();
+        } catch (InvalidStateException) {
+            abort(403, __('Invalid social login state.'));
+        }
 
         $providerUserId = (string) ($socialUser->getId() ?? $socialUser->id ?? '');
         abort_if($providerUserId === '', 422, 'Provider user id is missing.');
@@ -122,6 +130,17 @@ class SocialLoginController extends Controller
         $this->guard->login($user);
 
         return redirect()->intended(route(config('orbit.index')));
+    }
+
+    protected function socialProvider(LoginProvider $provider): Provider
+    {
+        $driver = Socialite::driver($provider->value);
+
+        if ($provider === LoginProvider::Apple) {
+            return $driver->stateless()->cookieNonce();
+        }
+
+        return $driver;
     }
 
     protected function provider(string $provider): LoginProvider

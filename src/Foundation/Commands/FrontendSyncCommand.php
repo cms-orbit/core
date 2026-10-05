@@ -23,7 +23,7 @@ class FrontendSyncCommand extends Command
 
         $this->reportTsconfig($sync, $result['tsconfig']);
 
-        if ($result['bridges'] === [] && ! $result['vite'] && ! $result['css'] && $result['npm'] === []) {
+        if ($result['bridges'] === [] && ! $result['vite'] && ! $result['css'] && ! $result['entry'] && $result['npm'] === []) {
             $this->components->info('No frontend scaffolding changes were required.');
 
             return self::SUCCESS;
@@ -38,6 +38,10 @@ class FrontendSyncCommand extends Command
 
         if ($result['css']) {
             $this->components->info('Generated the Orbit CSS entry: resources/css/orbit.css');
+        }
+
+        if ($result['entry']) {
+            $this->components->info(__('Prepared the React entry for the Orbit admin panel.'));
         }
 
         if ($result['vite']) {

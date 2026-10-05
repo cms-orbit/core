@@ -90,6 +90,8 @@ npm run dev   # 또는 npm run build
 | `php artisan orbit:sync` | 선택 | 설정/스텁만 안전하게 재동기화 (User 모델은 기본적으로 덮어쓰지 않음) |
 | `vite.config.*` 수동 alias | **불필요** | `orbit:frontend-sync`가 `// ORBIT:ALIASES:START` 블록을 관리 |
 | `resources/js/pages/*` 수동 re-export | **불필요** | 위 sync 명령이 패키지 페이지 브리지를 생성 |
+| React 스타터킷 | **불필요** | 순정 Laravel에 `resources/js/app.tsx`가 없으면 sync가 React 진입점과 Vite 플러그인을 준비합니다. 기존 `app.js`와 호스트 소유 `app.tsx`는 보존합니다. |
+| Wayfinder 설치·생성 설정 | **불필요** | Core가 Composer 의존성을 선언하며 sync가 필요한 npm 의존성과 Vite 플러그인을 연결합니다. 빌드 시 관리자 라우트를 생성합니다. |
 | Entity를 `app/Orbit/OrbitProvider`에 등록 | 호스트 전용 Entity 사용 시 | 패키지 Entity는 Service Provider가 자동 등록. `entities/` 스캔은 코어가 런타임 PSR-4로 연결하므로 호스트 `composer.json`에 `"Entities\\": "entities/"`를 **넣을 필요 없음** |
 
 기존 Laravel `User` 모델을 유지하려면 설치 중 덮어쓰기 확인에서 **아니오**를 선택하고, 안내되는 trait/extends 호환 가이드를 따르세요.
@@ -439,6 +441,21 @@ composer validate --no-check-publish
   ```bash
   composer install && vendor/bin/pest
   ```
+
+### 4.7.0 compatibility update
+
+Existing hosts should update their frontend constraints before rebuilding:
+
+```bash
+npm install @blocknote/core@^0.55 @blocknote/react@^0.55 @blocknote/mantine@^0.55 cropperjs@^2.2
+npm install -D @vitejs/plugin-react@^6.1
+php artisan orbit:frontend-sync
+npm run build
+```
+
+For existing React Compiler configurations, replace the plugin's removed `babel` option with `babel({ presets: [reactCompilerPreset()] })` from `@rolldown/plugin-babel` and `@vitejs/plugin-react`. Fresh Laravel hosts are configured automatically by `orbit:install`.
+
+Socialite 5.31 and newer support Guzzle 8; the historical 4.2.0 downgrade limitation below no longer applies. Install Apple login with `socialiteproviders/apple:^6.1` and HTTPS. Core accepts Apple's POST callback and validates an encrypted Secure/HttpOnly/SameSite=None browser nonce cookie, without changing the host session cookie policy.
 
 ### 4.2.0
 

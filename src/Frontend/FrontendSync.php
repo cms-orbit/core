@@ -18,6 +18,8 @@ final class FrontendSync
      */
     private const CSS_ENTRY = 'resources/css/orbit.css';
 
+    private const REACT_ENTRY = 'resources/js/app.tsx';
+
     /**
      * Alias namespace this class owns inside the host tsconfig `paths`. Keys
      * under it are added/removed as packages come and go; anything else the
@@ -28,7 +30,7 @@ final class FrontendSync
     public function __construct(private readonly string $basePath) {}
 
     /**
-     * @return array{bridges: list<string>, vite: bool, tsconfig: array{updated: bool, reason: string|null}, aliases: list<string>, css: bool, npm: list<string>}
+     * @return array{bridges: list<string>, vite: bool, tsconfig: array{updated: bool, reason: string|null}, aliases: list<string>, css: bool, entry: bool, npm: list<string>}
      */
     public function sync(bool $force = false): array
     {
@@ -53,6 +55,8 @@ final class FrontendSync
 
         $this->syncRegistrations($manifests);
 
+        $entryUpdated = $this->syncReactEntry($manifests);
+        $wayfinderUpdated = $this->syncWayfinderPlugin($manifests);
         $viteUpdated = $this->syncViteAliases($manifests);
         $tsconfig = $this->syncTsconfigPaths($manifests);
         $cssUpdated = $this->syncStyleEntry($manifests);
@@ -61,12 +65,76 @@ final class FrontendSync
 
         return [
             'bridges'  => $createdBridges,
-            'vite'     => $viteUpdated || $viteInputUpdated,
+            'vite'     => $entryUpdated || $wayfinderUpdated || $viteUpdated || $viteInputUpdated,
             'tsconfig' => $tsconfig,
             'aliases'  => $aliases,
             'css'      => $cssUpdated,
+            'entry'    => $entryUpdated,
             'npm'      => $addedNpm,
         ];
+    }
+
+    /**
+     * Bootstrap React only when the host has no existing app.tsx. Plain Laravel
+     * ships app.js, which remains untouched and keeps its original Vite input.
+     *
+     * @param list<FrontendManifest> $manifests
+     */
+    private function syncReactEntry(array $manifests): bool
+    {
+        $entryPath = $this->basePath.'/'.self::REACT_ENTRY;
+        $vitePath = $this->resolveViteConfigPath();
+
+        if ($manifests === [] || is_file($entryPath) || $vitePath === null) {
+            return false;
+        }
+
+        $contents = (string) file_get_contents($vitePath);
+
+        if (preg_match('/plugins\s*:\s*\[/', $contents) !== 1 || preg_match('/input\s*:\s*\[/', $contents) !== 1) {
+            return false;
+        }
+
+        if (! str_contains($contents, '@vitejs/plugin-react')) {
+            $contents = "import orbitReact from '@vitejs/plugin-react';\n".$contents;
+            $contents = (string) preg_replace('/(plugins\s*:\s*\[)/', '$1orbitReact(), ', $contents, 1);
+        }
+
+        if (! str_contains($contents, self::REACT_ENTRY)) {
+            $contents = (string) preg_replace('/(input\s*:\s*\[)/', "$1'".self::REACT_ENTRY."', ", $contents, 1);
+        }
+
+        $this->ensureDirectory(dirname($entryPath));
+        copy(__DIR__.'/../../stubs/app/app.tsx.stub', $entryPath);
+        file_put_contents($vitePath, $contents);
+
+        return true;
+    }
+
+    /**
+     * The admin shell imports routes generated in the host by Wayfinder.
+     *
+     * @param list<FrontendManifest> $manifests
+     */
+    private function syncWayfinderPlugin(array $manifests): bool
+    {
+        $vitePath = $this->resolveViteConfigPath();
+
+        if ($manifests === [] || $vitePath === null) {
+            return false;
+        }
+
+        $contents = (string) file_get_contents($vitePath);
+
+        if (str_contains($contents, '@laravel/vite-plugin-wayfinder') || preg_match('/plugins\s*:\s*\[/', $contents) !== 1) {
+            return false;
+        }
+
+        $contents = "import { wayfinder as orbitWayfinder } from '@laravel/vite-plugin-wayfinder';\n".$contents;
+        $contents = (string) preg_replace('/(plugins\s*:\s*\[)/', '$1orbitWayfinder(), ', $contents, 1);
+        file_put_contents($vitePath, $contents);
+
+        return true;
     }
 
     /**

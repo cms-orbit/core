@@ -22,6 +22,7 @@
         "geoip2/geoip2": "^3.0",
         "laravel/framework": "^13.0",
         "laravel/scout": "^10.0 || ^11.0",
+        "laravel/wayfinder": "^0.1.21",
         "tabuna/breadcrumbs": "^5.0",
         "watson/active": "^7.0"
     },
@@ -29,15 +30,17 @@
         "laravel/pint": "^1.30",
         "orchestra/testbench": "^11.0",
         "pestphp/pest": "^5.0",
-        "pestphp/pest-plugin-laravel": "^5.0"
+        "pestphp/pest-plugin-laravel": "^5.0",
+        "laravel/socialite": "^5.31",
+        "socialiteproviders/apple": "^6.1"
     },
     "suggest": {
         "cms-orbit/announcement": "Document-based announcement content type for the Orbit admin.",
         "cms-orbit/popup": "Document-based popup content type for the Orbit admin.",
         "cms-orbit/sendgo": "Install for SendGo admin GUI, template sync, campaign records, and phone verification delivery.",
         "laravel/octane": "Install to run Orbit under Laravel Octane; request-scoped state is flushed between requests.",
-        "laravel/socialite": "소셜 로그인(구글·카카오·애플)을 쓸 때 설치하세요: composer require \"laravel/socialite:^5.28\" -W. socialite 는 아직 guzzle 8 을 지원하지 않아 guzzle 7 로 내려갑니다.",
-        "socialiteproviders/apple": "애플 로그인용 (^5.10). laravel/socialite 와 함께 설치하세요.",
+        "laravel/socialite": "소셜 로그인(구글·카카오·애플)을 쓸 때 설치하세요. Socialite 5.31 이상은 Guzzle 8도 지원합니다.",
+        "socialiteproviders/apple": "애플 로그인용 (^6.1). HTTPS에서 암호화된 nonce 쿠키로 POST 콜백을 검증합니다.",
         "socialiteproviders/kakao": "카카오 로그인용 (^4.3). laravel/socialite 와 함께 설치하세요.",
         "socialiteproviders/manager": "카카오·애플 프로바이더 등록용 (^4.9)."
     },
@@ -78,5 +81,8 @@
         "psr-4": {
             "CmsOrbit\\Core\\Tests\\": "tests/"
         }
+    },
+    "conflict": {
+        "socialiteproviders/apple": "<6.1"
     }
 }

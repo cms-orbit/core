@@ -52,7 +52,7 @@ jobs:
 
       - uses: actions/setup-node@v5
         with:
-          node-version: '22'
+          node-version: '24'
           cache: npm
 
       # 패키지는 .tsx 원본을 그대로 배포한다. 여기서 잡지 않으면 타입 오류가
@@ -62,3 +62,9 @@ jobs:
 
       - name: Type check
         run: npm run types:check
+
+      - name: Install browser
+        run: npx playwright install --with-deps chromium
+
+      - name: Run frontend regression tests
+        run: npm run test:frontend

@@ -3,7 +3,11 @@
         "target": "ESNext",
         "module": "ESNext",
         "moduleResolution": "bundler",
-        "lib": ["DOM", "DOM.Iterable", "ESNext"],
+        "lib": [
+            "DOM",
+            "DOM.Iterable",
+            "ESNext"
+        ],
         "jsx": "react-jsx",
         "strict": true,
         "noEmit": true,
@@ -13,7 +17,15 @@
         "resolveJsonModule": true,
         "isolatedModules": true,
         "forceConsistentCasingInFileNames": true,
-        "types": ["react", "react-dom"]
+        "types": [
+            "react",
+            "react-dom"
+        ]
     },
-    "include": ["resources/js/**/*.ts", "resources/js/**/*.tsx", "types/**/*.d.ts"]
+    "include": [
+        "resources/js/**/*.ts",
+        "resources/js/**/*.tsx",
+        "types/**/*.d.ts",
+        "tests/Frontend/**/*.tsx"
+    ]
 }
