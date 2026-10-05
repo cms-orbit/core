@@ -2,6 +2,21 @@
 
 이 문서는 `cms-orbit/core`의 릴리스 노트를 기록합니다.
 
+## 4.7.1 - 2026-10-06
+
+### Changed
+
+- Raise the generated host and package dependency floors to Marked 18.1 and the React Vite plugin 6.1.2.
+- Refresh the frontend lockfile, including Mantine 9.7 and current compatible transitive dependencies.
+
+### Validation
+
+- Laravel 13.34: development host 381 tests, Core 32 tests, SaaS 6 tests, and the Chromium crop/export regression passed.
+- Core TypeScript 7, host TypeScript 6, PHPStan (1 GiB memory limit), and production builds passed.
+- A fresh Laravel host installed all seven published packages, migrated, built, and passed its two starter tests. Private SaaS was installed through authenticated SSH source access.
+- Composer and npm audits reported no known vulnerabilities.
+- Host ESLint 10 and TypeScript 7 remain blocked by upstream plugin peer constraints; Pest 5.3 constrains PHPUnit to 13.3.6, which also holds ParaTest at 7.25. No constraints were bypassed.
+
 ## 4.7.0 - 2026-10-05
 
 ### Added
