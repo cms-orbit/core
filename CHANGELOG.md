@@ -2,6 +2,18 @@
 
 이 문서는 `cms-orbit/core`의 릴리스 노트를 기록합니다.
 
+## 4.7.2 - 2026-10-07
+
+### Changed
+
+- Refresh the frontend lockfile to Vite 8.3.3 and Mantine 9.7.1.
+
+### Validation
+
+- Verified Laravel 13.35, Scout 11.9, and current compatible Composer dependencies: 381 host tests, 32 Core tests, TypeScript checks, PHPStan, and Chromium crop/export regression passed.
+- Fresh Laravel installation, migrations, production build, and starter tests passed with all seven packages.
+- Core Composer/npm audits passed. The Laravel skeleton's Windows-only concurrently dependency pins vulnerable shell-quote (GHSA-pqg4-j6r4-53mv); removing that unused dependency on the macOS verification hosts clears their npm audits. Upstream Windows tooling remains affected; no dependency override was applied.
+
 ## 4.7.1 - 2026-10-06
 
 ### Changed
