@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace CmsOrbit\Core\Boost;
 
+use Composer\InstalledVersions;
 use Laravel\Boost\BoostServiceProvider;
-use Laravel\Boost\Support\Composer;
 use Laravel\Boost\Support\Config;
 
 /**
@@ -19,17 +19,14 @@ final class BoostPackageSync
      */
     public function discoverOrbitPackages(): array
     {
-        if (! class_exists(Composer::class)) {
-            return [];
-        }
-
-        /** @var class-string<Composer> $composer */
-        $composer = Composer::class;
-
-        return collect($composer::packagesDirectoriesWithBoostGuidelines())
-            ->merge($composer::packagesDirectoriesWithBoostSkills())
-            ->keys()
+        return collect(InstalledVersions::getInstalledPackages())
             ->filter(static fn (string $package): bool => str_starts_with($package, 'cms-orbit/'))
+            ->filter(static function (string $package): bool {
+                $path = InstalledVersions::getInstallPath($package);
+
+                return $path !== null && (is_dir($path.'/resources/boost/guidelines')
+                    || is_dir($path.'/resources/boost/skills'));
+            })
             ->unique()
             ->sort()
             ->values()

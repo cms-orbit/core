@@ -2,6 +2,22 @@
 
 이 문서는 `cms-orbit/core`의 릴리스 노트를 기록합니다.
 
+## 4.7.3 - 2026-10-08
+
+### Fixed
+
+- Discover Orbit Boost guidance through Composer's installed package metadata instead of removed Boost internal APIs. This restores `orbit:install` on fresh hosts with Boost 2.10.2 and retains guideline-only and skill-only packages while excluding unrelated or virtual packages.
+
+### Changed
+
+- Refresh the frontend lockfile to Cropper.js 2.3.0 and current compatible CodeMirror, Babel runtime, and transitive dependencies.
+
+### Validation
+
+- Laravel 13.35: 381 host tests, 34 Core tests, 9 SaaS tests, Chromium crop/export regression, TypeScript checks, and PHPStan passed.
+- Fresh Laravel host with all seven packages and Boost: installation, migrations, frontend sync, SaaS route cache build/clear, starter tests, production build, and Composer/npm audits passed.
+- The previously documented Laravel skeleton concurrently advisory remains upstream; the macOS fixture excludes that unused Windows dependency. No security exceptions or dependency constraint bypasses were applied.
+
 ## 4.7.2 - 2026-10-07
 
 ### Changed
