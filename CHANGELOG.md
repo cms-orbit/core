@@ -2,6 +2,19 @@
 
 이 문서는 `cms-orbit/core`의 릴리스 노트를 기록합니다.
 
+## 4.7.4 - 2026-10-09
+
+### Changed
+
+- Refresh the frontend lockfile to Vite 8.3.4, Playwright 1.64.0, and fast-equals 5.4.4.
+
+### Validation
+
+- Laravel 13.35: 381 host tests, 34 Core tests, 9 SaaS tests, Chromium crop/export regression, TypeScript checks, PHPStan, and production builds passed.
+- Fresh Laravel host with all seven published packages and Boost 2.10.3: installation, migrations, frontend sync, SaaS route cache build/clear, starter tests, platform requirements, and Composer/npm audits passed.
+- The fresh Laravel skeleton now resolves concurrently 10.0.6 with shell-quote 1.12.0; its previous security advisory is cleared without removing dependencies or applying overrides.
+- Standalone Composer verification uses stable Testbench Core 11.5.0 and its compatible Pest/PHPUnit versions; newer PHPUnit requires an unreleased Testbench Core branch. No upstream constraints were bypassed.
+
 ## 4.7.3 - 2026-10-08
 
 ### Fixed
