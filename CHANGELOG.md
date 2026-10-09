@@ -2,6 +2,18 @@
 
 이 문서는 `cms-orbit/core`의 릴리스 노트를 기록합니다.
 
+## 4.7.5 - 2026-10-10
+
+### Changed
+
+- Refresh the frontend lockfile to Inertia Core and React 3.9.0.
+
+### Validation
+
+- Laravel 13.35: 381 host tests, 34 Core tests, 9 SaaS tests, Chromium crop/export regression, TypeScript checks, PHPStan, and production builds passed.
+- Fresh Laravel host with all seven published packages and Boost 2.10.3: installation, migrations, frontend sync, SaaS route cache build/clear, starter tests, platform requirements, and Composer/npm audits passed.
+- Stable Testbench Core 11.6.0 now supports PHPUnit 13.4.1, Pest 5.3.1, and ParaTest 7.26.0 together; standalone verification no longer needs the previous stable-version holdback. No development dependencies or constraint bypasses were required.
+
 ## 4.7.4 - 2026-10-09
 
 ### Changed
