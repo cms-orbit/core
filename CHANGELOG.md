@@ -2,6 +2,18 @@
 
 이 문서는 `cms-orbit/core`의 릴리스 노트를 기록합니다.
 
+## 4.7.7 - 2026-10-12
+
+### Changed
+
+- Refresh the frontend lockfile to Mantine Core and Hooks 9.7.2.
+
+### Validation
+
+- Laravel 13.35: 381 host tests, 34 Core tests, 9 SaaS tests, Chromium crop/export regression, TypeScript checks, PHPStan, and production builds passed.
+- Fresh Laravel host with all seven published packages and Boost 2.10.3: installation, migrations, frontend sync, SaaS route cache build/clear, starter tests, platform requirements, and Composer/npm audits passed.
+- Verified current stable Composer dependencies, including ParaTest 7.26.1, without development versions or dependency constraint bypasses.
+
 ## 4.7.6 - 2026-10-11
 
 ### Changed
