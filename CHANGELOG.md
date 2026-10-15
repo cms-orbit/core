@@ -2,6 +2,20 @@
 
 이 문서는 `cms-orbit/core`의 릴리스 노트를 기록합니다.
 
+## 4.7.9 - 2026-10-16
+
+### Changed
+
+- Upgrade BlockNote Core, React, and Mantine to ^0.56.0 in both the package development dependencies and the frontend installation manifest.
+- Refresh the frontend lockfile, including React/React DOM 19.3.1 and Playwright 1.64.1.
+- Add a browser regression test for loading saved rich-text HTML, preserving formatting during edits, and copying Markdown with BlockNote 0.56.
+
+### Validation
+
+- Laravel 13.36: 381 host tests, 34 Core tests, 9 SaaS tests, both Chromium regressions, TypeScript checks, PHPStan, and production builds passed.
+- Fresh Laravel host with all seven packages and BlockNote 0.56: installation, migrations, frontend sync, SaaS route cache build/clear, starter tests, platform requirements, and Composer/npm audits passed.
+- Stable Composer dependencies only; no dependency constraint bypasses or ignored security advisories.
+
 ## 4.7.8 - 2026-10-13
 
 ### Changed
